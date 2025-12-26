@@ -26,9 +26,12 @@ import {
 export default function AthleteDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const athlete = useAthleteStore((state) => state.getAthleteById(id || ''));
-  const sessions = useAthleteStore((state) => state.getSessionsByAthleteId(id || ''));
+  const athletes = useAthleteStore((state) => state.athletes);
+  const testSessions = useAthleteStore((state) => state.testSessions);
   const deleteAthlete = useAthleteStore((state) => state.deleteAthlete);
+  
+  const athlete = useMemo(() => athletes.find((a) => a.id === id), [athletes, id]);
+  const sessions = useMemo(() => testSessions.filter((s) => s.athleteId === id), [testSessions, id]);
 
   const age = useMemo(() => {
     if (!athlete) return 0;
