@@ -200,6 +200,62 @@ export const biomotorCategories: BiomotorCategory[] = [
           { gender: 'female', ageRange: [26, 40], scale1: [0, 22], scale2: [22, 30], scale3: [30, 38], scale4: [38, 46], scale5: [46, 70], unit: 'kg', higherIsBetter: true },
         ]
       },
+      {
+        id: 'bench-press-1rm-ratio',
+        name: 'Bench Press 1RM (Rasio BB)',
+        description: 'Tes kekuatan maksimal dada dan lengan berdasarkan rasio berat badan. Nilai = 1RM / Berat Badan',
+        procedure: '1. Pemanasan dengan beban ringan 10-15 rep\n2. Tingkatkan beban bertahap hingga 1RM\n3. Istirahat 3-5 menit antar set\n4. Hitung rasio: 1RM ÷ Berat Badan',
+        equipment: ['Bench press', 'Barbell', 'Plate beban'],
+        reference: 'Baechle, T.R. & Earle, R.W. (2008). Essentials of Strength Training and Conditioning',
+        norms: [
+          { gender: 'male', ageRange: [15, 25], scale1: [0, 0.75], scale2: [0.75, 1.0], scale3: [1.0, 1.25], scale4: [1.25, 1.5], scale5: [1.5, 3.0], unit: 'rasio', higherIsBetter: true },
+          { gender: 'male', ageRange: [26, 40], scale1: [0, 0.70], scale2: [0.70, 0.95], scale3: [0.95, 1.20], scale4: [1.20, 1.45], scale5: [1.45, 3.0], unit: 'rasio', higherIsBetter: true },
+          { gender: 'female', ageRange: [15, 25], scale1: [0, 0.40], scale2: [0.40, 0.55], scale3: [0.55, 0.70], scale4: [0.70, 0.90], scale5: [0.90, 2.0], unit: 'rasio', higherIsBetter: true },
+          { gender: 'female', ageRange: [26, 40], scale1: [0, 0.35], scale2: [0.35, 0.50], scale3: [0.50, 0.65], scale4: [0.65, 0.85], scale5: [0.85, 2.0], unit: 'rasio', higherIsBetter: true },
+        ]
+      },
+      {
+        id: 'squat-1rm-ratio',
+        name: 'Back Squat 1RM (Rasio BB)',
+        description: 'Tes kekuatan maksimal tungkai berdasarkan rasio berat badan. Nilai = 1RM / Berat Badan',
+        procedure: '1. Pemanasan dengan beban ringan\n2. Squat penuh hingga paha paralel atau lebih rendah\n3. Tingkatkan beban hingga 1RM\n4. Hitung rasio: 1RM ÷ Berat Badan',
+        equipment: ['Squat rack', 'Barbell', 'Plate beban'],
+        reference: 'NSCA (2016). Essentials of Strength Training and Conditioning',
+        norms: [
+          { gender: 'male', ageRange: [15, 25], scale1: [0, 1.0], scale2: [1.0, 1.5], scale3: [1.5, 1.75], scale4: [1.75, 2.0], scale5: [2.0, 4.0], unit: 'rasio', higherIsBetter: true },
+          { gender: 'male', ageRange: [26, 40], scale1: [0, 0.95], scale2: [0.95, 1.40], scale3: [1.40, 1.65], scale4: [1.65, 1.90], scale5: [1.90, 4.0], unit: 'rasio', higherIsBetter: true },
+          { gender: 'female', ageRange: [15, 25], scale1: [0, 0.65], scale2: [0.65, 1.0], scale3: [1.0, 1.25], scale4: [1.25, 1.50], scale5: [1.50, 3.0], unit: 'rasio', higherIsBetter: true },
+          { gender: 'female', ageRange: [26, 40], scale1: [0, 0.60], scale2: [0.60, 0.90], scale3: [0.90, 1.15], scale4: [1.15, 1.40], scale5: [1.40, 3.0], unit: 'rasio', higherIsBetter: true },
+        ]
+      },
+      {
+        id: 'deadlift-1rm-ratio',
+        name: 'Deadlift 1RM (Rasio BB)',
+        description: 'Tes kekuatan total tubuh berdasarkan rasio berat badan. Nilai = 1RM / Berat Badan',
+        procedure: '1. Pemanasan dengan beban ringan\n2. Angkat barbell dari lantai dengan teknik yang benar\n3. Tingkatkan beban hingga 1RM\n4. Hitung rasio: 1RM ÷ Berat Badan',
+        equipment: ['Barbell', 'Plate beban', 'Platform deadlift'],
+        reference: 'Rippetoe, M. (2011). Starting Strength: Basic Barbell Training',
+        norms: [
+          { gender: 'male', ageRange: [15, 25], scale1: [0, 1.25], scale2: [1.25, 1.75], scale3: [1.75, 2.0], scale4: [2.0, 2.5], scale5: [2.5, 4.5], unit: 'rasio', higherIsBetter: true },
+          { gender: 'male', ageRange: [26, 40], scale1: [0, 1.20], scale2: [1.20, 1.65], scale3: [1.65, 1.90], scale4: [1.90, 2.40], scale5: [2.40, 4.5], unit: 'rasio', higherIsBetter: true },
+          { gender: 'female', ageRange: [15, 25], scale1: [0, 0.80], scale2: [0.80, 1.25], scale3: [1.25, 1.50], scale4: [1.50, 1.75], scale5: [1.75, 3.5], unit: 'rasio', higherIsBetter: true },
+          { gender: 'female', ageRange: [26, 40], scale1: [0, 0.75], scale2: [0.75, 1.15], scale3: [1.15, 1.40], scale4: [1.40, 1.65], scale5: [1.65, 3.5], unit: 'rasio', higherIsBetter: true },
+        ]
+      },
+      {
+        id: 'overhead-press-1rm-ratio',
+        name: 'Overhead Press 1RM (Rasio BB)',
+        description: 'Tes kekuatan bahu berdasarkan rasio berat badan. Nilai = 1RM / Berat Badan',
+        procedure: '1. Berdiri dengan barbell di depan bahu\n2. Tekan ke atas hingga tangan lurus\n3. Tingkatkan beban hingga 1RM\n4. Hitung rasio: 1RM ÷ Berat Badan',
+        equipment: ['Barbell', 'Plate beban'],
+        reference: 'Rippetoe, M. (2011). Starting Strength: Basic Barbell Training',
+        norms: [
+          { gender: 'male', ageRange: [15, 25], scale1: [0, 0.45], scale2: [0.45, 0.60], scale3: [0.60, 0.75], scale4: [0.75, 0.90], scale5: [0.90, 2.0], unit: 'rasio', higherIsBetter: true },
+          { gender: 'male', ageRange: [26, 40], scale1: [0, 0.40], scale2: [0.40, 0.55], scale3: [0.55, 0.70], scale4: [0.70, 0.85], scale5: [0.85, 2.0], unit: 'rasio', higherIsBetter: true },
+          { gender: 'female', ageRange: [15, 25], scale1: [0, 0.30], scale2: [0.30, 0.40], scale3: [0.40, 0.50], scale4: [0.50, 0.65], scale5: [0.65, 1.5], unit: 'rasio', higherIsBetter: true },
+          { gender: 'female', ageRange: [26, 40], scale1: [0, 0.25], scale2: [0.25, 0.35], scale3: [0.35, 0.45], scale4: [0.45, 0.60], scale5: [0.60, 1.5], unit: 'rasio', higherIsBetter: true },
+        ]
+      },
     ]
   },
   {

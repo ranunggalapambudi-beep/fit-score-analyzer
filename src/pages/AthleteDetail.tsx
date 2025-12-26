@@ -63,7 +63,7 @@ export default function AthleteDetail() {
   }, [sessions]);
 
   const radarData = useMemo(() => {
-    return generateRadarData(latestCategoryScores);
+    return generateRadarData(latestCategoryScores, true);
   }, [latestCategoryScores]);
 
   const handleDelete = () => {
