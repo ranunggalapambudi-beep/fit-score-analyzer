@@ -15,8 +15,10 @@ import { cn } from '@/lib/utils';
 export default function TestSession() {
   const { athleteId } = useParams();
   const navigate = useNavigate();
-  const athlete = useAthleteStore((state) => state.getAthleteById(athleteId || ''));
+  const athletes = useAthleteStore((state) => state.athletes);
   const addTestSession = useAthleteStore((state) => state.addTestSession);
+  
+  const athlete = useMemo(() => athletes.find((a) => a.id === athleteId), [athletes, athleteId]);
 
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [results, setResults] = useState<Record<string, number>>({});
@@ -81,12 +83,14 @@ export default function TestSession() {
       
       if (category && test) {
         const score = calculateScore(value, test, athlete.gender, age);
+        const unit = test.norms[0]?.unit || '';
         testResults.push({
           id: crypto.randomUUID(),
           athleteId: athlete.id,
           testId,
           categoryId: category.id,
           value,
+          unit,
           score,
           date: new Date().toISOString(),
         });

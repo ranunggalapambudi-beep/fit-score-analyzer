@@ -17,6 +17,7 @@ export interface TestResult {
   testId: string;
   categoryId: string;
   value: number;
+  unit: string;
   score: number;
   date: string;
   notes?: string;

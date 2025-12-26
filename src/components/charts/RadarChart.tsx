@@ -96,11 +96,20 @@ export function RadarChart({ data, compareData, height = 300 }: RadarChartProps)
 }
 
 export function generateRadarData(
-  categoryScores: Record<string, number>
+  categoryScores: Record<string, number>,
+  onlyTested: boolean = false
 ): { category: string; score: number; fullMark: number }[] {
-  return biomotorCategories.map((cat) => ({
+  const categories = biomotorCategories.map((cat) => ({
     category: cat.name,
+    categoryId: cat.id,
     score: categoryScores[cat.id] || 0,
     fullMark: 5,
   }));
+
+  // Filter to only show categories that were tested
+  if (onlyTested) {
+    return categories.filter((cat) => categoryScores[cat.categoryId] > 0);
+  }
+
+  return categories;
 }
