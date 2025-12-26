@@ -1,0 +1,90 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Layout } from '@/components/layout/Layout';
+import { AthleteCard } from '@/components/athletes/AthleteCard';
+import { AddAthleteSheet } from '@/components/athletes/AddAthleteSheet';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { useAthleteStore } from '@/store/athleteStore';
+import { Search, Plus, Users } from 'lucide-react';
+
+export default function Athletes() {
+  const navigate = useNavigate();
+  const [search, setSearch] = useState('');
+  const athletes = useAthleteStore((state) => state.athletes);
+  const testSessions = useAthleteStore((state) => state.testSessions);
+
+  const filteredAthletes = athletes.filter(
+    (a) =>
+      a.name.toLowerCase().includes(search.toLowerCase()) ||
+      a.sport.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const getTestCount = (athleteId: string) => {
+    return testSessions.filter((s) => s.athleteId === athleteId).length;
+  };
+
+  return (
+    <Layout title="Atlet" subtitle="Kelola data atlet">
+      <div className="px-4 py-6 space-y-4">
+        {/* Search & Add */}
+        <div className="flex gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Cari atlet atau cabor..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <AddAthleteSheet
+            trigger={
+              <Button size="icon" className="shrink-0">
+                <Plus className="w-5 h-5" />
+              </Button>
+            }
+          />
+        </div>
+
+        {/* Athletes List */}
+        {filteredAthletes.length > 0 ? (
+          <div className="space-y-3">
+            {filteredAthletes.map((athlete) => (
+              <AthleteCard
+                key={athlete.id}
+                athlete={athlete}
+                testCount={getTestCount(athlete.id)}
+                onClick={() => navigate(`/athletes/${athlete.id}`)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Users className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h3 className="font-semibold font-display text-foreground">
+              {search ? 'Atlet tidak ditemukan' : 'Belum ada atlet'}
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1 max-w-xs">
+              {search
+                ? 'Coba kata kunci lain'
+                : 'Tambahkan atlet pertama untuk mulai melakukan tes biomotor'}
+            </p>
+            {!search && (
+              <AddAthleteSheet
+                trigger={
+                  <Button className="mt-4 gap-2">
+                    <Plus className="w-4 h-4" />
+                    Tambah Atlet
+                  </Button>
+                }
+              />
+            )}
+          </div>
+        )}
+      </div>
+    </Layout>
+  );
+}
