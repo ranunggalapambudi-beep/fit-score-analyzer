@@ -5,9 +5,10 @@ import { RadarChart, generateRadarData } from '@/components/charts/RadarChart';
 import { ScoreBadge } from '@/components/ui/score-badge';
 import { useAthleteStore } from '@/store/athleteStore';
 import { biomotorCategories } from '@/data/biomotorTests';
+import { EditAthleteSheet } from '@/components/athletes/EditAthleteSheet';
 import { 
-  User, Calendar, Activity, ChevronLeft, Edit, Trash2, 
-  PlayCircle, FileText, Scale, Ruler, Heart, TrendingUp, TrendingDown
+  User, Calendar, Activity, ChevronLeft, Trash2, 
+  PlayCircle, FileText, Scale, Ruler, Heart, TrendingUp, TrendingDown, GitCompareArrows
 } from 'lucide-react';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
@@ -159,9 +160,7 @@ export default function AthleteDetail() {
           </Button>
           <h1 className="font-semibold font-display">Detail Atlet</h1>
           <div className="flex gap-1">
-            <Button variant="ghost" size="icon">
-              <Edit className="w-4 h-4" />
-            </Button>
+            <EditAthleteSheet athlete={athlete} />
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-destructive">
@@ -323,6 +322,16 @@ export default function AthleteDetail() {
                 <Activity className="w-5 h-5" />
                 Lihat Riwayat Tes
               </Button>
+              {sessions.length >= 2 && (
+                <Button 
+                  variant="outline" 
+                  className="w-full gap-2"
+                  onClick={() => navigate(`/comparison/${athlete.id}`)}
+                >
+                  <GitCompareArrows className="w-5 h-5" />
+                  Bandingkan Progress
+                </Button>
+              )}
               <Button 
                 variant="outline" 
                 className="w-full gap-2"
