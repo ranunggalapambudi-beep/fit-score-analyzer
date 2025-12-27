@@ -7,7 +7,7 @@ import { useAthleteStore } from '@/store/athleteStore';
 import { biomotorCategories } from '@/data/biomotorTests';
 import { 
   User, Calendar, Activity, ChevronLeft, Edit, Trash2, 
-  PlayCircle, FileText, Scale, Ruler
+  PlayCircle, FileText, Scale, Ruler, Heart, TrendingUp, TrendingDown
 } from 'lucide-react';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
@@ -22,6 +22,31 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+// BMI calculation helper
+function calculateBMI(weight: number, height: number): { value: number; category: string; color: string } {
+  const heightInMeters = height / 100;
+  const bmi = weight / (heightInMeters * heightInMeters);
+  
+  let category = '';
+  let color = '';
+  
+  if (bmi < 18.5) {
+    category = 'Kurus';
+    color = 'text-accent';
+  } else if (bmi < 25) {
+    category = 'Normal';
+    color = 'text-endurance';
+  } else if (bmi < 30) {
+    category = 'Overweight';
+    color = 'text-speed';
+  } else {
+    category = 'Obesitas';
+    color = 'text-destructive';
+  }
+  
+  return { value: Math.round(bmi * 10) / 10, category, color };
+}
 
 export default function AthleteDetail() {
   const { id } = useParams();
@@ -39,6 +64,11 @@ export default function AthleteDetail() {
       (new Date().getTime() - new Date(athlete.dateOfBirth).getTime()) /
       (365.25 * 24 * 60 * 60 * 1000)
     );
+  }, [athlete]);
+
+  const bmiData = useMemo(() => {
+    if (!athlete?.weight || !athlete?.height) return null;
+    return calculateBMI(athlete.weight, athlete.height);
   }, [athlete]);
 
   const latestCategoryScores = useMemo(() => {
@@ -60,6 +90,38 @@ export default function AthleteDetail() {
     });
 
     return avgScores;
+  }, [sessions]);
+
+  // Get all test results grouped by category
+  const allTestResults = useMemo(() => {
+    if (sessions.length === 0) return [];
+    
+    const latest = sessions.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    )[0];
+
+    const grouped: { categoryId: string; categoryName: string; tests: Array<{ name: string; value: number; unit: string; score: number }> }[] = [];
+    
+    biomotorCategories.forEach(cat => {
+      const catResults = latest.results.filter(r => r.categoryId === cat.id);
+      if (catResults.length > 0) {
+        grouped.push({
+          categoryId: cat.id,
+          categoryName: cat.name,
+          tests: catResults.map(r => {
+            const test = cat.tests.find(t => t.id === r.testId);
+            return {
+              name: test?.name || r.testId,
+              value: r.value,
+              unit: r.unit,
+              score: r.score
+            };
+          })
+        });
+      }
+    });
+    
+    return grouped;
   }, [sessions]);
 
   const radarData = useMemo(() => {
@@ -128,15 +190,15 @@ export default function AthleteDetail() {
       <div className="px-4 py-6 space-y-6">
         {/* Profile Card */}
         <section className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border/50">
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 shrink-0">
+          <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 shrink-0 overflow-hidden border-2 border-primary/30">
             {athlete.photo ? (
               <img 
                 src={athlete.photo} 
                 alt={athlete.name}
-                className="w-full h-full rounded-full object-cover"
+                className="w-full h-full object-cover"
               />
             ) : (
-              <User className="w-8 h-8 text-primary" />
+              <User className="w-10 h-10 text-primary" />
             )}
           </div>
           <div className="flex-1 min-w-0">
@@ -148,40 +210,44 @@ export default function AthleteDetail() {
               <span>{athlete.gender === 'male' ? 'L' : 'P'}</span>
             </div>
             <p className="text-sm font-medium text-primary mt-1">{athlete.sport}</p>
+            {athlete.team && (
+              <p className="text-xs text-muted-foreground">{athlete.team}</p>
+            )}
           </div>
         </section>
 
-        {/* Quick Stats */}
-        {(athlete.height || athlete.weight) && (
-          <section className="grid grid-cols-2 gap-3">
-            {athlete.height && (
-              <div className="p-4 rounded-xl bg-card border border-border/50 flex items-center gap-3">
-                <Ruler className="w-5 h-5 text-muted-foreground" />
-                <div>
-                  <p className="text-lg font-bold font-display">{athlete.height} cm</p>
-                  <p className="text-xs text-muted-foreground">Tinggi Badan</p>
-                </div>
-              </div>
-            )}
-            {athlete.weight && (
-              <div className="p-4 rounded-xl bg-card border border-border/50 flex items-center gap-3">
-                <Scale className="w-5 h-5 text-muted-foreground" />
-                <div>
-                  <p className="text-lg font-bold font-display">{athlete.weight} kg</p>
-                  <p className="text-xs text-muted-foreground">Berat Badan</p>
-                </div>
-              </div>
-            )}
-          </section>
-        )}
+        {/* BMI & Quick Stats */}
+        <section className="grid grid-cols-3 gap-3">
+          {athlete.height && (
+            <div className="p-3 rounded-xl bg-card border border-border/50 text-center">
+              <Ruler className="w-5 h-5 text-muted-foreground mx-auto" />
+              <p className="text-lg font-bold font-display mt-1">{athlete.height}</p>
+              <p className="text-xs text-muted-foreground">cm</p>
+            </div>
+          )}
+          {athlete.weight && (
+            <div className="p-3 rounded-xl bg-card border border-border/50 text-center">
+              <Scale className="w-5 h-5 text-muted-foreground mx-auto" />
+              <p className="text-lg font-bold font-display mt-1">{athlete.weight}</p>
+              <p className="text-xs text-muted-foreground">kg</p>
+            </div>
+          )}
+          {bmiData && (
+            <div className="p-3 rounded-xl bg-card border border-border/50 text-center">
+              <Heart className="w-5 h-5 text-muted-foreground mx-auto" />
+              <p className={`text-lg font-bold font-display mt-1 ${bmiData.color}`}>{bmiData.value}</p>
+              <p className="text-xs text-muted-foreground">{bmiData.category}</p>
+            </div>
+          )}
+        </section>
 
         {/* Radar Chart */}
-        {sessions.length > 0 ? (
+        {sessions.length > 0 && radarData.length > 0 ? (
           <section className="p-4 rounded-xl bg-card border border-border/50">
             <h3 className="font-semibold font-display mb-4">Profil Biomotor</h3>
             <RadarChart data={radarData} height={280} />
             <div className="grid grid-cols-2 gap-2 mt-4">
-              {biomotorCategories.map((cat) => (
+              {biomotorCategories.filter(cat => latestCategoryScores[cat.id] !== undefined).map((cat) => (
                 <div key={cat.id} className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/50">
                   <span className="text-muted-foreground truncate">{cat.name}</span>
                   <ScoreBadge 
@@ -200,6 +266,41 @@ export default function AthleteDetail() {
             <p className="text-sm text-muted-foreground mt-1">
               Lakukan tes biomotor untuk melihat profil atlet
             </p>
+          </section>
+        )}
+
+        {/* All Test Results */}
+        {allTestResults.length > 0 && (
+          <section className="space-y-4">
+            <h3 className="font-semibold font-display flex items-center gap-2">
+              <Activity className="w-5 h-5 text-primary" />
+              Hasil Tes Terakhir
+            </h3>
+            {allTestResults.map((group) => (
+              <div key={group.categoryId} className="rounded-xl bg-card border border-border/50 overflow-hidden">
+                <div className={`px-4 py-2 bg-${group.categoryId === 'endurance' ? 'endurance' : group.categoryId === 'strength' ? 'strength' : group.categoryId === 'speed' ? 'speed' : 'primary'}/10 border-b border-border/50`}>
+                  <h4 className="font-medium text-sm">{group.categoryName}</h4>
+                </div>
+                <div className="divide-y divide-border/50">
+                  {group.tests.map((test, idx) => (
+                    <div key={idx} className="px-4 py-3 flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{test.name}</p>
+                        <p className="text-xs text-muted-foreground">{test.value} {test.unit}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {test.score >= 4 ? (
+                          <TrendingUp className="w-4 h-4 text-endurance" />
+                        ) : test.score <= 2 ? (
+                          <TrendingDown className="w-4 h-4 text-destructive" />
+                        ) : null}
+                        <ScoreBadge score={test.score} size="sm" showLabel={false} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </section>
         )}
 

@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus } from 'lucide-react';
+import { Plus, Camera, X } from 'lucide-react';
 import { useAthleteStore } from '@/store/athleteStore';
 import { sportsList } from '@/data/biomotorTests';
 import { toast } from 'sonner';
@@ -23,8 +23,32 @@ export function AddAthleteSheet({ trigger, onSuccess }: AddAthleteSheetProps) {
   const [team, setTeam] = useState('');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
+  const [photo, setPhoto] = useState<string | undefined>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const addAthlete = useAthleteStore((state) => state.addAthlete);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('Ukuran foto maksimal 2MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhoto(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhoto(undefined);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +67,7 @@ export function AddAthleteSheet({ trigger, onSuccess }: AddAthleteSheetProps) {
       team: team || undefined,
       height: height ? parseFloat(height) : undefined,
       weight: weight ? parseFloat(weight) : undefined,
+      photo,
       createdAt: new Date().toISOString(),
     };
 
@@ -57,6 +82,7 @@ export function AddAthleteSheet({ trigger, onSuccess }: AddAthleteSheetProps) {
     setTeam('');
     setHeight('');
     setWeight('');
+    setPhoto(undefined);
     setOpen(false);
     onSuccess?.();
   };
@@ -76,6 +102,39 @@ export function AddAthleteSheet({ trigger, onSuccess }: AddAthleteSheetProps) {
           <SheetTitle className="font-display">Tambah Atlet Baru</SheetTitle>
         </SheetHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-6">
+          {/* Photo Upload */}
+          <div className="flex flex-col items-center gap-3">
+            <div className="relative">
+              <div 
+                className="w-24 h-24 rounded-full bg-muted border-2 border-dashed border-border flex items-center justify-center overflow-hidden cursor-pointer hover:border-primary transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {photo ? (
+                  <img src={photo} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <Camera className="w-8 h-8 text-muted-foreground" />
+                )}
+              </div>
+              {photo && (
+                <button
+                  type="button"
+                  onClick={handleRemovePhoto}
+                  className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoChange}
+              className="hidden"
+            />
+            <p className="text-xs text-muted-foreground">Tap untuk upload foto (maks. 2MB)</p>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="name">Nama Lengkap *</Label>
             <Input

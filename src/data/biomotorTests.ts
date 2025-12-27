@@ -667,13 +667,94 @@ export const biomotorCategories: BiomotorCategory[] = [
       },
     ]
   },
+  {
+    id: 'coordination',
+    name: 'Koordinasi',
+    description: 'Kemampuan mengintegrasikan gerakan berbagai bagian tubuh secara efisien',
+    icon: 'Crosshair',
+    color: 'agility',
+    tests: [
+      {
+        id: 'ball-wall-toss',
+        name: 'Ball Wall Toss Test',
+        description: 'Tes koordinasi mata-tangan dengan lempar tangkap bola ke dinding',
+        procedure: '1. Berdiri 2 meter dari dinding\n2. Lempar bola tenis ke dinding dengan tangan dominan\n3. Tangkap dengan tangan yang sama\n4. Hitung jumlah tangkapan sukses dalam 30 detik',
+        equipment: ['Bola tenis', 'Dinding', 'Stopwatch'],
+        reference: 'Fleishman, E.A. (1964). The Structure and Measurement of Physical Fitness',
+        norms: [
+          { gender: 'male', ageRange: [13, 25], scale1: [0, 20], scale2: [20, 28], scale3: [28, 35], scale4: [35, 42], scale5: [42, 60], unit: 'tangkapan', higherIsBetter: true },
+          { gender: 'male', ageRange: [26, 45], scale1: [0, 18], scale2: [18, 25], scale3: [25, 32], scale4: [32, 40], scale5: [40, 60], unit: 'tangkapan', higherIsBetter: true },
+          { gender: 'female', ageRange: [13, 25], scale1: [0, 18], scale2: [18, 25], scale3: [25, 32], scale4: [32, 38], scale5: [38, 55], unit: 'tangkapan', higherIsBetter: true },
+          { gender: 'female', ageRange: [26, 45], scale1: [0, 15], scale2: [15, 22], scale3: [22, 28], scale4: [28, 35], scale5: [35, 55], unit: 'tangkapan', higherIsBetter: true },
+        ]
+      },
+      {
+        id: 'alternate-hand-wall-toss',
+        name: 'Alternate Hand Wall Toss',
+        description: 'Tes koordinasi dengan lempar-tangkap bergantian tangan',
+        procedure: '1. Berdiri 2 meter dari dinding\n2. Lempar dengan tangan kanan, tangkap dengan kiri\n3. Lempar dengan kiri, tangkap dengan kanan\n4. Hitung dalam 30 detik',
+        equipment: ['Bola tenis', 'Dinding', 'Stopwatch'],
+        reference: 'Fleishman, E.A. (1964). The Structure and Measurement of Physical Fitness',
+        norms: [
+          { gender: 'male', ageRange: [13, 25], scale1: [0, 15], scale2: [15, 22], scale3: [22, 28], scale4: [28, 35], scale5: [35, 50], unit: 'tangkapan', higherIsBetter: true },
+          { gender: 'male', ageRange: [26, 45], scale1: [0, 13], scale2: [13, 20], scale3: [20, 26], scale4: [26, 32], scale5: [32, 50], unit: 'tangkapan', higherIsBetter: true },
+          { gender: 'female', ageRange: [13, 25], scale1: [0, 13], scale2: [13, 20], scale3: [20, 26], scale4: [26, 32], scale5: [32, 48], unit: 'tangkapan', higherIsBetter: true },
+          { gender: 'female', ageRange: [26, 45], scale1: [0, 10], scale2: [10, 17], scale3: [17, 23], scale4: [23, 29], scale5: [29, 48], unit: 'tangkapan', higherIsBetter: true },
+        ]
+      },
+      {
+        id: 'stick-drop-test',
+        name: 'Stick Drop Reaction Test',
+        description: 'Tes koordinasi reaksi dengan menangkap tongkat yang dijatuhkan',
+        procedure: '1. Tester memegang tongkat vertikal\n2. Subjek siap menangkap\n3. Tester lepas tongkat tanpa aba-aba\n4. Catat jarak jatuh sebelum ditangkap',
+        equipment: ['Tongkat reaksi dengan skala cm'],
+        reference: 'Drowatzky, J.N. & Zuccato, F.C. (1967). Interrelationships between selected measures of static and dynamic balance',
+        norms: [
+          { gender: 'male', ageRange: [13, 25], scale1: [35, 28], scale2: [28, 22], scale3: [22, 16], scale4: [16, 10], scale5: [10, 0], unit: 'cm', higherIsBetter: false },
+          { gender: 'male', ageRange: [26, 45], scale1: [38, 30], scale2: [30, 24], scale3: [24, 18], scale4: [18, 12], scale5: [12, 0], unit: 'cm', higherIsBetter: false },
+          { gender: 'female', ageRange: [13, 25], scale1: [38, 30], scale2: [30, 24], scale3: [24, 18], scale4: [18, 12], scale5: [12, 0], unit: 'cm', higherIsBetter: false },
+          { gender: 'female', ageRange: [26, 45], scale1: [42, 34], scale2: [34, 27], scale3: [27, 20], scale4: [20, 14], scale5: [14, 0], unit: 'cm', higherIsBetter: false },
+        ]
+      },
+      {
+        id: 'soccer-wall-volley',
+        name: 'Soccer Wall Volley Test',
+        description: 'Tes koordinasi kaki dengan tendang-kontrol bola ke dinding',
+        procedure: '1. Berdiri 4 meter dari dinding\n2. Tendang bola ke dinding\n3. Kontrol dan tendang lagi\n4. Hitung dalam 30 detik',
+        equipment: ['Bola sepak', 'Dinding', 'Stopwatch'],
+        reference: 'Mor, D. & Christian, V. (1979). The development of a skill test battery',
+        norms: [
+          { gender: 'male', ageRange: [13, 25], scale1: [0, 10], scale2: [10, 16], scale3: [16, 22], scale4: [22, 28], scale5: [28, 45], unit: 'tendangan', higherIsBetter: true },
+          { gender: 'male', ageRange: [26, 40], scale1: [0, 8], scale2: [8, 14], scale3: [14, 20], scale4: [20, 26], scale5: [26, 45], unit: 'tendangan', higherIsBetter: true },
+          { gender: 'female', ageRange: [13, 25], scale1: [0, 7], scale2: [7, 12], scale3: [12, 18], scale4: [18, 24], scale5: [24, 40], unit: 'tendangan', higherIsBetter: true },
+          { gender: 'female', ageRange: [26, 40], scale1: [0, 5], scale2: [5, 10], scale3: [10, 16], scale4: [16, 22], scale5: [22, 40], unit: 'tendangan', higherIsBetter: true },
+        ]
+      },
+      {
+        id: 'basketball-dribble',
+        name: 'Basketball Dribble Test',
+        description: 'Tes koordinasi dribbling bola basket melewati cone',
+        procedure: '1. Dribble melewati 5 cone dengan jarak 2m\n2. Bolak-balik\n3. Catat waktu tempuh',
+        equipment: ['Bola basket', '5 cone', 'Stopwatch'],
+        reference: 'AAHPERD (1984). Basketball Skills Test Manual',
+        norms: [
+          { gender: 'male', ageRange: [13, 25], scale1: [18, 14], scale2: [14, 11], scale3: [11, 9], scale4: [9, 7], scale5: [7, 0], unit: 'detik', higherIsBetter: false },
+          { gender: 'male', ageRange: [26, 40], scale1: [20, 16], scale2: [16, 13], scale3: [13, 10], scale4: [10, 8], scale5: [8, 0], unit: 'detik', higherIsBetter: false },
+          { gender: 'female', ageRange: [13, 25], scale1: [22, 17], scale2: [17, 14], scale3: [14, 11], scale4: [11, 9], scale5: [9, 0], unit: 'detik', higherIsBetter: false },
+          { gender: 'female', ageRange: [26, 40], scale1: [25, 20], scale2: [20, 16], scale3: [16, 13], scale4: [13, 10], scale5: [10, 0], unit: 'detik', higherIsBetter: false },
+        ]
+      },
+    ]
+  },
 ];
 
 export const sportsList = [
   'Sepak Bola', 'Basket', 'Voli', 'Bulu Tangkis', 'Tenis', 'Renang',
   'Atletik', 'Senam', 'Taekwondo', 'Pencak Silat', 'Karate', 'Judo',
   'Tinju', 'Gulat', 'Angkat Besi', 'Balap Sepeda', 'Rowing', 'Panahan',
-  'Golf', 'Futsal', 'Hoki', 'Rugby', 'Handball', 'Dayung', 'Menembak'
+  'Golf', 'Futsal', 'Hoki', 'Rugby', 'Handball', 'Dayung', 'Menembak',
+  'Tenis Meja', 'Squash', 'Softball', 'Baseball', 'Cricket', 'Polo Air',
+  'Triathlon', 'MMA', 'Muay Thai', 'Wushu', 'Kempo', 'Aikido'
 ];
 
 export function calculateScore(
