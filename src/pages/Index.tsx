@@ -6,7 +6,7 @@ import { biomotorCategories } from '@/data/biomotorTests';
 import { useAthleteStore } from '@/store/athleteStore';
 import { 
   Users, ClipboardList, TrendingUp, ArrowRight, Activity, 
-  Target, Brain, BarChart3, Zap, Award, ChevronRight
+  Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard
 } from 'lucide-react';
 
 export default function Index() {
@@ -205,12 +205,18 @@ export default function Index() {
         </section>
 
         {/* CTA */}
-        <section className="text-center py-4">
+        <section className="text-center py-4 space-y-3">
           <p className="text-muted-foreground text-sm mb-3">
             Siap untuk mengukur performa atletmu?
           </p>
-          <Link to="/athletes">
+          <Link to="/dashboard">
             <Button size="lg" className="gap-2 w-full max-w-xs glow-primary">
+              <LayoutDashboard className="w-5 h-5" />
+              Dashboard Pelatih
+            </Button>
+          </Link>
+          <Link to="/athletes">
+            <Button size="lg" variant="outline" className="gap-2 w-full max-w-xs">
               <Users className="w-5 h-5" />
               Kelola Atlet
             </Button>
