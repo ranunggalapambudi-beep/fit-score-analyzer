@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadarChart, generateRadarData } from '@/components/charts/RadarChart';
 import { ScoreBadge } from '@/components/ui/score-badge';
-import { TestSession } from '@/types/athlete';
+import type { TestSession } from '@/types/athlete';
 import { biomotorCategories } from '@/data/biomotorTests';
 import { TrendingUp, TrendingDown, Minus, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
