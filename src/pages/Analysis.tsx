@@ -12,7 +12,6 @@ import {
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { ExportPDF } from '@/components/export/ExportPDF';
 
 export default function Analysis() {
   const { athleteId } = useParams();
@@ -310,12 +309,6 @@ export default function Analysis() {
             </div>
           </section>
         )}
-
-        {/* Export PDF Section */}
-        <section className="p-4 rounded-xl bg-card border border-border/50">
-          <h3 className="font-semibold font-display mb-4">Export Laporan</h3>
-          <ExportPDF athlete={athlete} sessions={sessions} />
-        </section>
       </div>
     </Layout>
   );
