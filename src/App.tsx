@@ -11,6 +11,7 @@ import TestCategory from "./pages/TestCategory";
 import TestSession from "./pages/TestSession";
 import Results from "./pages/Results";
 import Analysis from "./pages/Analysis";
+import Progress from "./pages/Progress";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,13 +25,17 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/athletes" element={<Athletes />} />
+          <Route path="/athlete/:id" element={<AthleteDetail />} />
           <Route path="/athletes/:id" element={<AthleteDetail />} />
           <Route path="/tests" element={<Tests />} />
           <Route path="/tests/:categoryId" element={<TestCategory />} />
           <Route path="/test-session/:athleteId" element={<TestSession />} />
           <Route path="/results" element={<Results />} />
+          <Route path="/results/:athleteId" element={<Results />} />
+          <Route path="/results/:athleteId/:sessionId" element={<Results />} />
           <Route path="/analysis" element={<Analysis />} />
           <Route path="/analysis/:athleteId" element={<Analysis />} />
+          <Route path="/progress/:id" element={<Progress />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
