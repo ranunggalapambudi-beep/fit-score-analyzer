@@ -1,10 +1,8 @@
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download, Loader2 } from 'lucide-react';
-import { Athlete, TestSession } from '@/types/athlete';
+import type { Athlete, TestSession } from '@/types/athlete';
 import { biomotorCategories } from '@/data/biomotorTests';
-import { generateRadarData } from '@/components/charts/RadarChart';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { toast } from 'sonner';
