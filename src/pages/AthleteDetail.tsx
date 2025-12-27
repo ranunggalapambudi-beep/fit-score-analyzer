@@ -6,6 +6,7 @@ import { ScoreBadge } from '@/components/ui/score-badge';
 import { useAthleteStore } from '@/store/athleteStore';
 import { biomotorCategories } from '@/data/biomotorTests';
 import { EditAthleteSheet } from '@/components/athletes/EditAthleteSheet';
+import { AthleteProfileCard } from '@/components/athletes/AthleteProfileCard';
 import { 
   User, Calendar, Activity, ChevronLeft, Trash2, 
   PlayCircle, FileText, Scale, Ruler, Heart, TrendingUp, TrendingDown, GitCompareArrows
@@ -342,6 +343,7 @@ export default function AthleteDetail() {
               </Button>
             </>
           )}
+          <AthleteProfileCard athlete={athlete} />
         </section>
 
         {/* Test Sessions History */}
