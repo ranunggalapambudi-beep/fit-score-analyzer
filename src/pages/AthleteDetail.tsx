@@ -9,7 +9,7 @@ import {
   User, Calendar, Activity, ChevronLeft, Edit, Trash2, 
   PlayCircle, FileText, Scale, Ruler, Heart, TrendingUp, TrendingDown
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { EditAthleteSheet } from '@/components/athletes/EditAthleteSheet';
 
 // BMI calculation helper
 function calculateBMI(weight: number, height: number): { value: number; category: string; color: string } {
@@ -51,6 +52,7 @@ function calculateBMI(weight: number, height: number): { value: number; category
 export default function AthleteDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [editSheetOpen, setEditSheetOpen] = useState(false);
   const athletes = useAthleteStore((state) => state.athletes);
   const testSessions = useAthleteStore((state) => state.testSessions);
   const deleteAthlete = useAthleteStore((state) => state.deleteAthlete);
@@ -159,7 +161,7 @@ export default function AthleteDetail() {
           </Button>
           <h1 className="font-semibold font-display">Detail Atlet</h1>
           <div className="flex gap-1">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" onClick={() => setEditSheetOpen(true)}>
               <Edit className="w-4 h-4" />
             </Button>
             <AlertDialog>
@@ -323,6 +325,16 @@ export default function AthleteDetail() {
                 <Activity className="w-5 h-5" />
                 Lihat Riwayat Tes
               </Button>
+              {sessions.length >= 2 && (
+                <Button 
+                  variant="outline" 
+                  className="w-full gap-2"
+                  onClick={() => navigate(`/progress/${athlete.id}`)}
+                >
+                  <TrendingUp className="w-5 h-5" />
+                  Bandingkan Progress
+                </Button>
+              )}
               <Button 
                 variant="outline" 
                 className="w-full gap-2"
@@ -368,6 +380,15 @@ export default function AthleteDetail() {
           </section>
         )}
       </div>
+
+      {/* Edit Athlete Sheet */}
+      {athlete && (
+        <EditAthleteSheet
+          athlete={athlete}
+          open={editSheetOpen}
+          onOpenChange={setEditSheetOpen}
+        />
+      )}
     </Layout>
   );
 }
