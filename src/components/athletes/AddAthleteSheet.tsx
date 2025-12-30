@@ -11,16 +11,19 @@ import { toast } from 'sonner';
 
 interface AddAthleteSheetProps {
   trigger?: React.ReactNode;
+  children?: React.ReactNode;
   onSuccess?: () => void;
+  defaultTeam?: string;
+  defaultSport?: string;
 }
 
-export function AddAthleteSheet({ trigger, onSuccess }: AddAthleteSheetProps) {
+export function AddAthleteSheet({ trigger, children, onSuccess, defaultTeam, defaultSport }: AddAthleteSheetProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [gender, setGender] = useState<'male' | 'female'>('male');
-  const [sport, setSport] = useState('');
-  const [team, setTeam] = useState('');
+  const [sport, setSport] = useState(defaultSport || '');
+  const [team, setTeam] = useState(defaultTeam || '');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [photo, setPhoto] = useState<string | undefined>();
@@ -90,7 +93,7 @@ export function AddAthleteSheet({ trigger, onSuccess }: AddAthleteSheetProps) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        {trigger || (
+        {children || trigger || (
           <Button size="sm" className="gap-2">
             <Plus className="w-4 h-4" />
             Tambah Atlet

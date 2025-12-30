@@ -13,6 +13,8 @@ import Results from "./pages/Results";
 import Analysis from "./pages/Analysis";
 import SessionComparison from "./pages/SessionComparison";
 import CoachDashboard from "./pages/CoachDashboard";
+import Teams from "./pages/Teams";
+import TeamDetail from "./pages/TeamDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +37,8 @@ const App = () => (
           <Route path="/analysis/:athleteId" element={<Analysis />} />
           <Route path="/comparison/:athleteId" element={<SessionComparison />} />
           <Route path="/dashboard" element={<CoachDashboard />} />
+          <Route path="/teams" element={<Teams />} />
+          <Route path="/teams/:id" element={<TeamDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
