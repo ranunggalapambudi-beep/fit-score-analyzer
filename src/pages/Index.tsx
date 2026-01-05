@@ -6,7 +6,7 @@ import { biomotorCategories } from '@/data/biomotorTests';
 import { useAthleteStore } from '@/store/athleteStore';
 import { 
   Users, ClipboardList, TrendingUp, ArrowRight, Activity, 
-  Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2
+  Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2, BookOpen
 } from 'lucide-react';
 
 export default function Index() {
@@ -225,6 +225,12 @@ export default function Index() {
             <Button size="lg" variant="ghost" className="gap-2 w-full max-w-xs">
               <Users className="w-5 h-5" />
               Kelola Atlet
+            </Button>
+          </Link>
+          <Link to="/tutorial">
+            <Button size="lg" variant="ghost" className="gap-2 w-full max-w-xs">
+              <BookOpen className="w-5 h-5" />
+              Panduan Tes
             </Button>
           </Link>
         </section>
