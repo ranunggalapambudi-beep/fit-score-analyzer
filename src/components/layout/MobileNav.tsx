@@ -1,12 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, ClipboardList, BarChart3, Users2 } from 'lucide-react';
+import { Home, Users, ClipboardList, BarChart3, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Beranda' },
   { path: '/athletes', icon: Users, label: 'Atlet' },
-  { path: '/teams', icon: Users2, label: 'Tim' },
   { path: '/tests', icon: ClipboardList, label: 'Tes' },
+  { path: '/tutorial', icon: BookOpen, label: 'Panduan' },
   { path: '/results', icon: BarChart3, label: 'Hasil' },
 ];
 

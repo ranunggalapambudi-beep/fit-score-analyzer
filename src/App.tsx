@@ -15,6 +15,7 @@ import SessionComparison from "./pages/SessionComparison";
 import CoachDashboard from "./pages/CoachDashboard";
 import Teams from "./pages/Teams";
 import TeamDetail from "./pages/TeamDetail";
+import Tutorial from "./pages/Tutorial";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/dashboard" element={<CoachDashboard />} />
           <Route path="/teams" element={<Teams />} />
           <Route path="/teams/:id" element={<TeamDetail />} />
+          <Route path="/tutorial" element={<Tutorial />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
