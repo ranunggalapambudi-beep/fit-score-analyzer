@@ -4,12 +4,14 @@ import { CategoryCard } from '@/components/ui/category-card';
 import { Button } from '@/components/ui/button';
 import { biomotorCategories } from '@/data/biomotorTests';
 import { useAthleteStore } from '@/store/athleteStore';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   Users, ClipboardList, TrendingUp, ArrowRight, Activity, 
-  Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2, BookOpen
+  Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2, BookOpen, LogIn, LogOut
 } from 'lucide-react';
 
 export default function Index() {
+  const { user, signOut } = useAuth();
   const athletes = useAthleteStore((state) => state.athletes);
   const testSessions = useAthleteStore((state) => state.testSessions);
 
@@ -233,6 +235,25 @@ export default function Index() {
               Panduan Tes
             </Button>
           </Link>
+          
+          {user ? (
+            <Button 
+              size="lg" 
+              variant="ghost" 
+              className="gap-2 w-full max-w-xs text-muted-foreground"
+              onClick={() => signOut()}
+            >
+              <LogOut className="w-5 h-5" />
+              Keluar
+            </Button>
+          ) : (
+            <Link to="/auth">
+              <Button size="lg" variant="ghost" className="gap-2 w-full max-w-xs">
+                <LogIn className="w-5 h-5" />
+                Masuk / Daftar
+              </Button>
+            </Link>
+          )}
         </section>
       </div>
     </Layout>

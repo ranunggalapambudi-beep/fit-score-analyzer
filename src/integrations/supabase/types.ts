@@ -14,7 +14,178 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      athletes: {
+        Row: {
+          created_at: string | null
+          date_of_birth: string
+          gender: string
+          id: string
+          name: string
+          photo: string | null
+          sport: string
+          team: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date_of_birth: string
+          gender: string
+          id?: string
+          name: string
+          photo?: string | null
+          sport: string
+          team?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date_of_birth?: string
+          gender?: string
+          id?: string
+          name?: string
+          photo?: string | null
+          sport?: string
+          team?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string
+          organization: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+          organization?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          organization?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      teams: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          sport: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          sport: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          sport?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      test_results: {
+        Row: {
+          category_id: string
+          created_at: string | null
+          id: string
+          score: number
+          session_id: string
+          test_id: string
+          value: number
+        }
+        Insert: {
+          category_id: string
+          created_at?: string | null
+          id?: string
+          score: number
+          session_id: string
+          test_id: string
+          value: number
+        }
+        Update: {
+          category_id?: string
+          created_at?: string | null
+          id?: string
+          score?: number
+          session_id?: string
+          test_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_results_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "test_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_sessions: {
+        Row: {
+          athlete_id: string
+          created_at: string | null
+          date: string | null
+          id: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_sessions_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
