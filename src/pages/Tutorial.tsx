@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { biomotorCategories } from "@/data/biomotorTests";
+import { getTestIllustration } from "@/data/testIllustrations";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Heart, Dumbbell, Zap, Activity, StretchHorizontal, 
-  Search, BookOpen, Video, ClipboardList, Ruler, 
+  Search, BookOpen, ClipboardList, Ruler, 
   AlertCircle, CheckCircle2, Target, Info, ArrowLeft,
-  Timer, Users, Wrench
+  Timer, Users, Wrench, Lightbulb, XCircle, Shield
 } from "lucide-react";
 
 const iconMap: { [key: string]: React.ReactNode } = {
@@ -32,7 +32,6 @@ const categoryColors: { [key: string]: string } = {
 };
 
 export default function Tutorial() {
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -132,224 +131,300 @@ export default function Tutorial() {
               </div>
 
               <Accordion type="single" collapsible className="space-y-2">
-                {category.tests.map(test => (
-                  <AccordionItem 
-                    key={test.id} 
-                    value={test.id}
-                    className="border rounded-lg px-4 bg-card"
-                  >
-                    <AccordionTrigger className="hover:no-underline">
-                      <div className="flex items-center gap-3 text-left">
-                        <Target className="h-5 w-5 text-primary shrink-0" />
-                        <div>
-                          <h3 className="font-semibold">{test.name}</h3>
-                          <p className="text-sm text-muted-foreground">{test.description}</p>
-                        </div>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <Tabs defaultValue="procedure" className="mt-4">
-                        <TabsList className="grid w-full grid-cols-4">
-                          <TabsTrigger value="procedure" className="text-xs sm:text-sm">
-                            <ClipboardList className="h-4 w-4 mr-1 sm:mr-2" />
-                            <span className="hidden sm:inline">Prosedur</span>
-                          </TabsTrigger>
-                          <TabsTrigger value="equipment" className="text-xs sm:text-sm">
-                            <Wrench className="h-4 w-4 mr-1 sm:mr-2" />
-                            <span className="hidden sm:inline">Alat</span>
-                          </TabsTrigger>
-                          <TabsTrigger value="norms" className="text-xs sm:text-sm">
-                            <Ruler className="h-4 w-4 mr-1 sm:mr-2" />
-                            <span className="hidden sm:inline">Norma</span>
-                          </TabsTrigger>
-                          <TabsTrigger value="tips" className="text-xs sm:text-sm">
-                            <Info className="h-4 w-4 mr-1 sm:mr-2" />
-                            <span className="hidden sm:inline">Tips</span>
-                          </TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="procedure" className="mt-4 space-y-4">
-                          <Card>
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-base flex items-center gap-2">
-                                <ClipboardList className="h-4 w-4" />
-                                Langkah Pelaksanaan
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="space-y-2">
-                                {test.procedure.split('\n').map((step, idx) => (
-                                  <div key={idx} className="flex gap-3">
-                                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium">
-                                      {idx + 1}
-                                    </div>
-                                    <p className="text-sm pt-0.5">{step.replace(/^\d+\.\s*/, '')}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </TabsContent>
-
-                        <TabsContent value="equipment" className="mt-4">
-                          <Card>
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-base flex items-center gap-2">
-                                <Wrench className="h-4 w-4" />
-                                Peralatan yang Dibutuhkan
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="flex flex-wrap gap-2">
-                                {test.equipment.map((item, idx) => (
-                                  <Badge key={idx} variant="secondary" className="text-sm">
-                                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                                    {item}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </TabsContent>
-
-                        <TabsContent value="norms" className="mt-4 space-y-4">
-                          <Card>
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-base flex items-center gap-2">
-                                <Users className="h-4 w-4" />
-                                Norma Penilaian ({test.norms[0]?.unit || 'unit'})
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent className="overflow-x-auto">
-                              <table className="w-full text-sm">
-                                <thead>
-                                  <tr className="border-b">
-                                    <th className="text-left py-2 px-2">Gender</th>
-                                    <th className="text-left py-2 px-2">Usia</th>
-                                    <th className="text-center py-2 px-2">
-                                      <Badge variant="destructive" className="text-xs">1</Badge>
-                                    </th>
-                                    <th className="text-center py-2 px-2">
-                                      <Badge className="text-xs bg-orange-500">2</Badge>
-                                    </th>
-                                    <th className="text-center py-2 px-2">
-                                      <Badge className="text-xs bg-yellow-500">3</Badge>
-                                    </th>
-                                    <th className="text-center py-2 px-2">
-                                      <Badge className="text-xs bg-blue-500">4</Badge>
-                                    </th>
-                                    <th className="text-center py-2 px-2">
-                                      <Badge className="text-xs bg-green-500">5</Badge>
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {test.norms.map((norm, idx) => (
-                                    <tr key={idx} className="border-b last:border-0">
-                                      <td className="py-2 px-2 capitalize">
-                                        {norm.gender === 'male' ? '👨 Pria' : '👩 Wanita'}
-                                      </td>
-                                      <td className="py-2 px-2">
-                                        {norm.ageRange[0]}-{norm.ageRange[1]} th
-                                      </td>
-                                      <td className="text-center py-2 px-2 text-xs">
-                                        {norm.scale1[0]}-{norm.scale1[1]}
-                                      </td>
-                                      <td className="text-center py-2 px-2 text-xs">
-                                        {norm.scale2[0]}-{norm.scale2[1]}
-                                      </td>
-                                      <td className="text-center py-2 px-2 text-xs">
-                                        {norm.scale3[0]}-{norm.scale3[1]}
-                                      </td>
-                                      <td className="text-center py-2 px-2 text-xs">
-                                        {norm.scale4[0]}-{norm.scale4[1]}
-                                      </td>
-                                      <td className="text-center py-2 px-2 text-xs">
-                                        {norm.scale5[0]}-{norm.scale5[1]}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </CardContent>
-                          </Card>
-
-                          <div className="grid grid-cols-5 gap-2 text-center text-xs">
-                            {[1, 2, 3, 4, 5].map(score => (
-                              <div key={score} className="p-2 rounded bg-muted">
-                                <Badge 
-                                  className={`mb-1 ${
-                                    score === 1 ? 'bg-red-500' :
-                                    score === 2 ? 'bg-orange-500' :
-                                    score === 3 ? 'bg-yellow-500' :
-                                    score === 4 ? 'bg-blue-500' :
-                                    'bg-green-500'
-                                  }`}
-                                >
-                                  {score}
-                                </Badge>
-                                <p className="text-muted-foreground">{getScoreDescription(score)}</p>
-                              </div>
-                            ))}
+                {category.tests.map(test => {
+                  const illustration = getTestIllustration(test.id);
+                  
+                  return (
+                    <AccordionItem 
+                      key={test.id} 
+                      value={test.id}
+                      className="border rounded-lg px-4 bg-card"
+                    >
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3 text-left">
+                          <Target className="h-5 w-5 text-primary shrink-0" />
+                          <div>
+                            <h3 className="font-semibold">{test.name}</h3>
+                            <p className="text-sm text-muted-foreground">{test.description}</p>
                           </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <Tabs defaultValue="procedure" className="mt-4">
+                          <TabsList className="grid w-full grid-cols-4">
+                            <TabsTrigger value="procedure" className="text-xs sm:text-sm">
+                              <ClipboardList className="h-4 w-4 mr-1 sm:mr-2" />
+                              <span className="hidden sm:inline">Prosedur</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="equipment" className="text-xs sm:text-sm">
+                              <Wrench className="h-4 w-4 mr-1 sm:mr-2" />
+                              <span className="hidden sm:inline">Alat</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="norms" className="text-xs sm:text-sm">
+                              <Ruler className="h-4 w-4 mr-1 sm:mr-2" />
+                              <span className="hidden sm:inline">Norma</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="tips" className="text-xs sm:text-sm">
+                              <Info className="h-4 w-4 mr-1 sm:mr-2" />
+                              <span className="hidden sm:inline">Tips</span>
+                            </TabsTrigger>
+                          </TabsList>
 
-                          <p className="text-xs text-muted-foreground text-center">
-                            📚 Referensi: {test.reference}
-                          </p>
-                        </TabsContent>
+                          <TabsContent value="procedure" className="mt-4 space-y-4">
+                            {/* Enhanced procedure with illustrations data */}
+                            {illustration ? (
+                              <div className="space-y-4">
+                                {illustration.steps.map((step, idx) => (
+                                  <Card key={idx} className="overflow-hidden">
+                                    <CardContent className="p-4">
+                                      <div className="flex gap-4">
+                                        <div className="flex-shrink-0">
+                                          <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-lg font-bold">
+                                            {step.step}
+                                          </div>
+                                        </div>
+                                        <div className="flex-1 space-y-2">
+                                          <p className="font-medium">{step.description}</p>
+                                          {step.tips && (
+                                            <div className="flex gap-2 items-start text-sm bg-primary/5 p-2 rounded-lg">
+                                              <Lightbulb className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                                              <p className="text-muted-foreground">{step.tips}</p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                ))}
 
-                        <TabsContent value="tips" className="mt-4">
-                          <Card>
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-base flex items-center gap-2">
-                                <AlertCircle className="h-4 w-4" />
-                                Tips & Perhatian
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                              <div className="flex gap-3 items-start">
-                                <Timer className="h-4 w-4 text-primary mt-0.5" />
-                                <div>
-                                  <p className="font-medium text-sm">Waktu Terbaik</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    Lakukan tes di pagi hari (08.00-10.00) saat kondisi tubuh masih segar
-                                  </p>
-                                </div>
+                                {/* Common Mistakes */}
+                                {illustration.commonMistakes && illustration.commonMistakes.length > 0 && (
+                                  <Card className="border-orange-500/30 bg-orange-500/5">
+                                    <CardHeader className="pb-2">
+                                      <CardTitle className="text-base flex items-center gap-2 text-orange-600">
+                                        <XCircle className="h-4 w-4" />
+                                        Kesalahan Umum
+                                      </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <ul className="space-y-1">
+                                        {illustration.commonMistakes.map((mistake, idx) => (
+                                          <li key={idx} className="flex gap-2 text-sm">
+                                            <span className="text-orange-500">✗</span>
+                                            <span>{mistake}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </CardContent>
+                                  </Card>
+                                )}
+
+                                {/* Safety Tips */}
+                                {illustration.safetyTips && illustration.safetyTips.length > 0 && (
+                                  <Card className="border-green-500/30 bg-green-500/5">
+                                    <CardHeader className="pb-2">
+                                      <CardTitle className="text-base flex items-center gap-2 text-green-600">
+                                        <Shield className="h-4 w-4" />
+                                        Tips Keamanan
+                                      </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <ul className="space-y-1">
+                                        {illustration.safetyTips.map((tip, idx) => (
+                                          <li key={idx} className="flex gap-2 text-sm">
+                                            <span className="text-green-500">✓</span>
+                                            <span>{tip}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </CardContent>
+                                  </Card>
+                                )}
                               </div>
-                              <div className="flex gap-3 items-start">
-                                <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5" />
-                                <div>
-                                  <p className="font-medium text-sm">Persiapan</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    Pastikan atlet sudah pemanasan minimal 10-15 menit sebelum tes
-                                  </p>
+                            ) : (
+                              <Card>
+                                <CardHeader className="pb-2">
+                                  <CardTitle className="text-base flex items-center gap-2">
+                                    <ClipboardList className="h-4 w-4" />
+                                    Langkah Pelaksanaan
+                                  </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  <div className="space-y-2">
+                                    {test.procedure.split('\n').map((step, idx) => (
+                                      <div key={idx} className="flex gap-3">
+                                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium">
+                                          {idx + 1}
+                                        </div>
+                                        <p className="text-sm pt-0.5">{step.replace(/^\d+\.\s*/, '')}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            )}
+                          </TabsContent>
+
+                          <TabsContent value="equipment" className="mt-4">
+                            <Card>
+                              <CardHeader className="pb-2">
+                                <CardTitle className="text-base flex items-center gap-2">
+                                  <Wrench className="h-4 w-4" />
+                                  Peralatan yang Dibutuhkan
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="flex flex-wrap gap-2">
+                                  {test.equipment.map((item, idx) => (
+                                    <Badge key={idx} variant="secondary" className="text-sm">
+                                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                                      {item}
+                                    </Badge>
+                                  ))}
                                 </div>
-                              </div>
-                              <div className="flex gap-3 items-start">
-                                <AlertCircle className="h-4 w-4 text-orange-500 mt-0.5" />
-                                <div>
-                                  <p className="font-medium text-sm">Keamanan</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    Hentikan tes jika atlet menunjukkan tanda kelelahan berlebih atau cedera
-                                  </p>
+                              </CardContent>
+                            </Card>
+                          </TabsContent>
+
+                          <TabsContent value="norms" className="mt-4 space-y-4">
+                            <Card>
+                              <CardHeader className="pb-2">
+                                <CardTitle className="text-base flex items-center gap-2">
+                                  <Users className="h-4 w-4" />
+                                  Norma Penilaian ({test.norms[0]?.unit || 'unit'})
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                  <thead>
+                                    <tr className="border-b">
+                                      <th className="text-left py-2 px-2">Gender</th>
+                                      <th className="text-left py-2 px-2">Usia</th>
+                                      <th className="text-center py-2 px-2">
+                                        <Badge variant="destructive" className="text-xs">1</Badge>
+                                      </th>
+                                      <th className="text-center py-2 px-2">
+                                        <Badge className="text-xs bg-orange-500">2</Badge>
+                                      </th>
+                                      <th className="text-center py-2 px-2">
+                                        <Badge className="text-xs bg-yellow-500">3</Badge>
+                                      </th>
+                                      <th className="text-center py-2 px-2">
+                                        <Badge className="text-xs bg-blue-500">4</Badge>
+                                      </th>
+                                      <th className="text-center py-2 px-2">
+                                        <Badge className="text-xs bg-green-500">5</Badge>
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {test.norms.map((norm, idx) => (
+                                      <tr key={idx} className="border-b last:border-0">
+                                        <td className="py-2 px-2 capitalize">
+                                          {norm.gender === 'male' ? '👨 Pria' : '👩 Wanita'}
+                                        </td>
+                                        <td className="py-2 px-2">
+                                          {norm.ageRange[0]}-{norm.ageRange[1]} th
+                                        </td>
+                                        <td className="text-center py-2 px-2 text-xs">
+                                          {norm.scale1[0]}-{norm.scale1[1]}
+                                        </td>
+                                        <td className="text-center py-2 px-2 text-xs">
+                                          {norm.scale2[0]}-{norm.scale2[1]}
+                                        </td>
+                                        <td className="text-center py-2 px-2 text-xs">
+                                          {norm.scale3[0]}-{norm.scale3[1]}
+                                        </td>
+                                        <td className="text-center py-2 px-2 text-xs">
+                                          {norm.scale4[0]}-{norm.scale4[1]}
+                                        </td>
+                                        <td className="text-center py-2 px-2 text-xs">
+                                          {norm.scale5[0]}-{norm.scale5[1]}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </CardContent>
+                            </Card>
+
+                            <div className="grid grid-cols-5 gap-2 text-center text-xs">
+                              {[1, 2, 3, 4, 5].map(score => (
+                                <div key={score} className="p-2 rounded bg-muted">
+                                  <Badge 
+                                    className={`mb-1 ${
+                                      score === 1 ? 'bg-red-500' :
+                                      score === 2 ? 'bg-orange-500' :
+                                      score === 3 ? 'bg-yellow-500' :
+                                      score === 4 ? 'bg-blue-500' :
+                                      'bg-green-500'
+                                    }`}
+                                  >
+                                    {score}
+                                  </Badge>
+                                  <p className="text-muted-foreground">{getScoreDescription(score)}</p>
                                 </div>
-                              </div>
-                              <div className="flex gap-3 items-start">
-                                <Ruler className="h-4 w-4 text-blue-500 mt-0.5" />
-                                <div>
-                                  <p className="font-medium text-sm">Akurasi</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    Gunakan alat ukur yang sudah dikalibrasi untuk hasil yang akurat
-                                  </p>
+                              ))}
+                            </div>
+
+                            <p className="text-xs text-muted-foreground text-center">
+                              📚 Referensi: {test.reference}
+                            </p>
+                          </TabsContent>
+
+                          <TabsContent value="tips" className="mt-4">
+                            <Card>
+                              <CardHeader className="pb-2">
+                                <CardTitle className="text-base flex items-center gap-2">
+                                  <AlertCircle className="h-4 w-4" />
+                                  Tips & Perhatian
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="space-y-3">
+                                <div className="flex gap-3 items-start">
+                                  <Timer className="h-4 w-4 text-primary mt-0.5" />
+                                  <div>
+                                    <p className="font-medium text-sm">Waktu Terbaik</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Lakukan tes di pagi hari (08.00-10.00) saat kondisi tubuh masih segar
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </TabsContent>
-                      </Tabs>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
+                                <div className="flex gap-3 items-start">
+                                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5" />
+                                  <div>
+                                    <p className="font-medium text-sm">Persiapan</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Pastikan atlet sudah pemanasan minimal 10-15 menit sebelum tes
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex gap-3 items-start">
+                                  <AlertCircle className="h-4 w-4 text-orange-500 mt-0.5" />
+                                  <div>
+                                    <p className="font-medium text-sm">Keamanan</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Hentikan tes jika atlet menunjukkan tanda kelelahan berlebih atau cedera
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex gap-3 items-start">
+                                  <Ruler className="h-4 w-4 text-blue-500 mt-0.5" />
+                                  <div>
+                                    <p className="font-medium text-sm">Akurasi</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Gunakan alat ukur yang sudah dikalibrasi untuk hasil yang akurat
+                                    </p>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </TabsContent>
+                        </Tabs>
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
               </Accordion>
             </div>
           ))}
