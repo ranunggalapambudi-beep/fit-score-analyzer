@@ -17,6 +17,7 @@ import SessionComparison from "./pages/SessionComparison";
 import CoachDashboard from "./pages/CoachDashboard";
 import Teams from "./pages/Teams";
 import TeamDetail from "./pages/TeamDetail";
+import TeamComparison from "./pages/TeamComparison";
 import Tutorial from "./pages/Tutorial";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -72,6 +73,9 @@ const App = () => (
             } />
             <Route path="/teams/:id" element={
               <ProtectedRoute><TeamDetail /></ProtectedRoute>
+            } />
+            <Route path="/teams/:teamId/comparison" element={
+              <ProtectedRoute><TeamComparison /></ProtectedRoute>
             } />
             
             <Route path="*" element={<NotFound />} />

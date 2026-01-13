@@ -8,7 +8,7 @@ import { useTeamStore } from '@/store/teamStore';
 import { useAthleteStore } from '@/store/athleteStore';
 import { 
   Users, Trash2, Plus, ArrowLeft, Activity, 
-  TrendingUp, Medal, AlertCircle 
+  TrendingUp, Medal, AlertCircle, GitCompareArrows
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -200,6 +200,15 @@ export default function TeamDetail() {
                 );
               })}
             </div>
+            
+            {/* Compare Button */}
+            <Button 
+              className="w-full mt-4 gap-2" 
+              onClick={() => navigate(`/teams/${team.id}/comparison`)}
+            >
+              <GitCompareArrows className="w-5 h-5" />
+              Bandingkan Performa Atlet
+            </Button>
           </div>
         )}
 
