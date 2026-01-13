@@ -18,9 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useTeamStore } from '@/store/teamStore';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { sportsList } from '@/data/biomotorTests';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
 
 const teamColors = [
@@ -36,48 +36,47 @@ const teamColors = [
 
 interface AddTeamSheetProps {
   children?: React.ReactNode;
+  onSuccess?: () => void;
 }
 
-export function AddTeamSheet({ children }: AddTeamSheetProps) {
+export function AddTeamSheet({ children, onSuccess }: AddTeamSheetProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [sport, setSport] = useState('');
   const [description, setDescription] = useState('');
   const [color, setColor] = useState(teamColors[0].value);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const addTeam = useTeamStore((state) => state.addTeam);
+  const { addTeam } = useSupabaseData();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!name.trim() || !sport) {
-      toast({
-        title: "Error",
-        description: "Nama tim dan cabang olahraga wajib diisi",
-        variant: "destructive",
-      });
+      toast.error('Nama tim dan cabang olahraga wajib diisi');
       return;
     }
 
-    addTeam({
-      id: crypto.randomUUID(),
+    setIsSubmitting(true);
+
+    const result = await addTeam({
       name: name.trim(),
       sport,
       description: description.trim() || undefined,
       color,
-      createdAt: new Date().toISOString(),
     });
 
-    toast({
-      title: "Berhasil",
-      description: `Tim ${name} berhasil ditambahkan`,
-    });
+    setIsSubmitting(false);
 
-    setName('');
-    setSport('');
-    setDescription('');
-    setColor(teamColors[0].value);
-    setOpen(false);
+    if (result) {
+      toast.success(`Tim ${name} berhasil ditambahkan`);
+      setName('');
+      setSport('');
+      setDescription('');
+      setColor(teamColors[0].value);
+      setOpen(false);
+      onSuccess?.();
+    }
   };
 
   return (
@@ -157,8 +156,8 @@ export function AddTeamSheet({ children }: AddTeamSheetProps) {
             />
           </div>
 
-          <Button type="submit" className="w-full">
-            Tambah Tim
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? 'Menyimpan...' : 'Tambah Tim'}
           </Button>
         </form>
       </SheetContent>

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Camera, X } from 'lucide-react';
-import { useAthleteStore } from '@/store/athleteStore';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { sportsList } from '@/data/biomotorTests';
 import { toast } from 'sonner';
 
@@ -27,9 +27,10 @@ export function AddAthleteSheet({ trigger, children, onSuccess, defaultTeam, def
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [photo, setPhoto] = useState<string | undefined>();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const addAthlete = useAthleteStore((state) => state.addAthlete);
+  const { addAthlete } = useSupabaseData();
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -53,7 +54,7 @@ export function AddAthleteSheet({ trigger, children, onSuccess, defaultTeam, def
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!name || !dateOfBirth || !sport) {
@@ -61,8 +62,9 @@ export function AddAthleteSheet({ trigger, children, onSuccess, defaultTeam, def
       return;
     }
 
+    setIsSubmitting(true);
+    
     const newAthlete = {
-      id: crypto.randomUUID(),
       name,
       dateOfBirth,
       gender,
@@ -74,20 +76,24 @@ export function AddAthleteSheet({ trigger, children, onSuccess, defaultTeam, def
       createdAt: new Date().toISOString(),
     };
 
-    addAthlete(newAthlete);
-    toast.success('Atlet berhasil ditambahkan');
+    const result = await addAthlete(newAthlete);
     
-    // Reset form
-    setName('');
-    setDateOfBirth('');
-    setGender('male');
-    setSport('');
-    setTeam('');
-    setHeight('');
-    setWeight('');
-    setPhoto(undefined);
-    setOpen(false);
-    onSuccess?.();
+    setIsSubmitting(false);
+    
+    if (result) {
+      toast.success('Atlet berhasil ditambahkan');
+      // Reset form
+      setName('');
+      setDateOfBirth('');
+      setGender('male');
+      setSport(defaultSport || '');
+      setTeam(defaultTeam || '');
+      setHeight('');
+      setWeight('');
+      setPhoto(undefined);
+      setOpen(false);
+      onSuccess?.();
+    }
   };
 
   return (
@@ -220,8 +226,8 @@ export function AddAthleteSheet({ trigger, children, onSuccess, defaultTeam, def
             </div>
           </div>
 
-          <Button type="submit" className="w-full mt-6">
-            Simpan Atlet
+          <Button type="submit" className="w-full mt-6" disabled={isSubmitting}>
+            {isSubmitting ? 'Menyimpan...' : 'Simpan Atlet'}
           </Button>
         </form>
       </SheetContent>

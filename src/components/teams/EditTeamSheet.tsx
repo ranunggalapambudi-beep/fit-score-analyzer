@@ -18,10 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useTeamStore } from '@/store/teamStore';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { Team } from '@/types/team';
 import { sportsList } from '@/data/biomotorTests';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Pencil } from 'lucide-react';
 
 const teamColors = [
@@ -38,16 +38,18 @@ const teamColors = [
 interface EditTeamSheetProps {
   team: Team;
   children?: React.ReactNode;
+  onSuccess?: () => void;
 }
 
-export function EditTeamSheet({ team, children }: EditTeamSheetProps) {
+export function EditTeamSheet({ team, children, onSuccess }: EditTeamSheetProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(team.name);
   const [sport, setSport] = useState(team.sport);
   const [description, setDescription] = useState(team.description || '');
   const [color, setColor] = useState(team.color);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const updateTeam = useTeamStore((state) => state.updateTeam);
+  const { updateTeam } = useSupabaseData();
 
   useEffect(() => {
     if (open) {
@@ -58,31 +60,30 @@ export function EditTeamSheet({ team, children }: EditTeamSheetProps) {
     }
   }, [open, team]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!name.trim() || !sport) {
-      toast({
-        title: "Error",
-        description: "Nama tim dan cabang olahraga wajib diisi",
-        variant: "destructive",
-      });
+      toast.error('Nama tim dan cabang olahraga wajib diisi');
       return;
     }
 
-    updateTeam(team.id, {
+    setIsSubmitting(true);
+
+    const success = await updateTeam(team.id, {
       name: name.trim(),
       sport,
       description: description.trim() || undefined,
       color,
     });
 
-    toast({
-      title: "Berhasil",
-      description: `Tim ${name} berhasil diperbarui`,
-    });
+    setIsSubmitting(false);
 
-    setOpen(false);
+    if (success) {
+      toast.success(`Tim ${name} berhasil diperbarui`);
+      setOpen(false);
+      onSuccess?.();
+    }
   };
 
   return (
@@ -160,8 +161,8 @@ export function EditTeamSheet({ team, children }: EditTeamSheetProps) {
             />
           </div>
 
-          <Button type="submit" className="w-full">
-            Simpan Perubahan
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan'}
           </Button>
         </form>
       </SheetContent>

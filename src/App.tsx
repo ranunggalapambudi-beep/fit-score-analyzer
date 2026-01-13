@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Athletes from "./pages/Athletes";
 import AthleteDetail from "./pages/AthleteDetail";
@@ -30,21 +31,49 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Public routes */}
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/athletes" element={<Athletes />} />
-            <Route path="/athletes/:id" element={<AthleteDetail />} />
-            <Route path="/tests" element={<Tests />} />
-            <Route path="/tests/:categoryId" element={<TestCategory />} />
-            <Route path="/test-session/:athleteId" element={<TestSession />} />
-            <Route path="/results" element={<Results />} />
-            <Route path="/analysis" element={<Analysis />} />
-            <Route path="/analysis/:athleteId" element={<Analysis />} />
-            <Route path="/comparison/:athleteId" element={<SessionComparison />} />
-            <Route path="/dashboard" element={<CoachDashboard />} />
-            <Route path="/teams" element={<Teams />} />
-            <Route path="/teams/:id" element={<TeamDetail />} />
             <Route path="/tutorial" element={<Tutorial />} />
+            
+            {/* Protected routes */}
+            <Route path="/athletes" element={
+              <ProtectedRoute><Athletes /></ProtectedRoute>
+            } />
+            <Route path="/athletes/:id" element={
+              <ProtectedRoute><AthleteDetail /></ProtectedRoute>
+            } />
+            <Route path="/tests" element={
+              <ProtectedRoute><Tests /></ProtectedRoute>
+            } />
+            <Route path="/tests/:categoryId" element={
+              <ProtectedRoute><TestCategory /></ProtectedRoute>
+            } />
+            <Route path="/test-session/:athleteId" element={
+              <ProtectedRoute><TestSession /></ProtectedRoute>
+            } />
+            <Route path="/results" element={
+              <ProtectedRoute><Results /></ProtectedRoute>
+            } />
+            <Route path="/analysis" element={
+              <ProtectedRoute><Analysis /></ProtectedRoute>
+            } />
+            <Route path="/analysis/:athleteId" element={
+              <ProtectedRoute><Analysis /></ProtectedRoute>
+            } />
+            <Route path="/comparison/:athleteId" element={
+              <ProtectedRoute><SessionComparison /></ProtectedRoute>
+            } />
+            <Route path="/dashboard" element={
+              <ProtectedRoute><CoachDashboard /></ProtectedRoute>
+            } />
+            <Route path="/teams" element={
+              <ProtectedRoute><Teams /></ProtectedRoute>
+            } />
+            <Route path="/teams/:id" element={
+              <ProtectedRoute><TeamDetail /></ProtectedRoute>
+            } />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
