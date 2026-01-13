@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Camera, X, Edit } from 'lucide-react';
-import { useAthleteStore } from '@/store/athleteStore';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { sportsList } from '@/data/biomotorTests';
 import { Athlete } from '@/types/athlete';
 import { toast } from 'sonner';
@@ -26,9 +26,10 @@ export function EditAthleteSheet({ athlete, trigger, onSuccess }: EditAthleteShe
   const [height, setHeight] = useState(athlete.height?.toString() || '');
   const [weight, setWeight] = useState(athlete.weight?.toString() || '');
   const [photo, setPhoto] = useState<string | undefined>(athlete.photo);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const updateAthlete = useAthleteStore((state) => state.updateAthlete);
+  const { updateAthlete } = useSupabaseData();
 
   useEffect(() => {
     if (open) {
@@ -65,7 +66,7 @@ export function EditAthleteSheet({ athlete, trigger, onSuccess }: EditAthleteShe
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!name || !dateOfBirth || !sport) {
@@ -73,7 +74,9 @@ export function EditAthleteSheet({ athlete, trigger, onSuccess }: EditAthleteShe
       return;
     }
 
-    updateAthlete(athlete.id, {
+    setIsSubmitting(true);
+
+    const success = await updateAthlete(athlete.id, {
       name,
       dateOfBirth,
       gender,
@@ -83,10 +86,14 @@ export function EditAthleteSheet({ athlete, trigger, onSuccess }: EditAthleteShe
       weight: weight ? parseFloat(weight) : undefined,
       photo,
     });
-    
-    toast.success('Profil atlet berhasil diperbarui');
-    setOpen(false);
-    onSuccess?.();
+
+    setIsSubmitting(false);
+
+    if (success) {
+      toast.success('Profil atlet berhasil diperbarui');
+      setOpen(false);
+      onSuccess?.();
+    }
   };
 
   return (
@@ -218,8 +225,8 @@ export function EditAthleteSheet({ athlete, trigger, onSuccess }: EditAthleteShe
             </div>
           </div>
 
-          <Button type="submit" className="w-full mt-6">
-            Simpan Perubahan
+          <Button type="submit" className="w-full mt-6" disabled={isSubmitting}>
+            {isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan'}
           </Button>
         </form>
       </SheetContent>

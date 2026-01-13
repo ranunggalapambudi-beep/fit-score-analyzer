@@ -5,16 +5,18 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { TeamCard } from '@/components/teams/TeamCard';
 import { AddTeamSheet } from '@/components/teams/AddTeamSheet';
-import { useTeamStore } from '@/store/teamStore';
-import { useAthleteStore } from '@/store/athleteStore';
-import { Search, Plus, Users2 } from 'lucide-react';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
+import { CSVImportDialog } from '@/components/import/CSVImportDialog';
+import { exportTeamsToCSV } from '@/utils/csvExport';
+import { Search, Plus, Users2, Download, Upload, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { Team } from '@/types/team';
 
 export default function Teams() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   
-  const teams = useTeamStore((state) => state.teams);
-  const athletes = useAthleteStore((state) => state.athletes);
+  const { teams, athletes, loading, addTeam, refreshData } = useSupabaseData();
 
   const filteredTeams = teams.filter((team) =>
     team.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -26,6 +28,35 @@ export default function Teams() {
     if (!team) return 0;
     return athletes.filter(a => a.team === team.name).length;
   };
+
+  const handleExport = () => {
+    if (teams.length === 0) {
+      toast.error('Tidak ada data tim untuk diekspor');
+      return;
+    }
+    exportTeamsToCSV(teams);
+    toast.success('Data tim berhasil diekspor');
+  };
+
+  const handleImportTeams = async (importedTeams: Omit<Team, 'id' | 'createdAt'>[]) => {
+    let successCount = 0;
+    for (const team of importedTeams) {
+      const result = await addTeam(team);
+      if (result) successCount++;
+    }
+    toast.success(`${successCount} tim berhasil diimpor`);
+    refreshData();
+  };
+
+  if (loading) {
+    return (
+      <Layout title="Manajemen Tim" subtitle="Kelola tim dan grup atlet">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout
@@ -44,12 +75,30 @@ export default function Teams() {
               className="pl-10"
             />
           </div>
-          <AddTeamSheet>
+          <AddTeamSheet onSuccess={refreshData}>
             <Button className="gap-2 shrink-0">
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Tambah Tim</span>
             </Button>
           </AddTeamSheet>
+        </div>
+
+        {/* Import/Export Buttons */}
+        <div className="flex gap-2">
+          <CSVImportDialog 
+            type="teams" 
+            onImportTeams={handleImportTeams}
+            trigger={
+              <Button variant="outline" size="sm" className="gap-2">
+                <Upload className="w-4 h-4" />
+                Import
+              </Button>
+            }
+          />
+          <Button variant="outline" size="sm" className="gap-2" onClick={handleExport}>
+            <Download className="w-4 h-4" />
+            Export
+          </Button>
         </div>
 
         {/* Stats */}
@@ -85,7 +134,7 @@ export default function Teams() {
             <p className="text-sm text-muted-foreground mb-4">
               Buat tim untuk mengelompokkan atlet berdasarkan cabang olahraga
             </p>
-            <AddTeamSheet>
+            <AddTeamSheet onSuccess={refreshData}>
               <Button className="gap-2">
                 <Plus className="w-4 h-4" />
                 Buat Tim Pertama

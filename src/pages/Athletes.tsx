@@ -1,18 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { AthleteCard } from '@/components/athletes/AthleteCard';
 import { AddAthleteSheet } from '@/components/athletes/AddAthleteSheet';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useAthleteStore } from '@/store/athleteStore';
-import { Search, Plus, Users } from 'lucide-react';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
+import { CSVImportDialog } from '@/components/import/CSVImportDialog';
+import { exportAthletesToCSV } from '@/utils/csvExport';
+import { Search, Plus, Users, Download, Upload, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { Athlete } from '@/types/athlete';
 
 export default function Athletes() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const athletes = useAthleteStore((state) => state.athletes);
-  const testSessions = useAthleteStore((state) => state.testSessions);
+  const { athletes, testSessions, loading, addAthlete, refreshData } = useSupabaseData();
 
   const filteredAthletes = athletes.filter(
     (a) =>
@@ -24,10 +27,39 @@ export default function Athletes() {
     return testSessions.filter((s) => s.athleteId === athleteId).length;
   };
 
+  const handleExport = () => {
+    if (athletes.length === 0) {
+      toast.error('Tidak ada data atlet untuk diekspor');
+      return;
+    }
+    exportAthletesToCSV(athletes);
+    toast.success('Data atlet berhasil diekspor');
+  };
+
+  const handleImportAthletes = async (importedAthletes: Omit<Athlete, 'id'>[]) => {
+    let successCount = 0;
+    for (const athlete of importedAthletes) {
+      const result = await addAthlete(athlete);
+      if (result) successCount++;
+    }
+    toast.success(`${successCount} atlet berhasil diimpor`);
+    refreshData();
+  };
+
+  if (loading) {
+    return (
+      <Layout title="Atlet" subtitle="Kelola data atlet">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout title="Atlet" subtitle="Kelola data atlet">
       <div className="px-4 py-6 space-y-4">
-        {/* Search & Add */}
+        {/* Search & Actions */}
         <div className="flex gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -39,12 +71,31 @@ export default function Athletes() {
             />
           </div>
           <AddAthleteSheet
+            onSuccess={refreshData}
             trigger={
               <Button size="icon" className="shrink-0">
                 <Plus className="w-5 h-5" />
               </Button>
             }
           />
+        </div>
+
+        {/* Import/Export Buttons */}
+        <div className="flex gap-2">
+          <CSVImportDialog 
+            type="athletes" 
+            onImportAthletes={handleImportAthletes}
+            trigger={
+              <Button variant="outline" size="sm" className="gap-2">
+                <Upload className="w-4 h-4" />
+                Import
+              </Button>
+            }
+          />
+          <Button variant="outline" size="sm" className="gap-2" onClick={handleExport}>
+            <Download className="w-4 h-4" />
+            Export
+          </Button>
         </div>
 
         {/* Athletes List */}
@@ -74,6 +125,7 @@ export default function Athletes() {
             </p>
             {!search && (
               <AddAthleteSheet
+                onSuccess={refreshData}
                 trigger={
                   <Button className="mt-4 gap-2">
                     <Plus className="w-4 h-4" />
