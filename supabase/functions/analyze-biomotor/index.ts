@@ -1,29 +1,36 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface TestResult {
-  categoryId: string;
-  categoryName: string;
-  testId: string;
-  testName: string;
-  value: number;
-  unit: string;
-  score: number;
-}
+// Input validation schema
+const TestResultSchema = z.object({
+  categoryId: z.string().min(1).max(100),
+  categoryName: z.string().min(1).max(100),
+  testId: z.string().min(1).max(100),
+  testName: z.string().min(1).max(200),
+  value: z.number(),
+  unit: z.string().min(1).max(50),
+  score: z.number().min(1).max(5),
+});
 
-interface AthleteData {
-  name: string;
-  age: number;
-  gender: string;
-  sport: string;
-  weight?: number;
-  height?: number;
-  results: TestResult[];
-}
+const AthleteDataSchema = z.object({
+  name: z.string().min(1).max(100),
+  age: z.number().int().min(1).max(120),
+  gender: z.string().min(1).max(20),
+  sport: z.string().min(1).max(100),
+  weight: z.number().positive().optional(),
+  height: z.number().positive().optional(),
+  results: z.array(TestResultSchema).min(1).max(100),
+});
+
+const RequestBodySchema = z.object({
+  athleteData: AthleteDataSchema,
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -31,7 +38,56 @@ serve(async (req) => {
   }
 
   try {
-    const { athleteData } = await req.json() as { athleteData: AthleteData };
+    // Authentication check
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - Missing or invalid authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    // Validate JWT and get user claims
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabase.auth.getUser(token);
+    
+    if (claimsError || !claimsData?.user) {
+      console.error("Auth error:", claimsError);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claimsData.user.id;
+    console.log("Authenticated user:", userId);
+
+    // Input validation
+    let validatedBody;
+    try {
+      const rawBody = await req.json();
+      validatedBody = RequestBodySchema.parse(rawBody);
+    } catch (validationError) {
+      console.error("Validation error:", validationError);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input data',
+          details: validationError instanceof z.ZodError 
+            ? validationError.errors.map(e => ({ path: e.path.join('.'), message: e.message }))
+            : 'Validation failed'
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { athleteData } = validatedBody;
     
     console.log("Analyzing biomotor data for:", athleteData.name);
     
@@ -41,7 +97,7 @@ serve(async (req) => {
     }
 
     // Group results by category
-    const categoryResults: Record<string, { scores: number[]; tests: TestResult[] }> = {};
+    const categoryResults: Record<string, { scores: number[]; tests: z.infer<typeof TestResultSchema>[] }> = {};
     athleteData.results.forEach((result) => {
       if (!categoryResults[result.categoryId]) {
         categoryResults[result.categoryId] = { scores: [], tests: [] };
@@ -140,7 +196,7 @@ Berikan analisis dalam format berikut:
     const data = await response.json();
     const analysis = data.choices?.[0]?.message?.content;
 
-    console.log("Analysis completed successfully");
+    console.log("Analysis completed successfully for user:", userId);
 
     return new Response(JSON.stringify({ 
       analysis,
@@ -153,7 +209,7 @@ Berikan analisis dalam format berikut:
 
   } catch (error) {
     console.error("Error in analyze-biomotor function:", error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
+    return new Response(JSON.stringify({ error: "An error occurred processing your request" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
