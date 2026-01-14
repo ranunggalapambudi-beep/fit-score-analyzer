@@ -1,28 +1,69 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScoreBadge } from '@/components/ui/score-badge';
-import { useAthleteStore } from '@/store/athleteStore';
 import { biomotorCategories, calculateScore } from '@/data/biomotorTests';
-import { TestResult, TestSession as TestSessionType } from '@/types/athlete';
-import { ChevronLeft, Check, ChevronRight } from 'lucide-react';
+import { TestResult, TestSession as TestSessionType, Athlete } from '@/types/athlete';
+import { ChevronLeft, Check, ChevronRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function TestSession() {
   const { athleteId } = useParams();
   const navigate = useNavigate();
-  const athletes = useAthleteStore((state) => state.athletes);
-  const addTestSession = useAthleteStore((state) => state.addTestSession);
+  const { user } = useAuth();
   
-  const athlete = useMemo(() => athletes.find((a) => a.id === athleteId), [athletes, athleteId]);
+  const [athlete, setAthlete] = useState<Athlete | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [results, setResults] = useState<Record<string, number>>({});
   const [notes, setNotes] = useState('');
+
+  // Fetch athlete from Supabase
+  useEffect(() => {
+    const fetchAthlete = async () => {
+      if (!athleteId || !user) {
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('athletes')
+        .select('*')
+        .eq('id', athleteId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching athlete:', error);
+        toast.error('Gagal memuat data atlet');
+        setLoading(false);
+        return;
+      }
+
+      if (data) {
+        setAthlete({
+          id: data.id,
+          createdAt: data.created_at,
+          name: data.name,
+          dateOfBirth: data.date_of_birth,
+          gender: data.gender as 'male' | 'female',
+          sport: data.sport,
+          team: data.team || undefined,
+          photo: data.photo || undefined,
+        });
+      }
+      setLoading(false);
+    };
+
+    fetchAthlete();
+  }, [athleteId, user]);
 
   const age = useMemo(() => {
     if (!athlete) return 0;
@@ -70,10 +111,12 @@ export default function TestSession() {
     }
   };
 
-  const handleSave = () => {
-    if (!athlete) return;
+  const handleSave = async () => {
+    if (!athlete || !user) return;
     
-    const testResults: TestResult[] = [];
+    setSaving(true);
+    
+    const testResults: { testId: string; categoryId: string; value: number; score: number }[] = [];
     
     Object.entries(results).forEach(([testId, value]) => {
       const category = biomotorCategories.find((c) => 
@@ -83,37 +126,75 @@ export default function TestSession() {
       
       if (category && test) {
         const score = calculateScore(value, test, athlete.gender, age);
-        const unit = test.norms[0]?.unit || '';
         testResults.push({
-          id: crypto.randomUUID(),
-          athleteId: athlete.id,
           testId,
           categoryId: category.id,
           value,
-          unit,
           score,
-          date: new Date().toISOString(),
         });
       }
     });
 
     if (testResults.length === 0) {
       toast.error('Mohon isi minimal satu item tes');
+      setSaving(false);
       return;
     }
 
-    const session: TestSessionType = {
-      id: crypto.randomUUID(),
-      athleteId: athlete.id,
-      date: new Date().toISOString(),
-      results: testResults,
-      notes: notes || undefined,
-    };
+    try {
+      // Create test session
+      const { data: sessionData, error: sessionError } = await supabase
+        .from('test_sessions')
+        .insert({
+          user_id: user.id,
+          athlete_id: athlete.id,
+          date: new Date().toISOString(),
+          notes: notes || null,
+        })
+        .select()
+        .single();
+      
+      if (sessionError) {
+        throw sessionError;
+      }
+      
+      // Insert test results
+      const resultsToInsert = testResults.map(r => ({
+        session_id: sessionData.id,
+        test_id: r.testId,
+        category_id: r.categoryId,
+        value: r.value,
+        score: r.score,
+      }));
+      
+      const { error: resultsError } = await supabase
+        .from('test_results')
+        .insert(resultsToInsert);
+      
+      if (resultsError) {
+        throw resultsError;
+      }
 
-    addTestSession(session);
-    toast.success('Sesi tes berhasil disimpan');
-    navigate(`/athletes/${athlete.id}`);
+      toast.success('Sesi tes berhasil disimpan');
+      navigate(`/athletes/${athlete.id}`);
+    } catch (error: any) {
+      console.error('Error saving test session:', error);
+      toast.error('Gagal menyimpan sesi tes: ' + error.message);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <Layout title="Memuat...">
+        <div className="flex flex-col items-center justify-center py-16 px-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground mt-4">Memuat data atlet...</p>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!athlete) {
     return (
@@ -236,9 +317,13 @@ export default function TestSession() {
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
-            <Button className="flex-1 gap-2" onClick={handleSave}>
-              <Check className="w-4 h-4" />
-              Simpan Tes
+            <Button className="flex-1 gap-2" onClick={handleSave} disabled={saving}>
+              {saving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Check className="w-4 h-4" />
+              )}
+              {saving ? 'Menyimpan...' : 'Simpan Tes'}
             </Button>
           )}
         </div>
