@@ -9,7 +9,7 @@ import { EditAthleteSheet } from '@/components/athletes/EditAthleteSheet';
 import { AthleteProfileCard } from '@/components/athletes/AthleteProfileCard';
 import { 
   User, Calendar, Activity, ChevronLeft, Trash2, 
-  PlayCircle, FileText, Scale, Ruler, Heart, TrendingUp, TrendingDown, GitCompareArrows, Loader2
+  PlayCircle, FileText, Scale, Ruler, Heart, TrendingUp, TrendingDown, GitCompareArrows, Loader2, BarChart3
 } from 'lucide-react';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
@@ -325,6 +325,14 @@ export default function AthleteDetail() {
           </Button>
           {sessions.length > 0 && (
             <>
+              <Button 
+                variant="default"
+                className="w-full gap-2 bg-gradient-to-r from-primary to-speed hover:from-primary/90 hover:to-speed/90"
+                onClick={() => navigate(`/athletes/${athlete.id}/dashboard`)}
+              >
+                <BarChart3 className="w-5 h-5" />
+                Dashboard Perkembangan
+              </Button>
               <Button 
                 variant="outline" 
                 className="w-full gap-2"

@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Athletes from "./pages/Athletes";
 import AthleteDetail from "./pages/AthleteDetail";
+import AthleteDashboard from "./pages/AthleteDashboard";
 import Tests from "./pages/Tests";
 import TestCategory from "./pages/TestCategory";
 import TestSession from "./pages/TestSession";
@@ -43,6 +44,9 @@ const App = () => (
             } />
             <Route path="/athletes/:id" element={
               <ProtectedRoute><AthleteDetail /></ProtectedRoute>
+            } />
+            <Route path="/athletes/:athleteId/dashboard" element={
+              <ProtectedRoute><AthleteDashboard /></ProtectedRoute>
             } />
             <Route path="/tests" element={
               <ProtectedRoute><Tests /></ProtectedRoute>
