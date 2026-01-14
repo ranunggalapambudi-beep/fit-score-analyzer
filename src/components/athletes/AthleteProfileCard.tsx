@@ -6,6 +6,17 @@ import { Athlete } from '@/types/athlete';
 import { toast } from 'sonner';
 import hirocrossLogo from '@/assets/hirocross-logo.png';
 
+// HTML escape function to prevent XSS attacks
+const escapeHtml = (unsafe: string | undefined | null): string => {
+  if (!unsafe) return '';
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
+
 interface AthleteProfileCardProps {
   athlete: Athlete;
   baseUrl?: string;
@@ -32,11 +43,18 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
       return;
     }
 
+    // Escape all user-controlled data to prevent XSS
+    const safeName = escapeHtml(athlete.name);
+    const safeSport = escapeHtml(athlete.sport);
+    const safeTeam = escapeHtml(athlete.team);
+    const safePhoto = escapeHtml(athlete.photo);
+    const safeAthleteUrl = encodeURI(athleteUrl);
+
     const cardHtml = `
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Kartu Atlet - ${athlete.name}</title>
+        <title>Kartu Atlet - ${safeName}</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { 
@@ -170,17 +188,17 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
           </div>
           <div class="body">
             <div class="photo-section">
-              ${athlete.photo 
-                ? `<img src="${athlete.photo}" alt="${athlete.name}" class="photo" />`
-                : `<div class="photo">${athlete.name.charAt(0)}</div>`
+              ${safePhoto 
+                ? `<img src="${safePhoto}" alt="${safeName}" class="photo" />`
+                : `<div class="photo">${safeName.charAt(0)}</div>`
               }
               <div class="qr-container">
                 <svg id="qr-placeholder" width="70" height="70"></svg>
               </div>
             </div>
             <div class="info-section">
-              <div class="name">${athlete.name}</div>
-              <div class="sport">${athlete.sport}</div>
+              <div class="name">${safeName}</div>
+              <div class="sport">${safeSport}</div>
               <div class="details">
                 <div class="detail-row">
                   <span class="detail-label">Usia</span>
@@ -190,10 +208,10 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
                   <span class="detail-label">Gender</span>
                   <span class="detail-value">${athlete.gender === 'male' ? 'Laki-laki' : 'Perempuan'}</span>
                 </div>
-                ${athlete.team ? `
+                ${safeTeam ? `
                 <div class="detail-row">
                   <span class="detail-label">Tim</span>
-                  <span class="detail-value">${athlete.team}</span>
+                  <span class="detail-value">${safeTeam}</span>
                 </div>
                 ` : ''}
                 ${athlete.height ? `
@@ -209,7 +227,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
                 </div>
                 ` : ''}
               </div>
-              <div class="id-badge">ID: ${athlete.id.slice(0, 8).toUpperCase()}</div>
+              <div class="id-badge">ID: ${escapeHtml(athlete.id.slice(0, 8).toUpperCase())}</div>
             </div>
           </div>
           <div class="footer">
@@ -219,7 +237,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
         <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
         <script>
           const canvas = document.createElement('canvas');
-          QRCode.toCanvas(canvas, '${athleteUrl}', { width: 70, margin: 0 }, function(error) {
+          QRCode.toCanvas(canvas, '${safeAthleteUrl}', { width: 70, margin: 0 }, function(error) {
             if (!error) {
               const placeholder = document.getElementById('qr-placeholder');
               placeholder.parentNode.replaceChild(canvas, placeholder);
