@@ -16,12 +16,16 @@ interface EditAthleteSheetProps {
   onSuccess?: () => void;
 }
 
+const OTHER_SPORT_VALUE = '__other__';
+
 export function EditAthleteSheet({ athlete, trigger, onSuccess }: EditAthleteSheetProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(athlete.name);
   const [dateOfBirth, setDateOfBirth] = useState(athlete.dateOfBirth);
   const [gender, setGender] = useState<'male' | 'female'>(athlete.gender);
   const [sport, setSport] = useState(athlete.sport);
+  const [customSport, setCustomSport] = useState('');
+  const [showCustomSport, setShowCustomSport] = useState(false);
   const [team, setTeam] = useState(athlete.team || '');
   const [height, setHeight] = useState(athlete.height?.toString() || '');
   const [weight, setWeight] = useState(athlete.weight?.toString() || '');
@@ -36,13 +40,34 @@ export function EditAthleteSheet({ athlete, trigger, onSuccess }: EditAthleteShe
       setName(athlete.name);
       setDateOfBirth(athlete.dateOfBirth);
       setGender(athlete.gender);
-      setSport(athlete.sport);
       setTeam(athlete.team || '');
       setHeight(athlete.height?.toString() || '');
       setWeight(athlete.weight?.toString() || '');
       setPhoto(athlete.photo);
+      
+      // Check if athlete's sport is not in the sportsList
+      if (!sportsList.includes(athlete.sport)) {
+        setShowCustomSport(true);
+        setCustomSport(athlete.sport);
+        setSport('');
+      } else {
+        setShowCustomSport(false);
+        setSport(athlete.sport);
+        setCustomSport('');
+      }
     }
   }, [open, athlete]);
+
+  const handleSportChange = (value: string) => {
+    if (value === OTHER_SPORT_VALUE) {
+      setShowCustomSport(true);
+      setSport('');
+    } else {
+      setShowCustomSport(false);
+      setSport(value);
+      setCustomSport('');
+    }
+  };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -69,7 +94,9 @@ export function EditAthleteSheet({ athlete, trigger, onSuccess }: EditAthleteShe
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !dateOfBirth || !sport) {
+    const finalSport = showCustomSport ? customSport.trim() : sport;
+    
+    if (!name || !dateOfBirth || !finalSport) {
       toast.error('Mohon lengkapi data yang wajib diisi');
       return;
     }
@@ -80,7 +107,7 @@ export function EditAthleteSheet({ athlete, trigger, onSuccess }: EditAthleteShe
       name,
       dateOfBirth,
       gender,
-      sport,
+      sport: finalSport,
       team: team || undefined,
       height: height ? parseFloat(height) : undefined,
       weight: weight ? parseFloat(weight) : undefined,
@@ -171,7 +198,7 @@ export function EditAthleteSheet({ athlete, trigger, onSuccess }: EditAthleteShe
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background border border-border z-50">
                 <SelectItem value="male">Laki-laki</SelectItem>
                 <SelectItem value="female">Perempuan</SelectItem>
               </SelectContent>
@@ -180,16 +207,30 @@ export function EditAthleteSheet({ athlete, trigger, onSuccess }: EditAthleteShe
 
           <div className="space-y-2">
             <Label>Cabang Olahraga *</Label>
-            <Select value={sport} onValueChange={setSport}>
+            <Select 
+              value={showCustomSport ? OTHER_SPORT_VALUE : sport} 
+              onValueChange={handleSportChange}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Pilih cabang olahraga" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background border border-border z-50 max-h-60">
                 {sportsList.map((s) => (
                   <SelectItem key={s} value={s}>{s}</SelectItem>
                 ))}
+                <SelectItem value={OTHER_SPORT_VALUE} className="text-primary font-medium">
+                  + Lainnya (Input Manual)
+                </SelectItem>
               </SelectContent>
             </Select>
+            {showCustomSport && (
+              <Input
+                value={customSport}
+                onChange={(e) => setCustomSport(e.target.value)}
+                placeholder="Masukkan nama cabang olahraga"
+                className="mt-2"
+              />
+            )}
           </div>
 
           <div className="space-y-2">

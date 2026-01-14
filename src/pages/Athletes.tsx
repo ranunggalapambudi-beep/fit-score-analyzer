@@ -1,27 +1,51 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { AthleteCard } from '@/components/athletes/AthleteCard';
 import { AddAthleteSheet } from '@/components/athletes/AddAthleteSheet';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { CSVImportDialog } from '@/components/import/CSVImportDialog';
 import { exportAthletesToCSV } from '@/utils/csvExport';
-import { Search, Plus, Users, Download, Upload, Loader2 } from 'lucide-react';
+import { Search, Plus, Users, Download, Upload, Loader2, Filter, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Athlete } from '@/types/athlete';
 
 export default function Athletes() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [genderFilter, setGenderFilter] = useState<string>('all');
+  const [sportFilter, setSportFilter] = useState<string>('all');
   const { athletes, testSessions, loading, addAthlete, refreshData } = useSupabaseData();
 
-  const filteredAthletes = athletes.filter(
-    (a) =>
-      a.name.toLowerCase().includes(search.toLowerCase()) ||
-      a.sport.toLowerCase().includes(search.toLowerCase())
-  );
+  // Get unique sports from athletes
+  const uniqueSports = useMemo(() => {
+    const sports = [...new Set(athletes.map(a => a.sport))];
+    return sports.sort();
+  }, [athletes]);
+
+  const filteredAthletes = useMemo(() => {
+    return athletes.filter((a) => {
+      const matchesSearch = 
+        a.name.toLowerCase().includes(search.toLowerCase()) ||
+        a.sport.toLowerCase().includes(search.toLowerCase());
+      
+      const matchesGender = genderFilter === 'all' || a.gender === genderFilter;
+      const matchesSport = sportFilter === 'all' || a.sport === sportFilter;
+      
+      return matchesSearch && matchesGender && matchesSport;
+    });
+  }, [athletes, search, genderFilter, sportFilter]);
+
+  const hasActiveFilters = genderFilter !== 'all' || sportFilter !== 'all';
+
+  const clearFilters = () => {
+    setGenderFilter('all');
+    setSportFilter('all');
+    setSearch('');
+  };
 
   const getTestCount = (athleteId: string) => {
     return testSessions.filter((s) => s.athleteId === athleteId).length;
@@ -80,6 +104,39 @@ export default function Athletes() {
           />
         </div>
 
+        {/* Filters */}
+        <div className="flex gap-2 flex-wrap">
+          <Select value={genderFilter} onValueChange={setGenderFilter}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Jenis Kelamin" />
+            </SelectTrigger>
+            <SelectContent className="bg-background border border-border z-50">
+              <SelectItem value="all">Semua Gender</SelectItem>
+              <SelectItem value="male">Laki-laki</SelectItem>
+              <SelectItem value="female">Perempuan</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={sportFilter} onValueChange={setSportFilter}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Cabang Olahraga" />
+            </SelectTrigger>
+            <SelectContent className="bg-background border border-border z-50 max-h-60">
+              <SelectItem value="all">Semua Cabor</SelectItem>
+              {uniqueSports.map((sport) => (
+                <SelectItem key={sport} value={sport}>{sport}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
+              <X className="w-4 h-4" />
+              Reset
+            </Button>
+          )}
+        </div>
+
         {/* Import/Export Buttons */}
         <div className="flex gap-2">
           <CSVImportDialog 
@@ -97,6 +154,13 @@ export default function Athletes() {
             Export
           </Button>
         </div>
+
+        {/* Results Count */}
+        {(search || hasActiveFilters) && (
+          <p className="text-sm text-muted-foreground">
+            Menampilkan {filteredAthletes.length} dari {athletes.length} atlet
+          </p>
+        )}
 
         {/* Athletes List */}
         {filteredAthletes.length > 0 ? (
@@ -116,14 +180,14 @@ export default function Athletes() {
               <Users className="w-8 h-8 text-muted-foreground" />
             </div>
             <h3 className="font-semibold font-display text-foreground">
-              {search ? 'Atlet tidak ditemukan' : 'Belum ada atlet'}
+              {search || hasActiveFilters ? 'Atlet tidak ditemukan' : 'Belum ada atlet'}
             </h3>
             <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-              {search
-                ? 'Coba kata kunci lain'
+              {search || hasActiveFilters
+                ? 'Coba kata kunci atau filter lain'
                 : 'Tambahkan atlet pertama untuk mulai melakukan tes biomotor'}
             </p>
-            {!search && (
+            {!search && !hasActiveFilters && (
               <AddAthleteSheet
                 onSuccess={refreshData}
                 trigger={

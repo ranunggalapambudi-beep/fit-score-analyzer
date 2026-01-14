@@ -17,12 +17,16 @@ interface AddAthleteSheetProps {
   defaultSport?: string;
 }
 
+const OTHER_SPORT_VALUE = '__other__';
+
 export function AddAthleteSheet({ trigger, children, onSuccess, defaultTeam, defaultSport }: AddAthleteSheetProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [gender, setGender] = useState<'male' | 'female'>('male');
   const [sport, setSport] = useState(defaultSport || '');
+  const [customSport, setCustomSport] = useState('');
+  const [showCustomSport, setShowCustomSport] = useState(false);
   const [team, setTeam] = useState(defaultTeam || '');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
@@ -31,6 +35,17 @@ export function AddAthleteSheet({ trigger, children, onSuccess, defaultTeam, def
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { addAthlete } = useSupabaseData();
+
+  const handleSportChange = (value: string) => {
+    if (value === OTHER_SPORT_VALUE) {
+      setShowCustomSport(true);
+      setSport('');
+    } else {
+      setShowCustomSport(false);
+      setSport(value);
+      setCustomSport('');
+    }
+  };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -57,7 +72,9 @@ export function AddAthleteSheet({ trigger, children, onSuccess, defaultTeam, def
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !dateOfBirth || !sport) {
+    const finalSport = showCustomSport ? customSport.trim() : sport;
+    
+    if (!name || !dateOfBirth || !finalSport) {
       toast.error('Mohon lengkapi data yang wajib diisi');
       return;
     }
@@ -68,7 +85,7 @@ export function AddAthleteSheet({ trigger, children, onSuccess, defaultTeam, def
       name,
       dateOfBirth,
       gender,
-      sport,
+      sport: finalSport,
       team: team || undefined,
       height: height ? parseFloat(height) : undefined,
       weight: weight ? parseFloat(weight) : undefined,
@@ -87,6 +104,8 @@ export function AddAthleteSheet({ trigger, children, onSuccess, defaultTeam, def
       setDateOfBirth('');
       setGender('male');
       setSport(defaultSport || '');
+      setCustomSport('');
+      setShowCustomSport(false);
       setTeam(defaultTeam || '');
       setHeight('');
       setWeight('');
@@ -172,7 +191,7 @@ export function AddAthleteSheet({ trigger, children, onSuccess, defaultTeam, def
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background border border-border z-50">
                 <SelectItem value="male">Laki-laki</SelectItem>
                 <SelectItem value="female">Perempuan</SelectItem>
               </SelectContent>
@@ -181,16 +200,31 @@ export function AddAthleteSheet({ trigger, children, onSuccess, defaultTeam, def
 
           <div className="space-y-2">
             <Label>Cabang Olahraga *</Label>
-            <Select value={sport} onValueChange={setSport}>
+            <Select 
+              value={showCustomSport ? OTHER_SPORT_VALUE : sport} 
+              onValueChange={handleSportChange}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Pilih cabang olahraga" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background border border-border z-50 max-h-60">
                 {sportsList.map((s) => (
                   <SelectItem key={s} value={s}>{s}</SelectItem>
                 ))}
+                <SelectItem value={OTHER_SPORT_VALUE} className="text-primary font-medium">
+                  + Lainnya (Input Manual)
+                </SelectItem>
               </SelectContent>
             </Select>
+            {showCustomSport && (
+              <Input
+                value={customSport}
+                onChange={(e) => setCustomSport(e.target.value)}
+                placeholder="Masukkan nama cabang olahraga"
+                className="mt-2"
+                autoFocus
+              />
+            )}
           </div>
 
           <div className="space-y-2">

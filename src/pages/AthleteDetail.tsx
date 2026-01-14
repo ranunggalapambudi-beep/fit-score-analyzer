@@ -3,13 +3,13 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { RadarChart, generateRadarData } from '@/components/charts/RadarChart';
 import { ScoreBadge } from '@/components/ui/score-badge';
-import { useAthleteStore } from '@/store/athleteStore';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { biomotorCategories } from '@/data/biomotorTests';
 import { EditAthleteSheet } from '@/components/athletes/EditAthleteSheet';
 import { AthleteProfileCard } from '@/components/athletes/AthleteProfileCard';
 import { 
   User, Calendar, Activity, ChevronLeft, Trash2, 
-  PlayCircle, FileText, Scale, Ruler, Heart, TrendingUp, TrendingDown, GitCompareArrows
+  PlayCircle, FileText, Scale, Ruler, Heart, TrendingUp, TrendingDown, GitCompareArrows, Loader2
 } from 'lucide-react';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
@@ -53,9 +53,7 @@ function calculateBMI(weight: number, height: number): { value: number; category
 export default function AthleteDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const athletes = useAthleteStore((state) => state.athletes);
-  const testSessions = useAthleteStore((state) => state.testSessions);
-  const deleteAthlete = useAthleteStore((state) => state.deleteAthlete);
+  const { athletes, testSessions, deleteAthlete, loading } = useSupabaseData();
   
   const athlete = useMemo(() => athletes.find((a) => a.id === id), [athletes, id]);
   const sessions = useMemo(() => testSessions.filter((s) => s.athleteId === id), [testSessions, id]);
@@ -130,13 +128,25 @@ export default function AthleteDetail() {
     return generateRadarData(latestCategoryScores, true);
   }, [latestCategoryScores]);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (athlete) {
-      deleteAthlete(athlete.id);
-      toast.success('Atlet berhasil dihapus');
-      navigate('/athletes');
+      const success = await deleteAthlete(athlete.id);
+      if (success) {
+        toast.success('Atlet berhasil dihapus');
+        navigate('/athletes');
+      }
     }
   };
+
+  if (loading) {
+    return (
+      <Layout title="Detail Atlet">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
 
   if (!athlete) {
     return (
