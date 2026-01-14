@@ -256,6 +256,22 @@ export const biomotorCategories: BiomotorCategory[] = [
           { gender: 'female', ageRange: [26, 40], scale1: [0, 0.25], scale2: [0.25, 0.35], scale3: [0.35, 0.45], scale4: [0.45, 0.60], scale5: [0.60, 1.5], unit: 'rasio', higherIsBetter: true },
         ]
       },
+      {
+        id: 'leg-dynamometer',
+        name: 'Leg Dynamometer',
+        description: 'Tes kekuatan otot tungkai menggunakan leg dynamometer',
+        procedure: '1. Berdiri di atas platform leg dynamometer\n2. Tekuk lutut sekitar 115-125 derajat\n3. Punggung tetap lurus, pandangan ke depan\n4. Tarik pegangan ke atas dengan kekuatan tungkai (bukan punggung)\n5. Lakukan 3 kali percobaan dengan istirahat 30 detik\n6. Catat nilai tertinggi',
+        equipment: ['Leg dynamometer', 'Rantai penyesuaian tinggi'],
+        reference: 'Johnson, B.L. & Nelson, J.K. (1986). Practical Measurements for Evaluation in Physical Education',
+        norms: [
+          { gender: 'male', ageRange: [13, 19], scale1: [0, 120], scale2: [120, 160], scale3: [160, 200], scale4: [200, 250], scale5: [250, 400], unit: 'kg', higherIsBetter: true },
+          { gender: 'male', ageRange: [20, 29], scale1: [0, 140], scale2: [140, 190], scale3: [190, 240], scale4: [240, 290], scale5: [290, 450], unit: 'kg', higherIsBetter: true },
+          { gender: 'male', ageRange: [30, 45], scale1: [0, 130], scale2: [130, 175], scale3: [175, 220], scale4: [220, 270], scale5: [270, 420], unit: 'kg', higherIsBetter: true },
+          { gender: 'female', ageRange: [13, 19], scale1: [0, 70], scale2: [70, 100], scale3: [100, 130], scale4: [130, 165], scale5: [165, 280], unit: 'kg', higherIsBetter: true },
+          { gender: 'female', ageRange: [20, 29], scale1: [0, 85], scale2: [85, 120], scale3: [120, 155], scale4: [155, 190], scale5: [190, 310], unit: 'kg', higherIsBetter: true },
+          { gender: 'female', ageRange: [30, 45], scale1: [0, 75], scale2: [75, 110], scale3: [110, 145], scale4: [145, 180], scale5: [180, 290], unit: 'kg', higherIsBetter: true },
+        ]
+      },
     ]
   },
   {
