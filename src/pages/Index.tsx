@@ -3,22 +3,21 @@ import { Layout } from '@/components/layout/Layout';
 import { CategoryCard } from '@/components/ui/category-card';
 import { Button } from '@/components/ui/button';
 import { biomotorCategories } from '@/data/biomotorTests';
-import { useAthleteStore } from '@/store/athleteStore';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Users, ClipboardList, TrendingUp, ArrowRight, Activity, 
-  Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2, BookOpen, LogIn, LogOut
+  Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2, BookOpen, LogIn, LogOut, Loader2
 } from 'lucide-react';
 
 export default function Index() {
   const { user, signOut } = useAuth();
-  const athletes = useAthleteStore((state) => state.athletes);
-  const testSessions = useAthleteStore((state) => state.testSessions);
+  const { athletes, testSessions, loading } = useSupabaseData();
 
   const totalTests = testSessions.reduce((acc, s) => acc + s.results.length, 0);
   const totalSessions = testSessions.length;
 
-  const recentAthletes = athletes.slice(-3).reverse();
+  const recentAthletes = athletes.slice(0, 5);
 
   return (
     <Layout showHeader={false}>
@@ -67,31 +66,37 @@ export default function Index() {
       <div className="px-4 pb-6 space-y-6">
         {/* Quick Stats */}
         <section className="grid grid-cols-3 gap-3 -mt-2">
-          <div className="p-4 rounded-2xl bg-card/80 border border-border/50 backdrop-blur-sm text-center animate-fade-in">
+          <Link to="/athletes" className="p-4 rounded-2xl bg-card/80 border border-border/50 backdrop-blur-sm text-center animate-fade-in hover:border-primary/50 transition-colors">
             <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 mx-auto">
               <Users className="w-5 h-5 text-primary" />
             </div>
-            <p className="text-2xl font-bold font-display mt-2">{athletes.length}</p>
+            <p className="text-2xl font-bold font-display mt-2">
+              {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : athletes.length}
+            </p>
             <p className="text-xs text-muted-foreground">Atlet</p>
-          </div>
-          <div className="p-4 rounded-2xl bg-card/80 border border-border/50 backdrop-blur-sm text-center animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          </Link>
+          <Link to="/results" className="p-4 rounded-2xl bg-card/80 border border-border/50 backdrop-blur-sm text-center animate-fade-in hover:border-primary/50 transition-colors" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-accent/10 mx-auto">
               <ClipboardList className="w-5 h-5 text-accent" />
             </div>
-            <p className="text-2xl font-bold font-display mt-2">{totalSessions}</p>
+            <p className="text-2xl font-bold font-display mt-2">
+              {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : totalSessions}
+            </p>
             <p className="text-xs text-muted-foreground">Sesi Tes</p>
-          </div>
-          <div className="p-4 rounded-2xl bg-card/80 border border-border/50 backdrop-blur-sm text-center animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          </Link>
+          <Link to="/results" className="p-4 rounded-2xl bg-card/80 border border-border/50 backdrop-blur-sm text-center animate-fade-in hover:border-primary/50 transition-colors" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-strength/10 mx-auto">
               <BarChart3 className="w-5 h-5 text-strength" />
             </div>
-            <p className="text-2xl font-bold font-display mt-2">{totalTests}</p>
+            <p className="text-2xl font-bold font-display mt-2">
+              {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : totalTests}
+            </p>
             <p className="text-xs text-muted-foreground">Item Tes</p>
-          </div>
+          </Link>
         </section>
 
         {/* Recent Athletes */}
-        {recentAthletes.length > 0 && (
+        {!loading && recentAthletes.length > 0 && (
           <section className="animate-slide-up">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-semibold font-display flex items-center gap-2">
@@ -125,10 +130,43 @@ export default function Index() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-primary">{athleteSessions.length} sesi</p>
+                      <p className="text-xs text-muted-foreground">
+                        {athlete.gender === 'male' ? 'L' : 'P'}
+                      </p>
                     </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </Link>
                 );
               })}
+            </div>
+            {athletes.length > 5 && (
+              <Link to="/athletes">
+                <Button variant="ghost" size="sm" className="w-full mt-2 text-primary">
+                  Lihat {athletes.length - 5} atlet lainnya
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
+            )}
+          </section>
+        )}
+
+        {/* No Athletes Yet */}
+        {!loading && recentAthletes.length === 0 && user && (
+          <section className="animate-slide-up">
+            <div className="p-6 rounded-2xl bg-card/50 border border-border/50 text-center">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Users className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="font-semibold font-display">Belum Ada Atlet</h3>
+              <p className="text-sm text-muted-foreground mt-1 mb-4">
+                Tambahkan atlet untuk memulai pengukuran biomotor
+              </p>
+              <Link to="/athletes">
+                <Button className="gap-2">
+                  <Users className="w-4 h-4" />
+                  Tambah Atlet
+                </Button>
+              </Link>
             </div>
           </section>
         )}
@@ -175,34 +213,34 @@ export default function Index() {
             Fitur Unggulan
           </h2>
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 rounded-xl bg-background/50 border border-border/30">
+            <Link to="/tests" className="p-3 rounded-xl bg-background/50 border border-border/30 hover:border-primary/50 transition-colors">
               <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-endurance/10 mb-2">
                 <ClipboardList className="w-4 h-4 text-endurance" />
               </div>
               <p className="text-sm font-medium">30+ Item Tes</p>
               <p className="text-xs text-muted-foreground mt-0.5">Berdasarkan referensi ilmiah</p>
-            </div>
-            <div className="p-3 rounded-xl bg-background/50 border border-border/30">
+            </Link>
+            <Link to="/results" className="p-3 rounded-xl bg-background/50 border border-border/30 hover:border-primary/50 transition-colors">
               <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-strength/10 mb-2">
                 <BarChart3 className="w-4 h-4 text-strength" />
               </div>
               <p className="text-sm font-medium">Norma Usia & Gender</p>
               <p className="text-xs text-muted-foreground mt-0.5">Skala penilaian 1-5</p>
-            </div>
-            <div className="p-3 rounded-xl bg-background/50 border border-border/30">
+            </Link>
+            <Link to="/dashboard" className="p-3 rounded-xl bg-background/50 border border-border/30 hover:border-primary/50 transition-colors">
               <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent/10 mb-2">
                 <TrendingUp className="w-4 h-4 text-accent" />
               </div>
               <p className="text-sm font-medium">Radar Chart</p>
               <p className="text-xs text-muted-foreground mt-0.5">Visualisasi profil biomotor</p>
-            </div>
-            <div className="p-3 rounded-xl bg-background/50 border border-border/30">
+            </Link>
+            <Link to="/analysis" className="p-3 rounded-xl bg-background/50 border border-border/30 hover:border-primary/50 transition-colors">
               <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 mb-2">
                 <Brain className="w-4 h-4 text-primary" />
               </div>
               <p className="text-sm font-medium">Analisis AI</p>
               <p className="text-xs text-muted-foreground mt-0.5">Rekomendasi latihan cerdas</p>
-            </div>
+            </Link>
           </div>
         </section>
 

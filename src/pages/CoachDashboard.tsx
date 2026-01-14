@@ -4,17 +4,16 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { RadarChart, generateRadarData } from '@/components/charts/RadarChart';
 import { ScoreBadge } from '@/components/ui/score-badge';
-import { useAthleteStore } from '@/store/athleteStore';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { biomotorCategories } from '@/data/biomotorTests';
 import { 
   Users, Activity, TrendingUp, TrendingDown, Target, 
-  Medal, User, ChevronRight, BarChart3, Dumbbell
+  Medal, User, ChevronRight, BarChart3, Dumbbell, Loader2
 } from 'lucide-react';
 
 export default function CoachDashboard() {
   const navigate = useNavigate();
-  const athletes = useAthleteStore((state) => state.athletes);
-  const testSessions = useAthleteStore((state) => state.testSessions);
+  const { athletes, testSessions, loading } = useSupabaseData();
 
   // Calculate team statistics
   const teamStats = useMemo(() => {
@@ -139,6 +138,16 @@ export default function CoachDashboard() {
 
   const radarDataMale = useMemo(() => generateRadarData(categoryStatsByGender.male, true), [categoryStatsByGender.male]);
   const radarDataFemale = useMemo(() => generateRadarData(categoryStatsByGender.female, true), [categoryStatsByGender.female]);
+
+  if (loading) {
+    return (
+      <Layout title="Dashboard Pelatih" subtitle="Statistik tim dan atlet">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout title="Dashboard Pelatih" subtitle="Statistik tim dan atlet">

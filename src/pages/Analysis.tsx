@@ -3,7 +3,7 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { RadarChart, generateRadarData } from '@/components/charts/RadarChart';
 import { ScoreBadge } from '@/components/ui/score-badge';
-import { useAthleteStore } from '@/store/athleteStore';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { biomotorCategories } from '@/data/biomotorTests';
 import { PDFExport } from '@/components/export/PDFExport';
 import { 
@@ -17,8 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 export default function Analysis() {
   const { athleteId } = useParams();
   const navigate = useNavigate();
-  const athletes = useAthleteStore((state) => state.athletes);
-  const testSessions = useAthleteStore((state) => state.testSessions);
+  const { athletes, testSessions, loading: dataLoading } = useSupabaseData();
   
   const athlete = useMemo(() => athletes.find((a) => a.id === athleteId), [athletes, athleteId]);
   const sessions = useMemo(() => testSessions.filter((s) => s.athleteId === athleteId), [testSessions, athleteId]);
@@ -106,6 +105,16 @@ export default function Analysis() {
     }
   };
 
+  if (dataLoading) {
+    return (
+      <Layout title="Analisis AI" subtitle="Analisis cerdas biomotor">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
+
   if (!athleteId) {
     return (
       <Layout title="Analisis AI" subtitle="Analisis cerdas biomotor">
@@ -125,10 +134,10 @@ export default function Analysis() {
 
   if (!athlete) {
     return (
-      <Layout title="Atlet Tidak Ditemukan">
+      <Layout title="Memuat..." subtitle="Mencari data atlet">
         <div className="flex flex-col items-center justify-center py-16 px-4">
-          <p className="text-muted-foreground">Atlet tidak ditemukan</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate('/athletes')}>Kembali</Button>
+          <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+          <p className="text-muted-foreground">Memuat data atlet...</p>
         </div>
       </Layout>
     );

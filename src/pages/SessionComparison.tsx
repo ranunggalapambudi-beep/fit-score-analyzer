@@ -3,17 +3,16 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { RadarChart, generateRadarData } from '@/components/charts/RadarChart';
 import { ScoreBadge } from '@/components/ui/score-badge';
-import { useAthleteStore } from '@/store/athleteStore';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { biomotorCategories } from '@/data/biomotorTests';
-import { ChevronLeft, TrendingUp, TrendingDown, Minus, Calendar } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { ChevronLeft, TrendingUp, TrendingDown, Minus, Calendar, Loader2 } from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function SessionComparison() {
   const { athleteId } = useParams();
   const navigate = useNavigate();
-  const athletes = useAthleteStore((state) => state.athletes);
-  const testSessions = useAthleteStore((state) => state.testSessions);
+  const { athletes, testSessions, loading } = useSupabaseData();
   
   const athlete = useMemo(() => athletes.find((a) => a.id === athleteId), [athletes, athleteId]);
   const sessions = useMemo(() => 
@@ -23,8 +22,18 @@ export default function SessionComparison() {
     [testSessions, athleteId]
   );
 
-  const [session1Id, setSession1Id] = useState<string>(sessions[0]?.id || '');
-  const [session2Id, setSession2Id] = useState<string>(sessions[1]?.id || '');
+  const [session1Id, setSession1Id] = useState<string>('');
+  const [session2Id, setSession2Id] = useState<string>('');
+
+  // Initialize session IDs when sessions are loaded
+  useEffect(() => {
+    if (sessions.length >= 2 && !session1Id && !session2Id) {
+      setSession1Id(sessions[0]?.id || '');
+      setSession2Id(sessions[1]?.id || '');
+    } else if (sessions.length === 1 && !session1Id) {
+      setSession1Id(sessions[0]?.id || '');
+    }
+  }, [sessions, session1Id, session2Id]);
 
   const session1 = useMemo(() => sessions.find(s => s.id === session1Id), [sessions, session1Id]);
   const session2 = useMemo(() => sessions.find(s => s.id === session2Id), [sessions, session2Id]);
@@ -120,14 +129,22 @@ export default function SessionComparison() {
     });
   };
 
+  if (loading) {
+    return (
+      <Layout title="Perbandingan Sesi">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
+
   if (!athlete) {
     return (
-      <Layout title="Atlet Tidak Ditemukan">
+      <Layout title="Memuat..." subtitle="Mencari data atlet">
         <div className="flex flex-col items-center justify-center py-16 px-4">
-          <p className="text-muted-foreground">Atlet tidak ditemukan</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate('/athletes')}>
-            Kembali
-          </Button>
+          <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+          <p className="text-muted-foreground">Memuat data atlet...</p>
         </div>
       </Layout>
     );
