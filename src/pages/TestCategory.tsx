@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { biomotorCategories } from '@/data/biomotorTests';
+import { TestIllustrationGuide } from '@/components/tests/TestIllustrationGuide';
 import { ChevronLeft, ChevronRight, BookOpen, Wrench } from 'lucide-react';
 import { 
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger 
@@ -94,6 +95,13 @@ export default function TestCategory() {
                   <div>
                     <p className="text-sm text-muted-foreground">{test.description}</p>
                   </div>
+
+                  {/* Visual Illustration Guide */}
+                  <TestIllustrationGuide 
+                    testId={test.id} 
+                    testName={test.name}
+                    categoryColor={category.color}
+                  />
 
                   {/* Procedure */}
                   <div>

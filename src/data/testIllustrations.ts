@@ -359,6 +359,215 @@ export const testIllustrations: TestIllustration[] = [
       'Pemanasan lateral movement sebelum tes',
       'Hindari tes pada permukaan yang licin'
     ]
+  },
+  {
+    testId: 'back-lift',
+    steps: [
+      {
+        step: 1,
+        description: 'Berdiri di atas platform back lift dynamometer dengan kedua kaki',
+        tips: 'Pastikan kaki berada di tengah platform untuk keseimbangan optimal'
+      },
+      {
+        step: 2,
+        description: 'Tekuk lutut sedikit (sekitar 15-20 derajat), punggung tetap lurus',
+        tips: 'Jangan membungkuk, jaga postur tegak'
+      },
+      {
+        step: 3,
+        description: 'Pegang pegangan dynamometer dengan kedua tangan, lengan lurus',
+        tips: 'Pegangan harus setinggi lutut saat posisi siap'
+      },
+      {
+        step: 4,
+        description: 'Tarik pegangan ke atas dengan menggunakan kekuatan otot punggung secara maksimal',
+        tips: 'Lakukan 3 kali percobaan dengan istirahat 30 detik, ambil nilai tertinggi'
+      }
+    ],
+    commonMistakes: [
+      'Menggunakan kekuatan lengan bukan punggung',
+      'Punggung membungkuk saat menarik',
+      'Lutut terlalu lurus atau terlalu ditekuk'
+    ],
+    safetyTips: [
+      'Pemanasan punggung dan hamstring sebelum tes',
+      'Hentikan jika terasa nyeri pada punggung bawah',
+      'Tidak dianjurkan untuk atlet dengan riwayat cedera punggung'
+    ]
+  },
+  {
+    testId: 'leg-dynamometer',
+    steps: [
+      {
+        step: 1,
+        description: 'Berdiri di atas platform leg dynamometer dengan kedua kaki',
+        tips: 'Kaki selebar bahu untuk keseimbangan optimal'
+      },
+      {
+        step: 2,
+        description: 'Tekuk lutut sekitar 115-125 derajat, punggung tetap lurus dan tegak',
+        tips: 'Sudut lutut sangat penting untuk mengukur kekuatan tungkai dengan akurat'
+      },
+      {
+        step: 3,
+        description: 'Pegang pegangan dynamometer dengan kedua tangan, pandangan ke depan',
+        tips: 'Sesuaikan panjang rantai agar posisi nyaman'
+      },
+      {
+        step: 4,
+        description: 'Dorong ke atas dengan kekuatan tungkai, bukan punggung. Lakukan 3 percobaan',
+        tips: 'Fokus pada kontraksi otot paha dan betis'
+      }
+    ],
+    commonMistakes: [
+      'Menggunakan kekuatan punggung bukan tungkai',
+      'Sudut lutut tidak tepat (terlalu terbuka atau tertutup)',
+      'Mengangkat tumit dari platform'
+    ],
+    safetyTips: [
+      'Pemanasan tungkai sebelum tes',
+      'Pastikan platform stabil',
+      'Tidak dianjurkan untuk atlet dengan cedera lutut'
+    ]
+  },
+  {
+    testId: 'arm-dynamometer',
+    steps: [
+      {
+        step: 1,
+        description: 'Duduk di kursi dengan punggung tegak atau berdiri dengan posisi stabil',
+        tips: 'Pilih posisi sesuai protokol yang digunakan'
+      },
+      {
+        step: 2,
+        description: 'Pegang pegangan arm dynamometer dengan tangan yang akan diuji',
+        tips: 'Biasanya dimulai dengan lengan dominan'
+      },
+      {
+        step: 3,
+        description: 'Posisikan lengan sesuai protokol: lurus ke depan atau ditekuk 90 derajat',
+        tips: 'Konsistensi posisi penting untuk perbandingan hasil'
+      },
+      {
+        step: 4,
+        description: 'Tarik atau tekan pegangan dengan kekuatan maksimal lengan',
+        tips: 'Lakukan 3 percobaan per lengan dengan istirahat 30 detik'
+      }
+    ],
+    commonMistakes: [
+      'Menggerakkan badan untuk membantu menarik',
+      'Posisi lengan berubah-ubah antar percobaan',
+      'Tidak memberikan usaha maksimal'
+    ],
+    safetyTips: [
+      'Pemanasan lengan dan bahu sebelum tes',
+      'Hindari jika ada cedera bahu atau siku'
+    ]
+  },
+  {
+    testId: 'grip-strength',
+    steps: [
+      {
+        step: 1,
+        description: 'Berdiri tegak dengan lengan di samping tubuh, tidak menyentuh paha',
+        tips: 'Posisi berdiri standar dengan kaki selebar bahu'
+      },
+      {
+        step: 2,
+        description: 'Pegang hand grip dynamometer dengan tangan yang diuji',
+        tips: 'Sesuaikan ukuran grip agar nyaman di tangan'
+      },
+      {
+        step: 3,
+        description: 'Genggam dynamometer dengan kekuatan maksimal selama 3-5 detik',
+        tips: 'Jangan mengayun tangan atau menggerakkan badan'
+      },
+      {
+        step: 4,
+        description: 'Catat nilai, istirahat 30 detik, ulangi 3 kali. Ambil nilai tertinggi',
+        tips: 'Uji kedua tangan untuk perbandingan'
+      }
+    ],
+    commonMistakes: [
+      'Menggerakkan lengan saat menggenggam',
+      'Tidak memberikan usaha maksimal',
+      'Posisi grip yang tidak konsisten'
+    ],
+    safetyTips: [
+      'Hindari jika ada cedera tangan atau pergelangan',
+      'Hentikan jika terasa nyeri'
+    ]
+  },
+  {
+    testId: 'vertical-jump',
+    steps: [
+      {
+        step: 1,
+        description: 'Ukur reach height: berdiri di samping dinding, angkat tangan tertinggi, tandai posisi ujung jari',
+        tips: 'Pastikan bahu menempel dinding saat mengukur'
+      },
+      {
+        step: 2,
+        description: 'Posisi untuk lompatan: berdiri dengan kaki selebar bahu, sedikit menjauh dari dinding',
+        tips: 'Jarak dari dinding sekitar 15-20 cm'
+      },
+      {
+        step: 3,
+        description: 'Counter movement: tekuk lutut, ayun tangan ke belakang, lalu lompat setinggi mungkin',
+        tips: 'Koordinasikan ayunan tangan dengan lompatan'
+      },
+      {
+        step: 4,
+        description: 'Sentuh dinding/papan di titik tertinggi. Hitung selisih dengan reach height',
+        tips: 'Lakukan 3 percobaan, ambil nilai terbaik'
+      }
+    ],
+    videoUrl: 'https://www.youtube.com/watch?v=example_vertical_jump',
+    commonMistakes: [
+      'Melangkah atau berlari sebelum lompat',
+      'Tidak menggunakan counter movement yang optimal',
+      'Mendarat dengan lutut lurus'
+    ],
+    safetyTips: [
+      'Gunakan alas kaki yang tidak licin',
+      'Pastikan area pendaratan aman',
+      'Pemanasan yang cukup untuk mencegah cedera'
+    ]
+  },
+  {
+    testId: 'standing-broad-jump',
+    steps: [
+      {
+        step: 1,
+        description: 'Berdiri di belakang garis start dengan kedua kaki sejajar',
+        tips: 'Ujung jari kaki tepat di belakang garis'
+      },
+      {
+        step: 2,
+        description: 'Tekuk lutut dan ayunkan tangan ke belakang untuk momentum',
+        tips: 'Condongkan badan sedikit ke depan'
+      },
+      {
+        step: 3,
+        description: 'Lompat ke depan sejauh mungkin dengan mengayunkan tangan ke depan',
+        tips: 'Dorong dengan kuat dari kedua kaki secara bersamaan'
+      },
+      {
+        step: 4,
+        description: 'Mendarat dengan kedua kaki. Ukur dari garis start ke tumit terdekat',
+        tips: 'Lakukan 3 percobaan, ambil jarak terjauh'
+      }
+    ],
+    commonMistakes: [
+      'Menginjak garis start',
+      'Terjatuh ke belakang saat mendarat',
+      'Tidak menggunakan ayunan tangan optimal'
+    ],
+    safetyTips: [
+      'Gunakan alas yang tidak licin',
+      'Pastikan area pendaratan cukup empuk',
+      'Pemanasan tungkai dan ankle sebelum tes'
+    ]
   }
 ];
 
