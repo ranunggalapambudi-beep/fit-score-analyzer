@@ -272,6 +272,22 @@ export const biomotorCategories: BiomotorCategory[] = [
           { gender: 'female', ageRange: [30, 45], scale1: [0, 75], scale2: [75, 110], scale3: [110, 145], scale4: [145, 180], scale5: [180, 290], unit: 'kg', higherIsBetter: true },
         ]
       },
+      {
+        id: 'arm-dynamometer',
+        name: 'Arm Dynamometer',
+        description: 'Tes kekuatan otot lengan menggunakan arm dynamometer/cable tensiometer',
+        procedure: '1. Berdiri dengan posisi tegak atau duduk di kursi\n2. Pegang pegangan dynamometer dengan satu tangan\n3. Lengan lurus ke depan sejajar bahu atau ditekuk 90 derajat (sesuai protokol)\n4. Tarik/tekan pegangan dengan kekuatan maksimal\n5. Lakukan 3 kali percobaan untuk setiap lengan dengan istirahat 30 detik\n6. Catat nilai tertinggi untuk lengan dominan',
+        equipment: ['Arm dynamometer/Cable tensiometer', 'Kursi (jika tes duduk)'],
+        reference: 'Johnson, B.L. & Nelson, J.K. (1986). Practical Measurements for Evaluation in Physical Education',
+        norms: [
+          { gender: 'male', ageRange: [13, 19], scale1: [0, 25], scale2: [25, 35], scale3: [35, 45], scale4: [45, 55], scale5: [55, 90], unit: 'kg', higherIsBetter: true },
+          { gender: 'male', ageRange: [20, 29], scale1: [0, 30], scale2: [30, 42], scale3: [42, 54], scale4: [54, 66], scale5: [66, 100], unit: 'kg', higherIsBetter: true },
+          { gender: 'male', ageRange: [30, 45], scale1: [0, 28], scale2: [28, 40], scale3: [40, 52], scale4: [52, 64], scale5: [64, 95], unit: 'kg', higherIsBetter: true },
+          { gender: 'female', ageRange: [13, 19], scale1: [0, 15], scale2: [15, 22], scale3: [22, 29], scale4: [29, 36], scale5: [36, 60], unit: 'kg', higherIsBetter: true },
+          { gender: 'female', ageRange: [20, 29], scale1: [0, 18], scale2: [18, 26], scale3: [26, 34], scale4: [34, 42], scale5: [42, 70], unit: 'kg', higherIsBetter: true },
+          { gender: 'female', ageRange: [30, 45], scale1: [0, 16], scale2: [16, 24], scale3: [24, 32], scale4: [32, 40], scale5: [40, 65], unit: 'kg', higherIsBetter: true },
+        ]
+      },
     ]
   },
   {
