@@ -16,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 interface PDFExportProps {
   athlete: Athlete;
@@ -34,6 +36,7 @@ type PDFVersion = 'hirocross' | 'vocafit';
 export function PDFExport({ athlete, session, categoryScores, analysisResult }: PDFExportProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<PDFVersion>('hirocross');
+  const [includeSignature, setIncludeSignature] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   const radarData = generateRadarData(categoryScores, true);
@@ -153,6 +156,17 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
             <SelectItem value="vocafit">Versi VocaFit</SelectItem>
           </SelectContent>
         </Select>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="include-signature" 
+            checked={includeSignature}
+            onCheckedChange={(checked) => setIncludeSignature(checked === true)}
+          />
+          <Label htmlFor="include-signature" className="text-sm cursor-pointer">
+            Tambahkan tanda tangan
+          </Label>
+        </div>
 
         <Button 
           onClick={handleExport} 
@@ -368,6 +382,18 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
             <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200">
               <h3 className="font-semibold text-gray-800 mb-2 text-sm">📋 Evaluasi Keseluruhan</h3>
               <p className="text-xs text-gray-700 leading-relaxed">{analysisResult.overallAssessment}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Signature Section */}
+        {includeSignature && (
+          <div className="mt-10 flex justify-end">
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-16">Mengetahui,</p>
+              <div className="border-b border-gray-400 w-48 mb-2"></div>
+              <p className="font-semibold text-gray-900 text-sm">Dr. Kunjung Ashadi, S.Pd., M.Fis., AIFO</p>
+              <p className="text-gray-600 text-xs">Manajer</p>
             </div>
           </div>
         )}
