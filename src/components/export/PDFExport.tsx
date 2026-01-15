@@ -4,11 +4,18 @@ import { FileDown, Loader2 } from 'lucide-react';
 import { Athlete, TestSession } from '@/types/athlete';
 import { biomotorCategories } from '@/data/biomotorTests';
 import { RadarChart, generateRadarData } from '@/components/charts/RadarChart';
-import { ScoreBadge } from '@/components/ui/score-badge';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import hirocrossLogo from '@/assets/hirocross-logo.png';
+import vocafitHeader from '@/assets/vocafit-header.png';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PDFExportProps {
   athlete: Athlete;
@@ -22,8 +29,11 @@ interface PDFExportProps {
   };
 }
 
+type PDFVersion = 'hirocross' | 'vocafit';
+
 export function PDFExport({ athlete, session, categoryScores, analysisResult }: PDFExportProps) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState<PDFVersion>('hirocross');
   const printRef = useRef<HTMLDivElement>(null);
 
   const radarData = generateRadarData(categoryScores, true);
@@ -119,7 +129,8 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
         remainingHeight -= pdfHeight;
       }
 
-      pdf.save(`Laporan_Tes_${athlete.name.replace(/\s+/g, '_')}_${new Date(session.date).toISOString().split('T')[0]}.pdf`);
+      const versionName = selectedVersion === 'hirocross' ? 'Hirocross' : 'VocaFit';
+      pdf.save(`Laporan_${versionName}_${athlete.name.replace(/\s+/g, '_')}_${new Date(session.date).toISOString().split('T')[0]}.pdf`);
       
       toast.success('PDF berhasil dibuat!');
     } catch (error) {
@@ -132,19 +143,31 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
 
   return (
     <>
-      <Button 
-        onClick={handleExport} 
-        disabled={isGenerating}
-        className="w-full gap-2"
-        variant="outline"
-      >
-        {isGenerating ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <FileDown className="w-4 h-4" />
-        )}
-        {isGenerating ? 'Membuat PDF...' : 'Export ke PDF'}
-      </Button>
+      <div className="space-y-3">
+        <Select value={selectedVersion} onValueChange={(v: PDFVersion) => setSelectedVersion(v)}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Pilih versi PDF" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="hirocross">Versi HiroCross</SelectItem>
+            <SelectItem value="vocafit">Versi VocaFit</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Button 
+          onClick={handleExport} 
+          disabled={isGenerating}
+          className="w-full gap-2"
+          variant="outline"
+        >
+          {isGenerating ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <FileDown className="w-4 h-4" />
+          )}
+          {isGenerating ? 'Membuat PDF...' : `Export ke PDF (${selectedVersion === 'hirocross' ? 'HiroCross' : 'VocaFit'})`}
+        </Button>
+      </div>
 
       {/* Hidden Print Content */}
       <div 
@@ -152,19 +175,28 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
         className="fixed left-[-9999px] top-0 bg-white text-black"
         style={{ width: '794px', padding: '40px', fontFamily: 'Arial, sans-serif' }}
       >
-        {/* Header with Logo */}
-        <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-red-600">
-          <div className="flex items-center gap-4">
-            <img src={hirocrossLogo} alt="Hirocross" className="w-16 h-16 object-contain" />
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">HIROCROSS</h1>
-              <p className="text-sm text-gray-600">Laporan Tes Biomotor</p>
+        {/* Header - Different based on version */}
+        {selectedVersion === 'vocafit' ? (
+          <div className="mb-6 pb-4 border-b-2 border-blue-600">
+            <img src={vocafitHeader} alt="VocaFit" className="w-full h-auto" />
+            <div className="text-right text-sm text-gray-600 mt-2">
+              <p>Tanggal Tes: {new Date(session.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
             </div>
           </div>
-          <div className="text-right text-sm text-gray-600">
-            <p>Tanggal: {new Date(session.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+        ) : (
+          <div className="flex items-center justify-between mb-6 pb-4 border-b-2 border-red-600">
+            <div className="flex items-center gap-4">
+              <img src={hirocrossLogo} alt="Hirocross" className="w-16 h-16 object-contain" />
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">HIROCROSS</h1>
+                <p className="text-sm text-gray-600">Laporan Tes Biomotor</p>
+              </div>
+            </div>
+            <div className="text-right text-sm text-gray-600">
+              <p>Tanggal: {new Date(session.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Athlete Info */}
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
@@ -340,10 +372,19 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
           </div>
         )}
 
-        {/* Footer */}
+        {/* Footer - Different based on version */}
         <div className="mt-8 pt-4 border-t border-gray-300 text-center text-xs text-gray-500">
-          <p>Laporan ini dihasilkan oleh Hirocross Biomotor Test System</p>
-          <p>© {new Date().getFullYear()} Hirocross. All rights reserved.</p>
+          {selectedVersion === 'vocafit' ? (
+            <>
+              <p>Laporan ini dihasilkan oleh VocaFit Biomotor Test System</p>
+              <p>© {new Date().getFullYear()} VocaFit Strength and Conditioning Consultant. All rights reserved.</p>
+            </>
+          ) : (
+            <>
+              <p>Laporan ini dihasilkan oleh Hirocross Biomotor Test System</p>
+              <p>© {new Date().getFullYear()} Hirocross. All rights reserved.</p>
+            </>
+          )}
         </div>
       </div>
     </>
