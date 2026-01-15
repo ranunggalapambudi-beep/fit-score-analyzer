@@ -19,6 +19,7 @@ export type Database = {
           created_at: string | null
           date_of_birth: string
           gender: string
+          height: number | null
           id: string
           name: string
           photo: string | null
@@ -26,11 +27,13 @@ export type Database = {
           team: string | null
           updated_at: string | null
           user_id: string
+          weight: number | null
         }
         Insert: {
           created_at?: string | null
           date_of_birth: string
           gender: string
+          height?: number | null
           id?: string
           name: string
           photo?: string | null
@@ -38,11 +41,13 @@ export type Database = {
           team?: string | null
           updated_at?: string | null
           user_id: string
+          weight?: number | null
         }
         Update: {
           created_at?: string | null
           date_of_birth?: string
           gender?: string
+          height?: number | null
           id?: string
           name?: string
           photo?: string | null
@@ -50,6 +55,7 @@ export type Database = {
           team?: string | null
           updated_at?: string | null
           user_id?: string
+          weight?: number | null
         }
         Relationships: []
       }

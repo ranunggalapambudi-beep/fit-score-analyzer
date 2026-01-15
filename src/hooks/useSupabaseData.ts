@@ -34,6 +34,8 @@ export function useSupabaseData() {
       gender: a.gender as 'male' | 'female',
       sport: a.sport,
       team: a.team || undefined,
+      height: a.height ? Number(a.height) : undefined,
+      weight: a.weight ? Number(a.weight) : undefined,
       photo: a.photo || undefined,
     })));
   }, [user]);
@@ -133,6 +135,8 @@ export function useSupabaseData() {
         gender: athlete.gender,
         sport: athlete.sport,
         team: athlete.team || null,
+        height: athlete.height || null,
+        weight: athlete.weight || null,
         photo: athlete.photo || null,
       })
       .select()
@@ -156,6 +160,8 @@ export function useSupabaseData() {
         gender: updates.gender,
         sport: updates.sport,
         team: updates.team || null,
+        height: updates.height || null,
+        weight: updates.weight || null,
         photo: updates.photo || null,
       })
       .eq('id', id);
