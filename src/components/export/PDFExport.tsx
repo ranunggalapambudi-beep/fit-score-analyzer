@@ -4,6 +4,7 @@ import { FileDown, Loader2 } from 'lucide-react';
 import { Athlete, TestSession } from '@/types/athlete';
 import { biomotorCategories } from '@/data/biomotorTests';
 import { RadarChart, generateRadarData } from '@/components/charts/RadarChart';
+import { BMISpeedometer, calculateBMI } from '@/components/charts/BMISpeedometer';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface PDFExportProps {
   athlete: Athlete;
@@ -37,6 +39,8 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<PDFVersion>('hirocross');
   const [includeSignature, setIncludeSignature] = useState(false);
+  const [signerName, setSignerName] = useState('Dr. Kunjung Ashadi, S.Pd., M.Fis., AIFO');
+  const [signerPosition, setSignerPosition] = useState('Manajer');
   const printRef = useRef<HTMLDivElement>(null);
 
   const radarData = generateRadarData(categoryScores, true);
@@ -45,6 +49,11 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
     (new Date().getTime() - new Date(athlete.dateOfBirth).getTime()) /
     (365.25 * 24 * 60 * 60 * 1000)
   );
+
+  // Calculate BMI if height and weight are available
+  const bmi = athlete.height && athlete.weight 
+    ? calculateBMI(athlete.weight, athlete.height) 
+    : null;
 
   const allTestResults = (() => {
     const grouped: { categoryId: string; categoryName: string; tests: Array<{ name: string; value: number; unit: string; score: number }> }[] = [];
@@ -168,6 +177,31 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
           </Label>
         </div>
 
+        {includeSignature && (
+          <div className="space-y-2 p-3 border rounded-lg bg-muted/50">
+            <div>
+              <Label htmlFor="signer-name" className="text-xs">Nama Penandatangan</Label>
+              <Input
+                id="signer-name"
+                value={signerName}
+                onChange={(e) => setSignerName(e.target.value)}
+                placeholder="Nama lengkap dengan gelar"
+                className="h-8 text-sm"
+              />
+            </div>
+            <div>
+              <Label htmlFor="signer-position" className="text-xs">Jabatan</Label>
+              <Input
+                id="signer-position"
+                value={signerPosition}
+                onChange={(e) => setSignerPosition(e.target.value)}
+                placeholder="Jabatan"
+                className="h-8 text-sm"
+              />
+            </div>
+          </div>
+        )}
+
         <Button 
           onClick={handleExport} 
           disabled={isGenerating}
@@ -215,7 +249,7 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
         {/* Athlete Info */}
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
           <div className="flex justify-between items-start">
-            <div>
+            <div className="flex-1">
               <h2 className="text-lg font-bold text-gray-900 mb-3">Profil Atlet</h2>
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
@@ -254,8 +288,19 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
                 )}
               </div>
             </div>
+            
+            {/* BMI Section with Speedometer */}
+            {bmi && (
+              <div className="flex flex-col items-center gap-2 ml-4">
+                <div className="text-center bg-white rounded-lg p-3 shadow-sm border border-gray-200">
+                  <p className="text-xs text-gray-500 mb-1">Indeks Massa Tubuh</p>
+                  <BMISpeedometer bmi={bmi} size={100} />
+                </div>
+              </div>
+            )}
+            
             {/* Overall Score */}
-            <div className="text-center bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+            <div className="text-center bg-white rounded-lg p-4 shadow-sm border border-gray-200 ml-4">
               <p className="text-xs text-gray-500 mb-1">Skor Keseluruhan</p>
               <div className={`text-3xl font-bold ${
                 overallScore >= 4 ? 'text-green-600' : 
@@ -392,8 +437,8 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
             <div className="text-center">
               <p className="text-sm text-gray-600 mb-16">Mengetahui,</p>
               <div className="border-b border-gray-400 w-48 mb-2"></div>
-              <p className="font-semibold text-gray-900 text-sm">Dr. Kunjung Ashadi, S.Pd., M.Fis., AIFO</p>
-              <p className="text-gray-600 text-xs">Manajer</p>
+              <p className="font-semibold text-gray-900 text-sm">{signerName}</p>
+              <p className="text-gray-600 text-xs">{signerPosition}</p>
             </div>
           </div>
         )}
