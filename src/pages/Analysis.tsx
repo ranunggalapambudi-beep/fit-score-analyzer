@@ -71,13 +71,14 @@ export default function Analysis() {
       const resultsWithDetails = latestSession.results.map((r) => {
         const category = biomotorCategories.find(c => c.id === r.categoryId);
         const test = category?.tests.find(t => t.id === r.testId);
+        const unit = test?.norms?.[0]?.unit || 'unit';
         return {
           categoryId: r.categoryId,
           categoryName: category?.name || r.categoryId,
           testId: r.testId,
           testName: test?.name || r.testId,
           value: r.value,
-          unit: r.unit,
+          unit,
           score: r.score,
         };
       });
