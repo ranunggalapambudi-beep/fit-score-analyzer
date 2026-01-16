@@ -28,11 +28,11 @@ jobs:
           rm -f bun.lockb
           bun install
 
-      - name: Commit bun.lockb
+           - name: Commit bun.lockb
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git status
           git add bun.lockb
-          git commit -m "chore(ci): regenerate bun.lockb on linux" --allow-empty
+          git commit -m "chore(ci): regenerate bun.lockb on linux" || echo "No changes"
           git push
+
