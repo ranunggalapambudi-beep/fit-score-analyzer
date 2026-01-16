@@ -32,11 +32,11 @@ export default function Index() {
               <Activity className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <span className="text-xs font-medium text-primary/80 uppercase tracking-wider">
+              <span className="text-xs font-medium uppercase tracking-wider text-primary-foreground">
                 Biomotor Analysis
               </span>
               <h1 className="text-2xl font-bold font-display tracking-tight text-primary-foreground">
-                <span className="gradient-text">BiomotorTest</span>
+                <span className="gradient-text text-primary-foreground">BiomotorTest</span>
               </h1>
             </div>
           </div>
