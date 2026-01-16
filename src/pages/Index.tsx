@@ -5,7 +5,10 @@ import { Button } from '@/components/ui/button';
 import { biomotorCategories } from '@/data/biomotorTests';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/contexts/AuthContext';
-import { Users, ClipboardList, TrendingUp, ArrowRight, Activity, Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2, BookOpen, LogIn, LogOut, Loader2 } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { Users, ClipboardList, TrendingUp, ArrowRight, Activity, Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2, BookOpen, LogIn, LogOut, Loader2, Info } from 'lucide-react';
+import hirocrossLogo from '@/assets/hirocross-logo.png';
+
 export default function Index() {
   const {
     user,
@@ -27,18 +30,21 @@ export default function Index() {
         <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-accent/10 blur-[80px]" />
         
         <div className="relative px-6 pt-12 pb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/20 border border-primary/30">
-              <Activity className="w-6 h-6 text-primary" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-background/80 border border-primary/30 overflow-hidden">
+                <img src={hirocrossLogo} alt="HIROCROSS" className="w-10 h-10 object-contain" />
+              </div>
+              <div>
+                <span className="text-xs font-medium uppercase tracking-wider text-primary">
+                  Biomotor Analysis
+                </span>
+                <h1 className="text-2xl font-bold font-display tracking-tight text-foreground">
+                  <span className="gradient-text">BiomotorTest</span>
+                </h1>
+              </div>
             </div>
-            <div>
-              <span className="text-xs font-medium uppercase tracking-wider text-primary-foreground">
-                Biomotor Analysis
-              </span>
-              <h1 className="text-2xl font-bold font-display tracking-tight text-primary-foreground">
-                <span className="gradient-text text-primary-foreground">BiomotorTest</span>
-              </h1>
-            </div>
+            <ThemeToggle />
           </div>
           
           <p className="text-muted-foreground leading-relaxed max-w-sm">
@@ -252,6 +258,12 @@ export default function Index() {
             <Button size="lg" variant="ghost" className="gap-2 w-full max-w-xs">
               <BookOpen className="w-5 h-5" />
               Panduan Tes
+            </Button>
+          </Link>
+          <Link to="/about">
+            <Button size="lg" variant="ghost" className="gap-2 w-full max-w-xs">
+              <Info className="w-5 h-5" />
+              About HIROCROSS
             </Button>
           </Link>
           
