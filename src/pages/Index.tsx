@@ -6,9 +6,10 @@ import { biomotorCategories } from '@/data/biomotorTests';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
-  Users, ClipboardList, TrendingUp, ArrowRight, Activity, 
+  Users, ClipboardList, TrendingUp, ArrowRight, 
   Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2, BookOpen, LogIn, LogOut, Loader2
 } from 'lucide-react';
+import hirocrossIcon from '@/assets/hirocross-icon.png';
 
 export default function Index() {
   const { user, signOut } = useAuth();
@@ -28,10 +29,12 @@ export default function Index() {
         <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-accent/10 blur-[80px]" />
         
         <div className="relative px-6 pt-12 pb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/20 border border-primary/30">
-              <Activity className="w-6 h-6 text-primary" />
-            </div>
+          <div className="flex items-center gap-3 mb-4">
+            <img 
+              src={hirocrossIcon} 
+              alt="HIROCROSS Logo" 
+              className="w-14 h-14 object-contain"
+            />
             <div>
               <span className="text-xs font-medium text-primary/80 uppercase tracking-wider">
                 Biomotor Analysis
