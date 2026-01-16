@@ -1,0 +1,6 @@
+# Bun configuration
+# This file triggers the GitHub Action to regenerate bun.lockb on Linux
+
+[install]
+# Use exact versions from package.json
+exact = true
