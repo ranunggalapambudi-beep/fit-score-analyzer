@@ -1,13 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Users, ClipboardList, BarChart3, BookOpen } from 'lucide-react';
+import { Home, Users, ClipboardList, BarChart3, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Beranda' },
   { path: '/athletes', icon: Users, label: 'Atlet' },
   { path: '/tests', icon: ClipboardList, label: 'Tes' },
-  { path: '/tutorial', icon: BookOpen, label: 'Panduan' },
   { path: '/results', icon: BarChart3, label: 'Hasil' },
+  { path: '/about', icon: Info, label: 'About' },
 ];
 
 export function MobileNav() {
