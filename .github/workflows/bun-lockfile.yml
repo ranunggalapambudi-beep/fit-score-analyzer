@@ -1,0 +1,34 @@
+name: Regenerate bun.lockb (Linux)
+
+on:
+  push:
+    paths:
+      - "package.json"
+      - "bunfig.toml"
+  workflow_dispatch:
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.2.15
+
+      - name: Install dependencies & regenerate lockfile
+        run: |
+          rm -f bun.lockb
+          bun install
+
+      - name: Commit bun.lockb
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add bun.lockb
+          git commit -m "chore(ci): regenerate bun.lockb on linux" || echo "No changes"
+          git push
