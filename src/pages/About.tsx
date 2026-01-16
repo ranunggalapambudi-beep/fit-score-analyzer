@@ -3,8 +3,8 @@ import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Target, Users, BarChart3, Zap, Shield, Award } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Target, Users, BarChart3, Zap, Shield, Award, Mail } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 import hirocrossLogo from "@/assets/hirocross-logo.png";
 
 export default function About() {
@@ -131,6 +131,12 @@ export default function About() {
                   <span className="text-foreground">www.hirocross.com</span>
                 </div>
               </div>
+              <Link to="/contact">
+                <Button className="w-full mt-3 gap-2">
+                  <Mail className="w-4 h-4" />
+                  Hubungi Kami
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 

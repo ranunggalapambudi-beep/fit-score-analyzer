@@ -22,6 +22,7 @@ import TeamDetail from "./pages/TeamDetail";
 import TeamComparison from "./pages/TeamComparison";
 import Tutorial from "./pages/Tutorial";
 import About from "./pages/About";
+import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/tutorial" element={<Tutorial />} />
               <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
               
               {/* Protected routes */}
               <Route path="/athletes" element={
