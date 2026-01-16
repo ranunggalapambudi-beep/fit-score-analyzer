@@ -1,5 +1,6 @@
 name: Regenerate bun.lockb (Linux)
-
+permissions:
+  contents: write
 on:
   push:
     paths:
