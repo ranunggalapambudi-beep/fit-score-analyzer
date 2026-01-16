@@ -5,23 +5,21 @@ import { Button } from '@/components/ui/button';
 import { biomotorCategories } from '@/data/biomotorTests';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Users, ClipboardList, TrendingUp, ArrowRight, 
-  Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2, BookOpen, LogIn, LogOut, Loader2
-} from 'lucide-react';
-import hirocrossLogo from '@/assets/hirocross-logo.png';
-
+import { Users, ClipboardList, TrendingUp, ArrowRight, Activity, Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2, BookOpen, LogIn, LogOut, Loader2 } from 'lucide-react';
 export default function Index() {
-  const { user, signOut } = useAuth();
-  const { athletes, testSessions, loading } = useSupabaseData();
-
+  const {
+    user,
+    signOut
+  } = useAuth();
+  const {
+    athletes,
+    testSessions,
+    loading
+  } = useSupabaseData();
   const totalTests = testSessions.reduce((acc, s) => acc + s.results.length, 0);
   const totalSessions = testSessions.length;
-
   const recentAthletes = athletes.slice(0, 5);
-
-  return (
-    <Layout showHeader={false}>
+  return <Layout showHeader={false}>
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/10" />
@@ -29,17 +27,15 @@ export default function Index() {
         <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-accent/10 blur-[80px]" />
         
         <div className="relative px-6 pt-12 pb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <img 
-              src={hirocrossLogo} 
-              alt="HIROCROSS Logo" 
-              className="w-14 h-14 object-contain"
-            />
+          <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/20 border border-primary/30">
+              <Activity className="w-6 h-6 text-primary" />
+            </div>
             <div>
               <span className="text-xs font-medium text-primary/80 uppercase tracking-wider">
                 Biomotor Analysis
               </span>
-              <h1 className="text-2xl font-bold font-display tracking-tight">
+              <h1 className="text-2xl font-bold font-display tracking-tight text-primary-foreground">
                 <span className="gradient-text">BiomotorTest</span>
               </h1>
             </div>
@@ -78,7 +74,9 @@ export default function Index() {
             </p>
             <p className="text-xs text-muted-foreground">Atlet</p>
           </Link>
-          <Link to="/results" className="p-4 rounded-2xl bg-card/80 border border-border/50 backdrop-blur-sm text-center animate-fade-in hover:border-primary/50 transition-colors" style={{ animationDelay: '0.1s' }}>
+          <Link to="/results" className="p-4 rounded-2xl bg-card/80 border border-border/50 backdrop-blur-sm text-center animate-fade-in hover:border-primary/50 transition-colors" style={{
+          animationDelay: '0.1s'
+        }}>
             <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-accent/10 mx-auto">
               <ClipboardList className="w-5 h-5 text-accent" />
             </div>
@@ -87,7 +85,9 @@ export default function Index() {
             </p>
             <p className="text-xs text-muted-foreground">Sesi Tes</p>
           </Link>
-          <Link to="/results" className="p-4 rounded-2xl bg-card/80 border border-border/50 backdrop-blur-sm text-center animate-fade-in hover:border-primary/50 transition-colors" style={{ animationDelay: '0.2s' }}>
+          <Link to="/results" className="p-4 rounded-2xl bg-card/80 border border-border/50 backdrop-blur-sm text-center animate-fade-in hover:border-primary/50 transition-colors" style={{
+          animationDelay: '0.2s'
+        }}>
             <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-strength/10 mx-auto">
               <BarChart3 className="w-5 h-5 text-strength" />
             </div>
@@ -99,8 +99,7 @@ export default function Index() {
         </section>
 
         {/* Recent Athletes */}
-        {!loading && recentAthletes.length > 0 && (
-          <section className="animate-slide-up">
+        {!loading && recentAthletes.length > 0 && <section className="animate-slide-up">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-semibold font-display flex items-center gap-2">
                 <Award className="w-5 h-5 text-primary" />
@@ -112,20 +111,11 @@ export default function Index() {
               </Link>
             </div>
             <div className="space-y-2">
-              {recentAthletes.map((athlete) => {
-                const athleteSessions = testSessions.filter(s => s.athleteId === athlete.id);
-                return (
-                  <Link 
-                    key={athlete.id} 
-                    to={`/athletes/${athlete.id}`}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-card/50 border border-border/50 hover:border-primary/50 transition-colors"
-                  >
+              {recentAthletes.map(athlete => {
+            const athleteSessions = testSessions.filter(s => s.athleteId === athlete.id);
+            return <Link key={athlete.id} to={`/athletes/${athlete.id}`} className="flex items-center gap-3 p-3 rounded-xl bg-card/50 border border-border/50 hover:border-primary/50 transition-colors">
                     <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 shrink-0 overflow-hidden">
-                      {athlete.photo ? (
-                        <img src={athlete.photo} alt={athlete.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <Users className="w-5 h-5 text-primary" />
-                      )}
+                      {athlete.photo ? <img src={athlete.photo} alt={athlete.name} className="w-full h-full object-cover" /> : <Users className="w-5 h-5 text-primary" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{athlete.name}</p>
@@ -138,24 +128,19 @@ export default function Index() {
                       </p>
                     </div>
                     <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                  </Link>
-                );
-              })}
+                  </Link>;
+          })}
             </div>
-            {athletes.length > 5 && (
-              <Link to="/athletes">
+            {athletes.length > 5 && <Link to="/athletes">
                 <Button variant="ghost" size="sm" className="w-full mt-2 text-primary">
                   Lihat {athletes.length - 5} atlet lainnya
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
-              </Link>
-            )}
-          </section>
-        )}
+              </Link>}
+          </section>}
 
         {/* No Athletes Yet */}
-        {!loading && recentAthletes.length === 0 && user && (
-          <section className="animate-slide-up">
+        {!loading && recentAthletes.length === 0 && user && <section className="animate-slide-up">
             <div className="p-6 rounded-2xl bg-card/50 border border-border/50 text-center">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-primary" />
@@ -171,11 +156,12 @@ export default function Index() {
                 </Button>
               </Link>
             </div>
-          </section>
-        )}
+          </section>}
 
         {/* Categories */}
-        <section className="animate-slide-up" style={{ animationDelay: '0.15s' }}>
+        <section className="animate-slide-up" style={{
+        animationDelay: '0.15s'
+      }}>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold font-display flex items-center gap-2">
               <Target className="w-5 h-5 text-accent" />
@@ -187,30 +173,22 @@ export default function Index() {
             </Link>
           </div>
           <div className="grid gap-3">
-            {biomotorCategories.slice(0, 4).map((category, idx) => (
-              <Link key={category.id} to={`/tests/${category.id}`}>
-                <CategoryCard
-                  name={category.name}
-                  description={category.description}
-                  iconName={category.icon}
-                  color={category.color}
-                  testCount={category.tests.length}
-                />
-              </Link>
-            ))}
+            {biomotorCategories.slice(0, 4).map((category, idx) => <Link key={category.id} to={`/tests/${category.id}`}>
+                <CategoryCard name={category.name} description={category.description} iconName={category.icon} color={category.color} testCount={category.tests.length} />
+              </Link>)}
           </div>
-          {biomotorCategories.length > 4 && (
-            <Link to="/tests">
+          {biomotorCategories.length > 4 && <Link to="/tests">
               <Button variant="outline" className="w-full mt-3 gap-2">
                 Lihat {biomotorCategories.length - 4} Kategori Lainnya
                 <ArrowRight className="w-4 h-4" />
               </Button>
-            </Link>
-          )}
+            </Link>}
         </section>
 
         {/* Features */}
-        <section className="rounded-2xl border border-border/50 p-5 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm animate-slide-up" style={{ animationDelay: '0.2s' }}>
+        <section className="rounded-2xl border border-border/50 p-5 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm animate-slide-up" style={{
+        animationDelay: '0.2s'
+      }}>
           <h2 className="text-lg font-semibold font-display mb-4 flex items-center gap-2">
             <Zap className="w-5 h-5 text-primary" />
             Fitur Unggulan
@@ -277,26 +255,16 @@ export default function Index() {
             </Button>
           </Link>
           
-          {user ? (
-            <Button 
-              size="lg" 
-              variant="ghost" 
-              className="gap-2 w-full max-w-xs text-muted-foreground"
-              onClick={() => signOut()}
-            >
+          {user ? <Button size="lg" variant="ghost" className="gap-2 w-full max-w-xs text-muted-foreground" onClick={() => signOut()}>
               <LogOut className="w-5 h-5" />
               Keluar
-            </Button>
-          ) : (
-            <Link to="/auth">
+            </Button> : <Link to="/auth">
               <Button size="lg" variant="ghost" className="gap-2 w-full max-w-xs">
                 <LogIn className="w-5 h-5" />
                 Masuk / Daftar
               </Button>
-            </Link>
-          )}
+            </Link>}
         </section>
       </div>
-    </Layout>
-  );
+    </Layout>;
 }
