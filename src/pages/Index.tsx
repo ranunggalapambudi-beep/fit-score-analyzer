@@ -9,7 +9,7 @@ import {
   Users, ClipboardList, TrendingUp, ArrowRight, 
   Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2, BookOpen, LogIn, LogOut, Loader2
 } from 'lucide-react';
-import hirocrossIcon from '@/assets/hirocross-icon.png';
+import hirocrossLogo from '@/assets/hirocross-logo.png';
 
 export default function Index() {
   const { user, signOut } = useAuth();
@@ -31,7 +31,7 @@ export default function Index() {
         <div className="relative px-6 pt-12 pb-8">
           <div className="flex items-center gap-3 mb-4">
             <img 
-              src={hirocrossIcon} 
+              src={hirocrossLogo} 
               alt="HIROCROSS Logo" 
               className="w-14 h-14 object-contain"
             />
