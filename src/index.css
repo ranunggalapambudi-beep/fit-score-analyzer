@@ -15,8 +15,8 @@
     --popover: 220 18% 10%;
     --popover-foreground: 210 20% 98%;
 
-    --primary: 142 70% 45%;
-    --primary-foreground: 220 20% 6%;
+    --primary: 0 85% 50%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 220 15% 16%;
     --secondary-foreground: 210 20% 98%;
@@ -24,25 +24,25 @@
     --muted: 220 15% 14%;
     --muted-foreground: 215 15% 55%;
 
-    --accent: 200 80% 50%;
-    --accent-foreground: 220 20% 6%;
+    --accent: 0 70% 45%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 210 20% 98%;
 
     --border: 220 15% 18%;
     --input: 220 15% 18%;
-    --ring: 142 70% 45%;
+    --ring: 0 85% 50%;
 
     --radius: 0.75rem;
 
     /* Custom tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(142, 70%, 45%) 0%, hsl(160, 70%, 40%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(200, 80%, 50%) 0%, hsl(180, 70%, 45%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(0, 85%, 50%) 0%, hsl(0, 70%, 40%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(0, 70%, 45%) 0%, hsl(15, 80%, 50%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(220, 18%, 12%) 0%, hsl(220, 18%, 8%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(142, 70%, 45%, 0.1) 0%, hsl(200, 80%, 50%, 0.1) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(0, 85%, 50%, 0.1) 0%, hsl(0, 70%, 45%, 0.1) 100%);
     
-    --shadow-glow: 0 0 40px hsl(142, 70%, 45%, 0.2);
+    --shadow-glow: 0 0 40px hsl(0, 85%, 50%, 0.2);
     --shadow-card: 0 4px 24px hsl(220, 20%, 0%, 0.4);
     --shadow-elevated: 0 8px 32px hsl(220, 20%, 0%, 0.6);
 
@@ -50,7 +50,7 @@
     --font-body: 'Inter', sans-serif;
 
     /* Biomotor category colors */
-    --endurance: 142 70% 45%;
+    --endurance: 0 85% 50%;
     --strength: 0 72% 55%;
     --speed: 45 90% 50%;
     --agility: 280 70% 55%;
@@ -61,12 +61,12 @@
 
     --sidebar-background: 220 18% 8%;
     --sidebar-foreground: 210 20% 98%;
-    --sidebar-primary: 142 70% 45%;
-    --sidebar-primary-foreground: 220 20% 6%;
+    --sidebar-primary: 0 85% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 15% 14%;
     --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: 220 15% 16%;
-    --sidebar-ring: 142 70% 45%;
+    --sidebar-ring: 0 85% 50%;
   }
 
   .dark {
