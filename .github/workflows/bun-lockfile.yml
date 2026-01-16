@@ -18,8 +18,8 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-        ref: main
-        persist-credentials: true
+          ref: main
+          persist-credentials: true
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
