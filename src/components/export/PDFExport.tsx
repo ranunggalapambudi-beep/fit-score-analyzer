@@ -249,6 +249,26 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
         {/* Athlete Info */}
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
           <div className="flex justify-between items-start">
+            {/* Profile Photo */}
+            <div className="flex-shrink-0 mr-4">
+              {athlete.photo ? (
+                <div className="w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm">
+                  <img 
+                    src={athlete.photo} 
+                    alt={athlete.name} 
+                    className="w-full h-full object-cover"
+                    crossOrigin="anonymous"
+                  />
+                </div>
+              ) : (
+                <div className="w-24 h-24 rounded-xl bg-gray-200 border-2 border-gray-300 flex items-center justify-center">
+                  <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
+              )}
+            </div>
+            
             <div className="flex-1">
               <h2 className="text-lg font-bold text-gray-900 mb-3">Profil Atlet</h2>
               <div className="grid grid-cols-3 gap-4 text-sm">
