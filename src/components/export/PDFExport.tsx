@@ -250,21 +250,23 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
           <div className="flex justify-between items-start">
             {/* Profile Photo */}
-            <div className="flex-shrink-0 mr-4">
+            <div className="flex-shrink-0 mr-6">
               {athlete.photo ? (
-                <div className="w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm">
+                <div className="w-32 h-40 rounded-xl overflow-hidden border-3 border-gray-300 shadow-md" style={{ borderWidth: '3px' }}>
                   <img 
                     src={athlete.photo} 
                     alt={athlete.name} 
                     className="w-full h-full object-cover"
                     crossOrigin="anonymous"
+                    style={{ imageRendering: 'auto' }}
                   />
                 </div>
               ) : (
-                <div className="w-24 h-24 rounded-xl bg-gray-200 border-2 border-gray-300 flex items-center justify-center">
-                  <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                <div className="w-32 h-40 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 border-3 border-gray-300 flex flex-col items-center justify-center shadow-md" style={{ borderWidth: '3px' }}>
+                  <svg className="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                   </svg>
+                  <p className="text-xs text-gray-400 mt-1">Foto Atlet</p>
                 </div>
               )}
             </div>
