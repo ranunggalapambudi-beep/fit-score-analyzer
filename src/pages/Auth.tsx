@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react';
+import { Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { z } from 'zod';
+import hirocrossLogo from '@/assets/hirocross-logo.png';
 
 const emailSchema = z.string().email('Email tidak valid');
 const passwordSchema = z.string().min(6, 'Password minimal 6 karakter');
@@ -122,13 +123,13 @@ export default function Auth() {
       <Card className="w-full max-w-md relative z-10 shadow-xl border-border/50">
         <CardHeader className="text-center space-y-4">
           <div className="flex items-center justify-center gap-2">
-            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/20 border border-primary/30">
-              <Activity className="w-6 h-6 text-primary" />
+            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-background shadow-lg overflow-hidden">
+              <img src={hirocrossLogo} alt="HiroCross" className="w-14 h-14 object-contain" />
             </div>
           </div>
           <div>
             <CardTitle className="text-2xl font-bold">
-              <span className="gradient-text">BiomotorTest</span>
+              <span className="gradient-text">HiroCross Measure</span>
             </CardTitle>
             <CardDescription className="mt-2">
               Platform pengukuran komponen biomotor untuk pelatih profesional
