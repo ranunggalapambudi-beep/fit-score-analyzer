@@ -6,8 +6,12 @@ import { biomotorCategories } from '@/data/biomotorTests';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/contexts/AuthContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Users, ClipboardList, TrendingUp, ArrowRight, Activity, Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2, BookOpen, LogIn, LogOut, Loader2, Info } from 'lucide-react';
+import { Users, ClipboardList, TrendingUp, ArrowRight, Activity, Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2, BookOpen, LogIn, LogOut, Loader2, Info, Play } from 'lucide-react';
 import hirocrossLogo from '@/assets/hirocross-logo.png';
+import heroAthleteImage from '@/assets/hero-athlete-testing.jpg';
+import speedTestImage from '@/assets/speed-test.jpg';
+import jumpTestImage from '@/assets/jump-test.jpg';
+import agilityTestImage from '@/assets/agility-test.jpg';
 
 export default function Index() {
   const {
@@ -23,23 +27,29 @@ export default function Index() {
   const totalSessions = testSessions.length;
   const recentAthletes = athletes.slice(0, 5);
   return <Layout showHeader={false}>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/10" />
-        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-primary/10 blur-[100px]" />
-        <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-accent/10 blur-[80px]" />
+      {/* Hero Section with Background Image */}
+      <section className="relative overflow-hidden min-h-[60vh]">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <img 
+            src={heroAthleteImage} 
+            alt="Athlete Performance Testing" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-background" />
+        </div>
         
-        <div className="relative px-6 pt-12 pb-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="relative px-6 pt-12 pb-8 z-10">
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-background/80 border border-primary/30 overflow-hidden">
+              <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-black/40 backdrop-blur-sm border border-white/20 overflow-hidden">
                 <img src={hirocrossLogo} alt="HIROCROSS" className="w-10 h-10 object-contain" />
               </div>
               <div>
                 <span className="text-xs font-medium uppercase tracking-wider text-primary">
                   Biomotor Analysis
                 </span>
-                <h1 className="text-2xl font-bold font-display tracking-tight text-foreground">
+                <h1 className="text-2xl font-bold font-display tracking-tight text-white">
                   <span className="gradient-text">BiomotorTest</span>
                 </h1>
               </div>
@@ -47,23 +57,59 @@ export default function Index() {
             <ThemeToggle />
           </div>
           
-          <p className="text-muted-foreground leading-relaxed max-w-sm">
-            Platform pengukuran komponen biomotor komprehensif dengan norma ilmiah 
-            dan analisis AI untuk optimalisasi performa atlet.
-          </p>
+          <div className="mt-12">
+            <h2 className="text-3xl md:text-4xl font-bold font-display text-white leading-tight mb-4">
+              Ukur Performa <br />
+              <span className="text-primary">Atlet Profesional</span>
+            </h2>
+            <p className="text-white/80 leading-relaxed max-w-sm text-base">
+              Platform pengukuran komponen biomotor komprehensif dengan norma ilmiah 
+              dan analisis AI untuk optimalisasi performa atlet.
+            </p>
+          </div>
           
-          <div className="flex gap-3 mt-6">
+          <div className="flex gap-3 mt-8">
             <Link to="/athletes">
-              <Button size="lg" className="gap-2 glow-primary">
+              <Button size="lg" className="gap-2 glow-primary bg-primary text-white hover:bg-primary/90">
                 Mulai Pengukuran
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
             <Link to="/tests">
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10">
                 Lihat Tes
               </Button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Testing Gallery Section */}
+      <section className="px-4 -mt-8 relative z-20">
+        <div className="grid grid-cols-3 gap-2">
+          <div className="relative rounded-xl overflow-hidden aspect-square group cursor-pointer">
+            <img src={speedTestImage} alt="Speed Test" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute bottom-2 left-2 right-2">
+              <p className="text-white text-xs font-medium">Kecepatan</p>
+              <p className="text-white/60 text-[10px]">Sprint Test</p>
+            </div>
+          </div>
+          <div className="relative rounded-xl overflow-hidden aspect-square group cursor-pointer">
+            <img src={jumpTestImage} alt="Jump Test" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute bottom-2 left-2 right-2">
+              <p className="text-white text-xs font-medium">Power</p>
+              <p className="text-white/60 text-[10px]">Vertical Jump</p>
+            </div>
+          </div>
+          <div className="relative rounded-xl overflow-hidden aspect-square group cursor-pointer">
+            <img src={agilityTestImage} alt="Agility Test" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute bottom-2 left-2 right-2">
+              <p className="text-white text-xs font-medium">Kelincahan</p>
+              <p className="text-white/60 text-[10px]">Agility Test</p>
+            </div>
           </div>
         </div>
       </section>
