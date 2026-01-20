@@ -23,6 +23,7 @@ import TeamComparison from "./pages/TeamComparison";
 import Tutorial from "./pages/Tutorial";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import AdminDashboard from "./pages/AdminDashboard";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/tutorial" element={<Tutorial />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/admin" element={<AdminDashboard />} />
               
               {/* Protected routes */}
               <Route path="/athletes" element={
