@@ -3,7 +3,7 @@ import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Target, Users, BarChart3, Zap, Shield, Award, Mail } from "lucide-react";
+import { ArrowLeft, Target, Users, BarChart3, Zap, Shield, Award, Mail, Instagram } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import hirocrossLogo from "@/assets/hirocross-logo.png";
 
@@ -123,12 +123,14 @@ export default function About() {
               </p>
               <div className="flex flex-col gap-2 text-sm">
                 <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-muted-foreground" />
                   <span className="text-muted-foreground">Email:</span>
-                  <span className="text-foreground">support@hirocross.com</span>
+                  <a href="mailto:hiro.cross1010@gmail.com" className="text-foreground hover:text-primary transition-colors">hiro.cross1010@gmail.com</a>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Website:</span>
-                  <span className="text-foreground">www.hirocross.com</span>
+                  <Instagram className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Instagram:</span>
+                  <a href="https://instagram.com/hirocros" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors">@hirocros</a>
                 </div>
               </div>
               <Link to="/contact">
