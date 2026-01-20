@@ -25,6 +25,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import AdminDashboard from "./pages/AdminDashboard";
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -88,6 +89,9 @@ const App = () => (
               } />
               <Route path="/teams/:teamId/comparison" element={
                 <ProtectedRoute><TeamComparison /></ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute><Profile /></ProtectedRoute>
               } />
               
               <Route path="*" element={<NotFound />} />

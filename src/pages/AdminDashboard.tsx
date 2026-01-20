@@ -8,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   ArrowLeft, Mail, MessageSquare, Users, Shield, Clock, 
   CheckCircle, AlertCircle, Trash2, Eye, Loader2, RefreshCw,
-  UserPlus, Crown, UserCheck, UserX
+  UserPlus, Crown, UserCheck, UserX, Activity, ClipboardList,
+  TrendingUp, BarChart3
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,13 +61,31 @@ interface UserWithRole {
   full_name: string | null;
 }
 
+interface Statistics {
+  totalAthletes: number;
+  totalTeams: number;
+  totalTestSessions: number;
+  totalTestResults: number;
+  athletesThisMonth: number;
+  testsThisMonth: number;
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [users, setUsers] = useState<UserWithRole[]>([]);
+  const [stats, setStats] = useState<Statistics>({
+    totalAthletes: 0,
+    totalTeams: 0,
+    totalTestSessions: 0,
+    totalTestResults: 0,
+    athletesThisMonth: 0,
+    testsThisMonth: 0
+  });
   const [loading, setLoading] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadingStats, setLoadingStats] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingRole, setCheckingRole] = useState(true);
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
@@ -177,10 +196,52 @@ export default function AdminDashboard() {
     }
   };
 
+  // Fetch statistics
+  const fetchStatistics = async () => {
+    if (!isAdmin) return;
+    
+    setLoadingStats(true);
+    try {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+      // Fetch all stats in parallel
+      const [
+        athletesRes,
+        teamsRes,
+        sessionsRes,
+        resultsRes,
+        athletesMonthRes,
+        sessionsMonthRes
+      ] = await Promise.all([
+        supabase.from('athletes').select('id', { count: 'exact', head: true }),
+        supabase.from('teams').select('id', { count: 'exact', head: true }),
+        supabase.from('test_sessions').select('id', { count: 'exact', head: true }),
+        supabase.from('test_results').select('id', { count: 'exact', head: true }),
+        supabase.from('athletes').select('id', { count: 'exact', head: true }).gte('created_at', startOfMonth),
+        supabase.from('test_sessions').select('id', { count: 'exact', head: true }).gte('created_at', startOfMonth)
+      ]);
+
+      setStats({
+        totalAthletes: athletesRes.count || 0,
+        totalTeams: teamsRes.count || 0,
+        totalTestSessions: sessionsRes.count || 0,
+        totalTestResults: resultsRes.count || 0,
+        athletesThisMonth: athletesMonthRes.count || 0,
+        testsThisMonth: sessionsMonthRes.count || 0
+      });
+    } catch (error) {
+      console.error('Error fetching statistics:', error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
   useEffect(() => {
     if (isAdmin) {
       fetchMessages();
       fetchUsers();
+      fetchStatistics();
     }
   }, [isAdmin]);
 
@@ -351,32 +412,72 @@ export default function AdminDashboard() {
 
       <main className="flex-1 overflow-auto">
         <div className="p-4 space-y-4 pb-24">
-          {/* Stats */}
+          {/* Main Stats */}
           <div className="grid grid-cols-2 gap-3">
-            <Card>
+            <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <MessageSquare className="w-5 h-5 text-primary" />
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <Activity className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">{totalCount}</p>
-                    <p className="text-xs text-muted-foreground">Total Pesan</p>
+                    <p className="text-2xl font-bold">{stats.totalAthletes}</p>
+                    <p className="text-xs text-muted-foreground">Total Atlet</p>
                   </div>
                 </div>
+                {stats.athletesThisMonth > 0 && (
+                  <div className="mt-2 flex items-center gap-1 text-xs text-green-500">
+                    <TrendingUp className="w-3 h-3" />
+                    +{stats.athletesThisMonth} bulan ini
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                    <ClipboardList className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stats.totalTestSessions}</p>
+                    <p className="text-xs text-muted-foreground">Total Tes</p>
+                  </div>
+                </div>
+                {stats.testsThisMonth > 0 && (
+                  <div className="mt-2 flex items-center gap-1 text-xs text-green-500">
+                    <TrendingUp className="w-3 h-3" />
+                    +{stats.testsThisMonth} bulan ini
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Secondary Stats */}
+          <div className="grid grid-cols-4 gap-2">
+            <Card>
+              <CardContent className="p-3 text-center">
+                <p className="text-lg font-bold">{totalUsers}</p>
+                <p className="text-[10px] text-muted-foreground">Pengguna</p>
               </CardContent>
             </Card>
             <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                    <Users className="w-5 h-5 text-blue-500" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{totalUsers}</p>
-                    <p className="text-xs text-muted-foreground">Total Pengguna</p>
-                  </div>
-                </div>
+              <CardContent className="p-3 text-center">
+                <p className="text-lg font-bold">{stats.totalTeams}</p>
+                <p className="text-[10px] text-muted-foreground">Tim</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-3 text-center">
+                <p className="text-lg font-bold">{stats.totalTestResults}</p>
+                <p className="text-[10px] text-muted-foreground">Hasil Tes</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-3 text-center">
+                <p className="text-lg font-bold">{totalCount}</p>
+                <p className="text-[10px] text-muted-foreground">Pesan</p>
               </CardContent>
             </Card>
           </div>
@@ -387,7 +488,7 @@ export default function AdminDashboard() {
               <CardContent className="p-3">
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-orange-500" />
-                  <span className="text-sm font-medium">{unreadCount} belum dibaca</span>
+                  <span className="text-sm font-medium">{unreadCount} pesan belum dibaca</span>
                 </div>
               </CardContent>
             </Card>
@@ -395,7 +496,7 @@ export default function AdminDashboard() {
               <CardContent className="p-3">
                 <div className="flex items-center gap-2">
                   <Crown className="w-4 h-4 text-red-500" />
-                  <span className="text-sm font-medium">{adminCount} admin</span>
+                  <span className="text-sm font-medium">{adminCount} admin aktif</span>
                 </div>
               </CardContent>
             </Card>
