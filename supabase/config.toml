@@ -2,3 +2,6 @@ project_id = "trmkvmtzqvvwnaqlamfg"
 
 [functions.analyze-biomotor]
 verify_jwt = false
+
+[functions.notify-admin-contact]
+verify_jwt = false

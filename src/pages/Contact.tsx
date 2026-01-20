@@ -69,6 +69,21 @@ export default function Contact() {
 
       if (error) throw error;
 
+      // Send email notification to admin
+      try {
+        await supabase.functions.invoke('notify-admin-contact', {
+          body: {
+            name: result.data.name,
+            email: result.data.email,
+            subject: result.data.subject || null,
+            message: result.data.message
+          }
+        });
+      } catch (emailError) {
+        console.error("Failed to send email notification:", emailError);
+        // Don't throw - message was saved, just notification failed
+      }
+
       setIsSuccess(true);
       toast.success("Pesan berhasil dikirim!");
       setFormData({ name: "", email: "", subject: "", message: "" });
