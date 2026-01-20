@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   ArrowLeft, Mail, MessageSquare, Users, Shield, Clock, 
-  CheckCircle, AlertCircle, Trash2, Eye, Loader2, RefreshCw 
+  CheckCircle, AlertCircle, Trash2, Eye, Loader2, RefreshCw,
+  UserPlus, Crown, UserCheck, UserX
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,6 +34,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ContactMessage {
   id: string;
@@ -44,15 +52,26 @@ interface ContactMessage {
   created_at: string;
 }
 
+interface UserWithRole {
+  id: string;
+  email: string;
+  created_at: string;
+  role: 'admin' | 'moderator' | 'user' | null;
+  full_name: string | null;
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [users, setUsers] = useState<UserWithRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingRole, setCheckingRole] = useState(true);
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [updatingRole, setUpdatingRole] = useState<string | null>(null);
 
   // Check if user is admin
   useEffect(() => {
@@ -111,9 +130,57 @@ export default function AdminDashboard() {
     }
   };
 
+  // Fetch users with their roles
+  const fetchUsers = async () => {
+    if (!isAdmin) return;
+    
+    setLoadingUsers(true);
+    try {
+      // Fetch profiles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, created_at');
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        toast.error('Gagal memuat data pengguna');
+        setLoadingUsers(false);
+        return;
+      }
+
+      // Fetch all user roles
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      if (rolesError) {
+        console.error('Error fetching roles:', rolesError);
+      }
+
+      // Combine profiles with roles
+      const usersWithRoles: UserWithRole[] = (profiles || []).map(profile => {
+        const userRole = roles?.find(r => r.user_id === profile.id);
+        return {
+          id: profile.id,
+          email: '', // We don't have direct access to auth.users
+          created_at: profile.created_at,
+          role: userRole?.role || null,
+          full_name: profile.full_name
+        };
+      });
+
+      setUsers(usersWithRoles);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
   useEffect(() => {
     if (isAdmin) {
       fetchMessages();
+      fetchUsers();
     }
   }, [isAdmin]);
 
@@ -128,15 +195,84 @@ export default function AdminDashboard() {
   };
 
   const markAsRead = async (messageId: string) => {
-    // Note: This would require UPDATE policy on contact_messages for admins
-    // For now, we'll update locally only
+    // Update locally only since we don't have UPDATE policy for regular read
     setMessages(prev => 
       prev.map(m => m.id === messageId ? { ...m, is_read: true } : m)
     );
   };
 
+  const handleRoleChange = async (userId: string, newRole: 'admin' | 'moderator' | 'user' | 'none') => {
+    if (userId === user?.id) {
+      toast.error('Anda tidak dapat mengubah role Anda sendiri');
+      return;
+    }
+
+    setUpdatingRole(userId);
+    try {
+      if (newRole === 'none') {
+        // Remove all roles for this user
+        const { error } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', userId);
+
+        if (error) throw error;
+        
+        setUsers(prev => 
+          prev.map(u => u.id === userId ? { ...u, role: null } : u)
+        );
+        toast.success('Role berhasil dihapus');
+      } else {
+        // Check if user already has a role
+        const existingRole = users.find(u => u.id === userId)?.role;
+
+        if (existingRole) {
+          // Update existing role
+          const { error } = await supabase
+            .from('user_roles')
+            .update({ role: newRole })
+            .eq('user_id', userId);
+
+          if (error) throw error;
+        } else {
+          // Insert new role
+          const { error } = await supabase
+            .from('user_roles')
+            .insert({ user_id: userId, role: newRole });
+
+          if (error) throw error;
+        }
+
+        setUsers(prev => 
+          prev.map(u => u.id === userId ? { ...u, role: newRole } : u)
+        );
+        toast.success(`Role berhasil diubah menjadi ${newRole}`);
+      }
+    } catch (error: any) {
+      console.error('Error updating role:', error);
+      toast.error(error.message || 'Gagal mengubah role');
+    } finally {
+      setUpdatingRole(null);
+    }
+  };
+
+  const getRoleBadge = (role: string | null) => {
+    switch (role) {
+      case 'admin':
+        return <Badge className="bg-red-500 hover:bg-red-600"><Crown className="w-3 h-3 mr-1" />Admin</Badge>;
+      case 'moderator':
+        return <Badge className="bg-blue-500 hover:bg-blue-600"><Shield className="w-3 h-3 mr-1" />Moderator</Badge>;
+      case 'user':
+        return <Badge variant="secondary"><UserCheck className="w-3 h-3 mr-1" />User</Badge>;
+      default:
+        return <Badge variant="outline" className="text-muted-foreground"><UserX className="w-3 h-3 mr-1" />Belum ada role</Badge>;
+    }
+  };
+
   const unreadCount = messages.filter(m => !m.is_read).length;
   const totalCount = messages.length;
+  const adminCount = users.filter(u => u.role === 'admin').length;
+  const totalUsers = users.length;
 
   if (checkingRole) {
     return (
@@ -233,13 +369,33 @@ export default function AdminDashboard() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-orange-500" />
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-blue-500" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">{unreadCount}</p>
-                    <p className="text-xs text-muted-foreground">Belum Dibaca</p>
+                    <p className="text-2xl font-bold">{totalUsers}</p>
+                    <p className="text-xs text-muted-foreground">Total Pengguna</p>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sub Stats */}
+          <div className="grid grid-cols-2 gap-3">
+            <Card className="border-orange-500/20">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-orange-500" />
+                  <span className="text-sm font-medium">{unreadCount} belum dibaca</span>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-red-500/20">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2">
+                  <Crown className="w-4 h-4 text-red-500" />
+                  <span className="text-sm font-medium">{adminCount} admin</span>
                 </div>
               </CardContent>
             </Card>
@@ -317,13 +473,103 @@ export default function AdminDashboard() {
               )}
             </TabsContent>
 
-            <TabsContent value="users" className="mt-4">
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground">Manajemen pengguna akan tersedia segera</p>
-                </CardContent>
-              </Card>
+            <TabsContent value="users" className="mt-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">Manajemen Pengguna</h3>
+                <Button variant="outline" size="sm" onClick={fetchUsers} disabled={loadingUsers}>
+                  <RefreshCw className={`w-4 h-4 mr-2 ${loadingUsers ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </div>
+
+              {loadingUsers ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : users.length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground">Belum ada pengguna terdaftar</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-2">
+                  {users.map((u) => (
+                    <Card key={u.id} className={u.id === user?.id ? 'border-primary/50' : ''}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                              <Users className="w-5 h-5 text-primary" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium truncate">
+                                  {u.full_name || 'Pengguna'}
+                                </p>
+                                {u.id === user?.id && (
+                                  <Badge variant="outline" className="text-[10px]">Anda</Badge>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                Bergabung {format(new Date(u.created_at), 'dd MMM yyyy', { locale: idLocale })}
+                              </p>
+                              <div className="mt-1">
+                                {getRoleBadge(u.role)}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {u.id !== user?.id && (
+                            <div className="shrink-0">
+                              <Select
+                                value={u.role || 'none'}
+                                onValueChange={(value) => handleRoleChange(u.id, value as any)}
+                                disabled={updatingRole === u.id}
+                              >
+                                <SelectTrigger className="w-32 h-8">
+                                  {updatingRole === u.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <SelectValue placeholder="Pilih Role" />
+                                  )}
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="admin">
+                                    <div className="flex items-center gap-2">
+                                      <Crown className="w-3 h-3 text-red-500" />
+                                      Admin
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="moderator">
+                                    <div className="flex items-center gap-2">
+                                      <Shield className="w-3 h-3 text-blue-500" />
+                                      Moderator
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="user">
+                                    <div className="flex items-center gap-2">
+                                      <UserCheck className="w-3 h-3" />
+                                      User
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="none">
+                                    <div className="flex items-center gap-2">
+                                      <UserX className="w-3 h-3 text-muted-foreground" />
+                                      Hapus Role
+                                    </div>
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>
