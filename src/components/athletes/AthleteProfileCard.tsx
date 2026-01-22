@@ -31,7 +31,10 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
     (365.25 * 24 * 60 * 60 * 1000)
   );
 
-  const athleteUrl = `${baseUrl}/athletes/${athlete.id}`;
+  // Public profile URL (accessible without login)
+  const publicProfileUrl = `${baseUrl}/p/${athlete.id}`;
+  // Short ID for barcode
+  const shortId = athlete.id.slice(0, 8).toUpperCase();
 
   const handlePrint = () => {
     setIsPrinting(true);
@@ -48,7 +51,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
     const safeSport = escapeHtml(athlete.sport);
     const safeTeam = escapeHtml(athlete.team);
     const safePhoto = escapeHtml(athlete.photo);
-    const safeAthleteUrl = encodeURI(athleteUrl);
+    const safePublicUrl = encodeURI(publicProfileUrl);
 
     const cardHtml = `
       <!DOCTYPE html>
@@ -119,10 +122,21 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
             font-size: 32px;
             color: #e94560;
           }
+          .codes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+          }
           .qr-container {
             background: white;
-            padding: 8px;
-            border-radius: 8px;
+            padding: 6px;
+            border-radius: 6px;
+          }
+          .barcode-container {
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
           }
           .info-section {
             flex: 1;
@@ -192,8 +206,13 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
                 ? `<img src="${safePhoto}" alt="${safeName}" class="photo" />`
                 : `<div class="photo">${safeName.charAt(0)}</div>`
               }
-              <div class="qr-container">
-                <svg id="qr-placeholder" width="70" height="70"></svg>
+              <div class="codes-container">
+                <div class="qr-container">
+                  <svg id="qr-placeholder" width="60" height="60"></svg>
+                </div>
+                <div class="barcode-container">
+                  <svg id="barcode-placeholder"></svg>
+                </div>
               </div>
             </div>
             <div class="info-section">
@@ -227,22 +246,39 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
                 </div>
                 ` : ''}
               </div>
-              <div class="id-badge">ID: ${escapeHtml(athlete.id.slice(0, 8).toUpperCase())}</div>
+              <div class="id-badge">ID: ${shortId}</div>
             </div>
           </div>
           <div class="footer">
-            Scan QR untuk akses profil digital • ${new Date().getFullYear()} Hirocross
+            Scan QR/Barcode untuk akses profil & hasil tes • ${new Date().getFullYear()} Hirocross
           </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
         <script>
+          // Generate QR Code
           const canvas = document.createElement('canvas');
-          QRCode.toCanvas(canvas, '${safeAthleteUrl}', { width: 70, margin: 0 }, function(error) {
+          QRCode.toCanvas(canvas, '${safePublicUrl}', { width: 60, margin: 0 }, function(error) {
             if (!error) {
               const placeholder = document.getElementById('qr-placeholder');
               placeholder.parentNode.replaceChild(canvas, placeholder);
             }
           });
+          
+          // Generate Barcode
+          try {
+            JsBarcode("#barcode-placeholder", "${shortId}", {
+              format: "CODE128",
+              width: 1.5,
+              height: 25,
+              displayValue: true,
+              fontSize: 10,
+              margin: 0
+            });
+          } catch(e) {
+            console.error('Barcode error:', e);
+          }
+          
           setTimeout(() => window.print(), 500);
         </script>
       </body>
@@ -291,7 +327,10 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
                 </div>
               )}
               <div className="bg-white p-2 rounded">
-                <QRCodeSVG value={athleteUrl} size={70} />
+                <QRCodeSVG value={publicProfileUrl} size={60} />
+              </div>
+              <div className="text-[10px] text-muted-foreground font-mono">
+                {shortId}
               </div>
             </div>
             <div className="flex-1">

@@ -27,6 +27,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import PublicAthleteProfile from "./pages/PublicAthleteProfile";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
               <Route path="/tutorial" element={<Tutorial />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/p/:id" element={<PublicAthleteProfile />} />
               <Route path="/admin" element={<AdminDashboard />} />
               
               {/* Protected routes */}
