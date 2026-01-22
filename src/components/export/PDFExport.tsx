@@ -338,8 +338,8 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
             </div>
             
             {/* BMI Section with Speedometer - Enhanced */}
-            {bmi && (
-              <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center">
+              {bmi ? (
                 <div className="bg-white rounded-xl p-4 shadow-md border-2" style={{ borderColor: bmi < 18.5 ? '#3B82F6' : bmi < 25 ? '#22C55E' : bmi < 30 ? '#F59E0B' : '#EF4444' }}>
                   <p className="text-xs text-gray-600 font-medium text-center mb-2">INDEKS MASSA TUBUH (IMT)</p>
                   <BMISpeedometer bmi={bmi} size={110} />
@@ -356,8 +356,15 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="bg-gray-100 rounded-xl p-4 shadow-md border-2 border-gray-300">
+                  <p className="text-xs text-gray-600 font-medium text-center mb-2">INDEKS MASSA TUBUH (IMT)</p>
+                  <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center mx-auto">
+                    <span className="text-gray-400 text-xs text-center px-2">Data TB/BB tidak tersedia</span>
+                  </div>
+                </div>
+              )}
+            </div>
             
             {/* Overall Score - Enhanced */}
             <div className="flex flex-col items-center">
