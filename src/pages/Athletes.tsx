@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { AthleteCard } from '@/components/athletes/AthleteCard';
 import { AddAthleteSheet } from '@/components/athletes/AddAthleteSheet';
+import { BulkUpdateSheet } from '@/components/athletes/BulkUpdateSheet';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { CSVImportDialog } from '@/components/import/CSVImportDialog';
 import { exportAthletesToCSV } from '@/utils/csvExport';
-import { Search, Plus, Users, Download, Upload, Loader2, Filter, X } from 'lucide-react';
+import { Search, Plus, Users, Download, Upload, Loader2, Filter, X, Scale } from 'lucide-react';
 import { toast } from 'sonner';
 import { Athlete } from '@/types/athlete';
 
@@ -137,8 +138,8 @@ export default function Athletes() {
           )}
         </div>
 
-        {/* Import/Export Buttons */}
-        <div className="flex gap-2">
+        {/* Import/Export/Bulk Update Buttons */}
+        <div className="flex gap-2 flex-wrap">
           <CSVImportDialog 
             type="athletes" 
             onImportAthletes={handleImportAthletes}
@@ -153,6 +154,16 @@ export default function Athletes() {
             <Download className="w-4 h-4" />
             Export
           </Button>
+          <BulkUpdateSheet
+            athletes={athletes}
+            onSuccess={refreshData}
+            trigger={
+              <Button variant="outline" size="sm" className="gap-2">
+                <Scale className="w-4 h-4" />
+                Bulk TB/BB
+              </Button>
+            }
+          />
         </div>
 
         {/* Results Count */}
