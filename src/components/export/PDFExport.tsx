@@ -242,11 +242,17 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
         </Button>
       </div>
 
-      {/* Hidden Print Content */}
+      {/* Hidden Print Content - A4 size: 210mm x 297mm = 794px width at 96dpi */}
       <div 
         ref={printRef} 
         className="fixed left-[-9999px] top-0 bg-white text-black"
-        style={{ width: '794px', padding: '40px', fontFamily: 'Arial, sans-serif' }}
+        style={{ 
+          width: '210mm', 
+          minHeight: '297mm',
+          padding: '15mm 12mm', 
+          fontFamily: 'Arial, sans-serif',
+          boxSizing: 'border-box',
+        }}
       >
         {/* Header - Different based on version */}
         {selectedVersion === 'vocafit' ? (
@@ -271,115 +277,110 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
           </div>
         )}
 
-        {/* Athlete Info */}
+        {/* Athlete Info - Optimized for A4 */}
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <div className="flex justify-between items-start gap-4">
-            {/* Profile Photo - Enhanced */}
-            <div className="flex-shrink-0">
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+            {/* Profile Photo */}
+            <div style={{ flexShrink: 0 }}>
               {athlete.photo ? (
-                <div className="w-36 h-44 rounded-xl overflow-hidden shadow-lg" style={{ border: '4px solid #e5e7eb' }}>
+                <div style={{ width: '100px', height: '120px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', border: '3px solid #e5e7eb' }}>
                   <img 
                     src={athlete.photo} 
                     alt={athlete.name} 
-                    className="w-full h-full object-cover"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     crossOrigin="anonymous"
-                    style={{ imageRendering: 'auto' }}
                   />
                 </div>
               ) : (
-                <div className="w-36 h-44 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center shadow-lg" style={{ border: '4px solid #e5e7eb' }}>
-                  <svg className="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                <div style={{ width: '100px', height: '120px', borderRadius: '12px', background: 'linear-gradient(to bottom right, #f3f4f6, #e5e7eb)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', border: '3px solid #e5e7eb' }}>
+                  <svg style={{ width: '40px', height: '40px', color: '#9ca3af' }} fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                   </svg>
-                  <p className="text-xs text-gray-400 mt-1">Foto Atlet</p>
+                  <p style={{ fontSize: '9px', color: '#9ca3af', marginTop: '4px' }}>Foto Atlet</p>
                 </div>
               )}
             </div>
             
             {/* Athlete Details */}
-            <div className="flex-1">
-              <h2 className="text-lg font-bold text-gray-900 mb-3">Profil Atlet</h2>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+            <div style={{ flex: 1, minWidth: '180px' }}>
+              <h2 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111827', marginBottom: '10px' }}>Profil Atlet</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 12px', fontSize: '11px' }}>
                 <div>
-                  <p className="text-gray-500 text-xs">Nama</p>
-                  <p className="font-semibold" style={{ wordBreak: 'break-word' }}>{athlete.name}</p>
+                  <p style={{ color: '#6b7280', fontSize: '9px', marginBottom: '2px' }}>Nama</p>
+                  <p style={{ fontWeight: '600', wordBreak: 'break-word', lineHeight: '1.3' }}>{athlete.name}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500 text-xs">Usia</p>
-                  <p className="font-semibold">{age} tahun</p>
+                  <p style={{ color: '#6b7280', fontSize: '9px', marginBottom: '2px' }}>Usia</p>
+                  <p style={{ fontWeight: '600' }}>{age} tahun</p>
                 </div>
                 <div>
-                  <p className="text-gray-500 text-xs">Jenis Kelamin</p>
-                  <p className="font-semibold">{athlete.gender === 'male' ? 'Laki-laki' : 'Perempuan'}</p>
+                  <p style={{ color: '#6b7280', fontSize: '9px', marginBottom: '2px' }}>Jenis Kelamin</p>
+                  <p style={{ fontWeight: '600' }}>{athlete.gender === 'male' ? 'Laki-laki' : 'Perempuan'}</p>
                 </div>
-                <div style={{ gridColumn: 'span 2' }}>
-                  <p className="text-gray-500 text-xs">Cabang Olahraga</p>
-                  <p className="font-semibold" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>{athlete.sport}</p>
+                <div>
+                  <p style={{ color: '#6b7280', fontSize: '9px', marginBottom: '2px' }}>Cabang Olahraga</p>
+                  <p style={{ fontWeight: '600', wordBreak: 'break-word', lineHeight: '1.3', maxWidth: '150px' }}>{athlete.sport}</p>
                 </div>
                 {athlete.team && (
                   <div style={{ gridColumn: 'span 2' }}>
-                    <p className="text-gray-500 text-xs">Tim/Klub</p>
-                    <p className="font-semibold" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>{athlete.team}</p>
+                    <p style={{ color: '#6b7280', fontSize: '9px', marginBottom: '2px' }}>Tim/Klub</p>
+                    <p style={{ fontWeight: '600', wordBreak: 'break-word', lineHeight: '1.3' }}>{athlete.team}</p>
                   </div>
                 )}
-                {athlete.height && (
-                  <div>
-                    <p className="text-gray-500 text-xs">Tinggi Badan</p>
-                    <p className="font-semibold">{athlete.height} cm</p>
-                  </div>
-                )}
-                {athlete.weight && (
-                  <div>
-                    <p className="text-gray-500 text-xs">Berat Badan</p>
-                    <p className="font-semibold">{athlete.weight} kg</p>
-                  </div>
+                {athlete.height && athlete.weight && (
+                  <>
+                    <div>
+                      <p style={{ color: '#6b7280', fontSize: '9px', marginBottom: '2px' }}>Tinggi Badan</p>
+                      <p style={{ fontWeight: '600' }}>{athlete.height} cm</p>
+                    </div>
+                    <div>
+                      <p style={{ color: '#6b7280', fontSize: '9px', marginBottom: '2px' }}>Berat Badan</p>
+                      <p style={{ fontWeight: '600' }}>{athlete.weight} kg</p>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
             
-            {/* BMI Section with Speedometer - Enhanced */}
-            <div className="flex flex-col items-center">
+            {/* BMI Section - Compact */}
+            <div style={{ flexShrink: 0 }}>
               {bmi ? (
-                <div className="bg-white rounded-xl p-4 shadow-md border-2" style={{ borderColor: bmi < 18.5 ? '#3B82F6' : bmi < 25 ? '#22C55E' : bmi < 30 ? '#F59E0B' : '#EF4444' }}>
-                  <p className="text-xs text-gray-600 font-medium text-center mb-2">INDEKS MASSA TUBUH (IMT)</p>
-                  <BMISpeedometer bmi={bmi} size={110} />
-                  <div className="mt-2 pt-2 border-t border-gray-100">
-                    <div className="grid grid-cols-2 gap-2 text-center text-xs">
+                <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', border: `2px solid ${bmi < 18.5 ? '#3B82F6' : bmi < 25 ? '#22C55E' : bmi < 30 ? '#F59E0B' : '#EF4444'}`, textAlign: 'center' }}>
+                  <p style={{ fontSize: '9px', color: '#6b7280', fontWeight: '600', marginBottom: '6px' }}>IMT</p>
+                  <BMISpeedometer bmi={bmi} size={80} />
+                  <div style={{ marginTop: '6px', paddingTop: '6px', borderTop: '1px solid #e5e7eb' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', fontSize: '9px', textAlign: 'center' }}>
                       <div>
-                        <p className="text-gray-500">BB</p>
-                        <p className="font-bold">{athlete.weight} kg</p>
+                        <p style={{ color: '#6b7280' }}>BB</p>
+                        <p style={{ fontWeight: 'bold' }}>{athlete.weight} kg</p>
                       </div>
                       <div>
-                        <p className="text-gray-500">TB</p>
-                        <p className="font-bold">{athlete.height} cm</p>
+                        <p style={{ color: '#6b7280' }}>TB</p>
+                        <p style={{ fontWeight: 'bold' }}>{athlete.height} cm</p>
                       </div>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="bg-gray-100 rounded-xl p-4 shadow-md border-2 border-gray-300">
-                  <p className="text-xs text-gray-600 font-medium text-center mb-2">INDEKS MASSA TUBUH (IMT)</p>
-                  <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center mx-auto">
-                    <span className="text-gray-400 text-xs text-center px-2">Data TB/BB tidak tersedia</span>
+                <div style={{ backgroundColor: '#f3f4f6', borderRadius: '12px', padding: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', border: '2px solid #d1d5db', textAlign: 'center', width: '100px' }}>
+                  <p style={{ fontSize: '9px', color: '#6b7280', fontWeight: '600', marginBottom: '6px' }}>IMT</p>
+                  <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                    <span style={{ color: '#9ca3af', fontSize: '8px', textAlign: 'center', padding: '4px' }}>Data TB/BB tidak tersedia</span>
                   </div>
                 </div>
               )}
             </div>
             
-            {/* Overall Score - Enhanced */}
-            <div className="flex flex-col items-center">
-              <div className="bg-white rounded-xl p-4 shadow-md border-2" style={{ borderColor: overallScore >= 4 ? '#22C55E' : overallScore >= 3 ? '#F59E0B' : overallScore >= 2 ? '#F97316' : '#EF4444' }}>
-                <p className="text-xs text-gray-600 font-medium text-center mb-2">SKOR KESELURUHAN</p>
-                <div className="flex flex-col items-center">
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ 
-                    backgroundColor: getScoreColor(overallScore)
-                  }}>
-                    <div className="text-center">
-                      <span className="text-2xl font-bold text-white">{overallPercentage.toFixed(0)}%</span>
-                    </div>
+            {/* Overall Score - Compact */}
+            <div style={{ flexShrink: 0 }}>
+              <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', border: `2px solid ${overallScore >= 4 ? '#22C55E' : overallScore >= 3 ? '#F59E0B' : overallScore >= 2 ? '#F97316' : '#EF4444'}`, textAlign: 'center' }}>
+                <p style={{ fontSize: '9px', color: '#6b7280', fontWeight: '600', marginBottom: '6px' }}>SKOR TOTAL</p>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: getScoreColor(overallScore) }}>
+                    <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'white' }}>{overallPercentage.toFixed(0)}%</span>
                   </div>
-                  <div className="mt-2 px-3 py-1 rounded-full" style={{ backgroundColor: getScoreBgColor(overallScore) }}>
-                    <p className="text-sm font-bold" style={{ color: getScoreColor(overallScore) }}>
+                  <div style={{ marginTop: '6px', padding: '3px 8px', borderRadius: '9999px', backgroundColor: getScoreBgColor(overallScore) }}>
+                    <p style={{ fontSize: '10px', fontWeight: 'bold', color: getScoreColor(overallScore) }}>
                       {getScoreLabel(overallScore)}
                     </p>
                   </div>
