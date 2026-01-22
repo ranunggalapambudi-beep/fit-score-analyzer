@@ -270,55 +270,91 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
         </div>
       </div>
       
-      <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
       <script>
-        function waitForLibraries() {
-          return new Promise((resolve) => {
-            const check = () => {
-              if (typeof QRCode !== 'undefined' && typeof JsBarcode !== 'undefined') {
-                resolve();
-              } else {
-                setTimeout(check, 50);
-              }
+        var librariesLoaded = { qr: false, barcode: false };
+        
+        function loadScript(src, key) {
+          return new Promise((resolve, reject) => {
+            var script = document.createElement('script');
+            script.src = src;
+            script.onload = function() { 
+              librariesLoaded[key] = true; 
+              resolve(); 
             };
-            check();
+            script.onerror = reject;
+            document.head.appendChild(script);
           });
         }
         
-        async function generateCodes() {
-          await waitForLibraries();
+        async function init() {
+          // Load scripts sequentially to avoid race conditions
+          await loadScript('https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js', 'qr');
+          await loadScript('https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js', 'barcode');
+          
+          // Double-check libraries are available
+          var attempts = 0;
+          while ((typeof QRCode === 'undefined' || typeof JsBarcode === 'undefined') && attempts < 50) {
+            await new Promise(r => setTimeout(r, 100));
+            attempts++;
+          }
           
           // Generate QR Code
           try {
-            const qrCanvas = document.getElementById('qr-code');
-            await QRCode.toCanvas(qrCanvas, '${safePublicUrl}', { 
-              width: 80, 
-              margin: 0,
-              color: { dark: '#000000', light: '#ffffff' }
-            });
+            var qrCanvas = document.getElementById('qr-code');
+            if (qrCanvas) {
+              await QRCode.toCanvas(qrCanvas, '${safePublicUrl}', { 
+                width: 80, 
+                margin: 0,
+                color: { dark: '#000000', light: '#ffffff' }
+              });
+            }
           } catch(e) {
             console.error('QR error:', e);
           }
           
           // Generate Barcode
           try {
-            JsBarcode("#barcode", "${shortId}", {
-              format: "CODE128",
-              width: 1.2,
-              height: 30,
-              displayValue: false,
-              margin: 0
-            });
+            var barcodeEl = document.getElementById('barcode');
+            if (barcodeEl) {
+              JsBarcode(barcodeEl, "${shortId}", {
+                format: "CODE128",
+                width: 1.2,
+                height: 30,
+                displayValue: false,
+                margin: 0
+              });
+            }
           } catch(e) {
             console.error('Barcode error:', e);
           }
           
-          // Wait a bit then print
-          setTimeout(() => window.print(), 300);
+          // Wait for SVG to render, then print
+          await new Promise(r => setTimeout(r, 500));
+          
+          // Verify barcode was generated
+          var barcodeSvg = document.getElementById('barcode');
+          if (barcodeSvg && barcodeSvg.innerHTML.length > 50) {
+            window.print();
+          } else {
+            // Retry barcode generation
+            try {
+              JsBarcode("#barcode", "${shortId}", {
+                format: "CODE128",
+                width: 1.2,
+                height: 30,
+                displayValue: false,
+                margin: 0
+              });
+              await new Promise(r => setTimeout(r, 300));
+              window.print();
+            } catch(e) {
+              console.error('Barcode retry error:', e);
+              window.print();
+            }
+          }
         }
         
-        generateCodes();
+        init();
       </script>
     </body>
     </html>
@@ -542,56 +578,93 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
         </div>
       </div>
       
-      <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
       <script>
-        function waitForLibraries() {
-          return new Promise((resolve) => {
-            const check = () => {
-              if (typeof QRCode !== 'undefined' && typeof JsBarcode !== 'undefined') {
-                resolve();
-              } else {
-                setTimeout(check, 50);
-              }
+        var librariesLoaded = { qr: false, barcode: false };
+        
+        function loadScript(src, key) {
+          return new Promise((resolve, reject) => {
+            var script = document.createElement('script');
+            script.src = src;
+            script.onload = function() { 
+              librariesLoaded[key] = true; 
+              resolve(); 
             };
-            check();
+            script.onerror = reject;
+            document.head.appendChild(script);
           });
         }
         
-        async function generateCodes() {
-          await waitForLibraries();
+        async function init() {
+          // Load scripts sequentially to avoid race conditions
+          await loadScript('https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js', 'qr');
+          await loadScript('https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js', 'barcode');
+          
+          // Double-check libraries are available
+          var attempts = 0;
+          while ((typeof QRCode === 'undefined' || typeof JsBarcode === 'undefined') && attempts < 50) {
+            await new Promise(r => setTimeout(r, 100));
+            attempts++;
+          }
           
           // Generate QR Code
           try {
-            const qrCanvas = document.getElementById('qr-code');
-            await QRCode.toCanvas(qrCanvas, '${safePublicUrl}', { 
-              width: 60, 
-              margin: 0,
-              color: { dark: '#000000', light: '#ffffff' }
-            });
+            var qrCanvas = document.getElementById('qr-code');
+            if (qrCanvas) {
+              await QRCode.toCanvas(qrCanvas, '${safePublicUrl}', { 
+                width: 60, 
+                margin: 0,
+                color: { dark: '#000000', light: '#ffffff' }
+              });
+            }
           } catch(e) {
             console.error('QR error:', e);
           }
           
           // Generate Barcode
           try {
-            JsBarcode("#barcode", "${shortId}", {
-              format: "CODE128",
-              width: 1.5,
-              height: 25,
-              displayValue: true,
-              fontSize: 10,
-              margin: 0
-            });
+            var barcodeEl = document.getElementById('barcode');
+            if (barcodeEl) {
+              JsBarcode(barcodeEl, "${shortId}", {
+                format: "CODE128",
+                width: 1.5,
+                height: 25,
+                displayValue: true,
+                fontSize: 10,
+                margin: 0
+              });
+            }
           } catch(e) {
             console.error('Barcode error:', e);
           }
           
-          // Wait a bit then print
-          setTimeout(() => window.print(), 500);
+          // Wait for SVG to render, then print
+          await new Promise(r => setTimeout(r, 500));
+          
+          // Verify barcode was generated
+          var barcodeSvg = document.getElementById('barcode');
+          if (barcodeSvg && barcodeSvg.innerHTML.length > 50) {
+            window.print();
+          } else {
+            // Retry barcode generation
+            try {
+              JsBarcode("#barcode", "${shortId}", {
+                format: "CODE128",
+                width: 1.5,
+                height: 25,
+                displayValue: true,
+                fontSize: 10,
+                margin: 0
+              });
+              await new Promise(r => setTimeout(r, 300));
+              window.print();
+            } catch(e) {
+              console.error('Barcode retry error:', e);
+              window.print();
+            }
+          }
         }
         
-        generateCodes();
+        init();
       </script>
     </body>
     </html>
