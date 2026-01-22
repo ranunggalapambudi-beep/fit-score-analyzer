@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Printer, Loader2, Tag } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
+import { Printer, Loader2, Tag, Download } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
+import JsBarcode from 'jsbarcode';
 import { Athlete } from '@/types/athlete';
 import { toast } from 'sonner';
 import hirocrossLogo from '@/assets/hirocross-logo.png';
@@ -9,6 +10,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
@@ -30,7 +32,7 @@ interface AthleteProfileCardProps {
 
 export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }: AthleteProfileCardProps) {
   const [isPrinting, setIsPrinting] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const qrRef = useRef<HTMLCanvasElement>(null);
 
   const age = Math.floor(
     (new Date().getTime() - new Date(athlete.dateOfBirth).getTime()) /
@@ -60,9 +62,50 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
     });
   };
 
+  // Generate QR Code as base64 data URL
+  const generateQRCodeDataUrl = useCallback((): string => {
+    if (qrRef.current) {
+      return qrRef.current.toDataURL('image/png');
+    }
+    return '';
+  }, []);
+
+  // Generate Barcode as SVG string
+  const generateBarcodeSVG = useCallback((id: string): string => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    try {
+      JsBarcode(svg, id, {
+        format: 'CODE128',
+        width: 2,
+        height: 40,
+        displayValue: true,
+        fontSize: 12,
+        margin: 5,
+        background: '#ffffff',
+        lineColor: '#000000'
+      });
+      return new XMLSerializer().serializeToString(svg);
+    } catch (e) {
+      console.error('Barcode generation error:', e);
+      return '';
+    }
+  }, []);
+
+  // Generate Barcode as base64 data URL
+  const generateBarcodeDataUrl = useCallback((id: string): string => {
+    const svgString = generateBarcodeSVG(id);
+    if (!svgString) return '';
+    
+    const encoded = btoa(unescape(encodeURIComponent(svgString)));
+    return `data:image/svg+xml;base64,${encoded}`;
+  }, [generateBarcodeSVG]);
+
   const handlePrint = async (format: 'card' | 'sticker' = 'card') => {
     setIsPrinting(true);
     
+    // Wait a moment for QR code to render
+    await new Promise(r => setTimeout(r, 100));
+
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
       toast.error('Popup diblokir. Izinkan popup untuk mencetak.');
@@ -70,32 +113,255 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
       return;
     }
 
-    // Get logo as base64
+    // Get pre-generated assets
     const logoBase64 = await getLogoBase64();
+    const qrDataUrl = generateQRCodeDataUrl();
+    const barcodeDataUrl = generateBarcodeDataUrl(shortId);
 
     // Escape all user-controlled data to prevent XSS
     const safeName = escapeHtml(athlete.name);
     const safeSport = escapeHtml(athlete.sport);
     const safeTeam = escapeHtml(athlete.team);
     const safePhoto = escapeHtml(athlete.photo);
-    const safePublicUrl = encodeURI(publicProfileUrl);
 
     const cardHtml = format === 'sticker' 
-      ? generateStickerHtml(safeName, safeSport, safeTeam, safePhoto, safePublicUrl, shortId, logoBase64)
-      : generateCardHtml(safeName, safeSport, safeTeam, safePhoto, safePublicUrl, shortId, logoBase64, age, athlete);
+      ? generateStickerHtml(safeName, safeSport, safeTeam, safePhoto, qrDataUrl, barcodeDataUrl, shortId, logoBase64)
+      : generateCardHtml(safeName, safeSport, safeTeam, safePhoto, qrDataUrl, barcodeDataUrl, shortId, logoBase64, age, athlete);
 
     printWindow.document.write(cardHtml);
     printWindow.document.close();
     
+    // Wait for images to load then print
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+      }, 300);
+    };
+    
     setTimeout(() => setIsPrinting(false), 1000);
   };
+
+  const handleDownloadPDF = async (format: 'card' | 'sticker' = 'card') => {
+    setIsPrinting(true);
+    
+    try {
+      // Dynamically import jspdf and html2canvas
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas')
+      ]);
+
+      // Wait for QR code to render
+      await new Promise(r => setTimeout(r, 100));
+
+      // Get pre-generated assets
+      const logoBase64 = await getLogoBase64();
+      const qrDataUrl = generateQRCodeDataUrl();
+      const barcodeDataUrl = generateBarcodeDataUrl(shortId);
+
+      const safeName = escapeHtml(athlete.name);
+      const safeSport = escapeHtml(athlete.sport);
+      const safeTeam = escapeHtml(athlete.team);
+      const safePhoto = escapeHtml(athlete.photo);
+
+      // Create a temporary container
+      const container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      document.body.appendChild(container);
+
+      const cardHtml = format === 'sticker' 
+        ? generateStickerHtmlForPDF(safeName, safeSport, safeTeam, safePhoto, qrDataUrl, barcodeDataUrl, shortId, logoBase64)
+        : generateCardHtmlForPDF(safeName, safeSport, safeTeam, safePhoto, qrDataUrl, barcodeDataUrl, shortId, logoBase64, age, athlete);
+
+      container.innerHTML = cardHtml;
+
+      // Wait for images to load
+      await new Promise(r => setTimeout(r, 500));
+
+      const cardElement = container.querySelector('.card, .sticker') as HTMLElement;
+      if (!cardElement) {
+        throw new Error('Card element not found');
+      }
+
+      const canvas = await html2canvas(cardElement, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: format === 'sticker' ? 'landscape' : 'portrait',
+        unit: 'mm',
+        format: format === 'sticker' ? [85, 54] : [90, 130]
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Kartu-${athlete.name.replace(/\s+/g, '-')}.pdf`);
+
+      // Cleanup
+      document.body.removeChild(container);
+      toast.success('Kartu berhasil diunduh!');
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast.error('Gagal mengunduh kartu. Silakan coba lagi.');
+    }
+    
+    setIsPrinting(false);
+  };
+
+  const generateStickerHtmlForPDF = (
+    safeName: string, 
+    safeSport: string, 
+    safeTeam: string | undefined, 
+    safePhoto: string | undefined, 
+    qrDataUrl: string,
+    barcodeDataUrl: string,
+    shortId: string,
+    logoBase64: string
+  ) => `
+    <div class="sticker" style="
+      width: 320px;
+      height: 204px;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+    ">
+      <div style="
+        width: 100px;
+        background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      ">
+        ${logoBase64 ? `<img src="${logoBase64}" alt="Logo" style="width: 45px; height: 45px; object-fit: contain;" />` : ''}
+        <div style="color: white; font-size: 10px; font-weight: 700;">HIROCROSS</div>
+        ${safePhoto 
+          ? `<img src="${safePhoto}" alt="${safeName}" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; object-fit: cover;" />`
+          : `<div style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: bold;">${safeName.charAt(0)}</div>`
+        }
+      </div>
+      <div style="flex: 1; padding: 12px; display: flex; flex-direction: column;">
+        <div style="font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 2px;">${safeName}</div>
+        <div style="font-size: 11px; color: #e94560; font-weight: 600; margin-bottom: 6px;">${safeSport}</div>
+        ${safeTeam ? `<div style="font-size: 9px; color: #666;">Tim: ${safeTeam}</div>` : ''}
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: auto; padding-top: 8px; border-top: 1px solid #eee;">
+          <img src="${qrDataUrl}" alt="QR Code" style="width: 55px; height: 55px; border: 1px solid #ddd; border-radius: 4px;" />
+          <div style="flex: 1; text-align: center;">
+            <img src="${barcodeDataUrl}" alt="Barcode" style="max-width: 100%; height: 35px;" />
+            <div style="font-size: 8px; color: #999; margin-top: 2px;">ID: ${shortId}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const generateCardHtmlForPDF = (
+    safeName: string, 
+    safeSport: string, 
+    safeTeam: string | undefined, 
+    safePhoto: string | undefined, 
+    qrDataUrl: string,
+    barcodeDataUrl: string,
+    shortId: string,
+    logoBase64: string,
+    age: number,
+    athlete: Athlete
+  ) => `
+    <div class="card" style="
+      width: 340px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      border-radius: 16px;
+      overflow: hidden;
+      color: white;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+    ">
+      <div style="
+        background: linear-gradient(90deg, #e94560 0%, #ff6b6b 100%);
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      ">
+        ${logoBase64 ? `<img src="${logoBase64}" alt="Hirocross" style="width: 40px; height: 40px; object-fit: contain;" />` : ''}
+        <div>
+          <div style="font-size: 18px; font-weight: 700; letter-spacing: 1px;">HIROCROSS</div>
+          <div style="font-size: 10px; opacity: 0.9;">Athlete Identification Card</div>
+        </div>
+      </div>
+      <div style="padding: 24px 20px; display: flex; gap: 20px;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+          ${safePhoto 
+            ? `<img src="${safePhoto}" alt="${safeName}" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #e94560; object-fit: cover;" />`
+            : `<div style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #e94560; background: #2a2a4a; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #e94560;">${safeName.charAt(0)}</div>`
+          }
+          <div style="background: white; padding: 6px; border-radius: 6px;">
+            <img src="${qrDataUrl}" alt="QR Code" style="width: 60px; height: 60px; display: block;" />
+          </div>
+          <div style="background: white; padding: 4px 8px; border-radius: 4px;">
+            <img src="${barcodeDataUrl}" alt="Barcode" style="height: 30px;" />
+          </div>
+        </div>
+        <div style="flex: 1;">
+          <div style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">${safeName}</div>
+          <div style="font-size: 12px; color: #e94560; font-weight: 600; margin-bottom: 12px;">${safeSport}</div>
+          <div style="display: grid; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+              <span style="color: #888;">Usia</span>
+              <span style="font-weight: 600;">${age} tahun</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+              <span style="color: #888;">Gender</span>
+              <span style="font-weight: 600;">${athlete.gender === 'male' ? 'Laki-laki' : 'Perempuan'}</span>
+            </div>
+            ${safeTeam ? `
+            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+              <span style="color: #888;">Tim</span>
+              <span style="font-weight: 600;">${safeTeam}</span>
+            </div>
+            ` : ''}
+            ${athlete.height ? `
+            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+              <span style="color: #888;">Tinggi</span>
+              <span style="font-weight: 600;">${athlete.height} cm</span>
+            </div>
+            ` : ''}
+            ${athlete.weight ? `
+            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+              <span style="color: #888;">Berat</span>
+              <span style="font-weight: 600;">${athlete.weight} kg</span>
+            </div>
+            ` : ''}
+          </div>
+          <div style="background: #e94560; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; display: inline-block; margin-top: 8px;">ID: ${shortId}</div>
+        </div>
+      </div>
+      <div style="background: rgba(0,0,0,0.2); padding: 12px 20px; text-align: center; font-size: 10px; color: #888;">
+        Scan QR/Barcode untuk akses profil & hasil tes • ${new Date().getFullYear()} Hirocross
+      </div>
+    </div>
+  `;
 
   const generateStickerHtml = (
     safeName: string, 
     safeSport: string, 
     safeTeam: string | undefined, 
     safePhoto: string | undefined, 
-    safePublicUrl: string, 
+    qrDataUrl: string,
+    barcodeDataUrl: string,
     shortId: string,
     logoBase64: string
   ) => `
@@ -209,9 +475,10 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
           border: 1px solid #ddd;
           border-radius: 2px;
         }
-        .qr-box canvas {
-          width: 100% !important;
-          height: 100% !important;
+        .qr-box img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
         }
         .barcode-box {
           flex: 1;
@@ -219,9 +486,9 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
           flex-direction: column;
           align-items: center;
         }
-        .barcode-box svg {
+        .barcode-box img {
           max-width: 100%;
-          height: 12mm !important;
+          height: 12mm;
         }
         .id-text {
           font-size: 6pt;
@@ -260,101 +527,26 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
           ${safeTeam ? `<div class="info-row">Tim: ${safeTeam}</div>` : ''}
           <div class="codes-section">
             <div class="qr-box">
-              <canvas id="qr-code"></canvas>
+              <img src="${qrDataUrl}" alt="QR Code" />
             </div>
             <div class="barcode-box">
-              <svg id="barcode"></svg>
+              <img src="${barcodeDataUrl}" alt="Barcode" />
               <div class="id-text">ID: ${shortId}</div>
             </div>
           </div>
         </div>
       </div>
-      
       <script>
-        var librariesLoaded = { qr: false, barcode: false };
-        
-        function loadScript(src, key) {
-          return new Promise((resolve, reject) => {
-            var script = document.createElement('script');
-            script.src = src;
-            script.onload = function() { 
-              librariesLoaded[key] = true; 
-              resolve(); 
-            };
-            script.onerror = reject;
-            document.head.appendChild(script);
+        // Wait for all images to load
+        Promise.all(Array.from(document.images).map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve;
           });
-        }
-        
-        async function init() {
-          // Load scripts sequentially to avoid race conditions
-          await loadScript('https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js', 'qr');
-          await loadScript('https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js', 'barcode');
-          
-          // Double-check libraries are available
-          var attempts = 0;
-          while ((typeof QRCode === 'undefined' || typeof JsBarcode === 'undefined') && attempts < 50) {
-            await new Promise(r => setTimeout(r, 100));
-            attempts++;
-          }
-          
-          // Generate QR Code
-          try {
-            var qrCanvas = document.getElementById('qr-code');
-            if (qrCanvas) {
-              await QRCode.toCanvas(qrCanvas, '${safePublicUrl}', { 
-                width: 80, 
-                margin: 0,
-                color: { dark: '#000000', light: '#ffffff' }
-              });
-            }
-          } catch(e) {
-            console.error('QR error:', e);
-          }
-          
-          // Generate Barcode
-          try {
-            var barcodeEl = document.getElementById('barcode');
-            if (barcodeEl) {
-              JsBarcode(barcodeEl, "${shortId}", {
-                format: "CODE128",
-                width: 1.2,
-                height: 30,
-                displayValue: false,
-                margin: 0
-              });
-            }
-          } catch(e) {
-            console.error('Barcode error:', e);
-          }
-          
-          // Wait for SVG to render, then print
-          await new Promise(r => setTimeout(r, 500));
-          
-          // Verify barcode was generated
-          var barcodeSvg = document.getElementById('barcode');
-          if (barcodeSvg && barcodeSvg.innerHTML.length > 50) {
-            window.print();
-          } else {
-            // Retry barcode generation
-            try {
-              JsBarcode("#barcode", "${shortId}", {
-                format: "CODE128",
-                width: 1.2,
-                height: 30,
-                displayValue: false,
-                margin: 0
-              });
-              await new Promise(r => setTimeout(r, 300));
-              window.print();
-            } catch(e) {
-              console.error('Barcode retry error:', e);
-              window.print();
-            }
-          }
-        }
-        
-        init();
+        })).then(() => {
+          setTimeout(() => window.print(), 200);
+        });
       </script>
     </body>
     </html>
@@ -365,7 +557,8 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
     safeSport: string, 
     safeTeam: string | undefined, 
     safePhoto: string | undefined, 
-    safePublicUrl: string, 
+    qrDataUrl: string,
+    barcodeDataUrl: string,
     shortId: string,
     logoBase64: string,
     age: number,
@@ -424,7 +617,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
         }
         .photo {
           width: 80px;
@@ -433,34 +626,36 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
           border: 3px solid #e94560;
           object-fit: cover;
           background: #2a2a4a;
+        }
+        .photo-placeholder {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          border: 3px solid #e94560;
+          background: #2a2a4a;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 32px;
           color: #e94560;
         }
-        .codes-container {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          align-items: center;
-        }
         .qr-container {
           background: white;
           padding: 6px;
           border-radius: 6px;
         }
-        .qr-container canvas {
+        .qr-container img {
+          width: 60px;
+          height: 60px;
           display: block;
         }
         .barcode-container {
           background: white;
           padding: 4px 8px;
           border-radius: 4px;
-          min-height: 35px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        }
+        .barcode-container img {
+          height: 30px;
         }
         .info-section {
           flex: 1;
@@ -528,15 +723,13 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
           <div class="photo-section">
             ${safePhoto 
               ? `<img src="${safePhoto}" alt="${safeName}" class="photo" />`
-              : `<div class="photo">${safeName.charAt(0)}</div>`
+              : `<div class="photo-placeholder">${safeName.charAt(0)}</div>`
             }
-            <div class="codes-container">
-              <div class="qr-container">
-                <canvas id="qr-code" width="60" height="60"></canvas>
-              </div>
-              <div class="barcode-container">
-                <svg id="barcode"></svg>
-              </div>
+            <div class="qr-container">
+              <img src="${qrDataUrl}" alt="QR Code" />
+            </div>
+            <div class="barcode-container">
+              <img src="${barcodeDataUrl}" alt="Barcode" />
             </div>
           </div>
           <div class="info-section">
@@ -577,94 +770,17 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
           Scan QR/Barcode untuk akses profil & hasil tes • ${new Date().getFullYear()} Hirocross
         </div>
       </div>
-      
       <script>
-        var librariesLoaded = { qr: false, barcode: false };
-        
-        function loadScript(src, key) {
-          return new Promise((resolve, reject) => {
-            var script = document.createElement('script');
-            script.src = src;
-            script.onload = function() { 
-              librariesLoaded[key] = true; 
-              resolve(); 
-            };
-            script.onerror = reject;
-            document.head.appendChild(script);
+        // Wait for all images to load
+        Promise.all(Array.from(document.images).map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve;
           });
-        }
-        
-        async function init() {
-          // Load scripts sequentially to avoid race conditions
-          await loadScript('https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js', 'qr');
-          await loadScript('https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js', 'barcode');
-          
-          // Double-check libraries are available
-          var attempts = 0;
-          while ((typeof QRCode === 'undefined' || typeof JsBarcode === 'undefined') && attempts < 50) {
-            await new Promise(r => setTimeout(r, 100));
-            attempts++;
-          }
-          
-          // Generate QR Code
-          try {
-            var qrCanvas = document.getElementById('qr-code');
-            if (qrCanvas) {
-              await QRCode.toCanvas(qrCanvas, '${safePublicUrl}', { 
-                width: 60, 
-                margin: 0,
-                color: { dark: '#000000', light: '#ffffff' }
-              });
-            }
-          } catch(e) {
-            console.error('QR error:', e);
-          }
-          
-          // Generate Barcode
-          try {
-            var barcodeEl = document.getElementById('barcode');
-            if (barcodeEl) {
-              JsBarcode(barcodeEl, "${shortId}", {
-                format: "CODE128",
-                width: 1.5,
-                height: 25,
-                displayValue: true,
-                fontSize: 10,
-                margin: 0
-              });
-            }
-          } catch(e) {
-            console.error('Barcode error:', e);
-          }
-          
-          // Wait for SVG to render, then print
-          await new Promise(r => setTimeout(r, 500));
-          
-          // Verify barcode was generated
-          var barcodeSvg = document.getElementById('barcode');
-          if (barcodeSvg && barcodeSvg.innerHTML.length > 50) {
-            window.print();
-          } else {
-            // Retry barcode generation
-            try {
-              JsBarcode("#barcode", "${shortId}", {
-                format: "CODE128",
-                width: 1.5,
-                height: 25,
-                displayValue: true,
-                fontSize: 10,
-                margin: 0
-              });
-              await new Promise(r => setTimeout(r, 300));
-              window.print();
-            } catch(e) {
-              console.error('Barcode retry error:', e);
-              window.print();
-            }
-          }
-        }
-        
-        init();
+        })).then(() => {
+          setTimeout(() => window.print(), 200);
+        });
       </script>
     </body>
     </html>
@@ -672,6 +788,17 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
 
   return (
     <>
+      {/* Hidden QR Code Canvas for generating data URL */}
+      <div style={{ position: 'absolute', left: '-9999px' }}>
+        <QRCodeCanvas
+          ref={qrRef}
+          value={publicProfileUrl}
+          size={200}
+          level="M"
+          includeMargin={false}
+        />
+      </div>
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button 
@@ -687,56 +814,26 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
             Cetak Kartu
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="bg-popover">
           <DropdownMenuItem onClick={() => handlePrint('card')} className="gap-2">
             <Printer className="w-4 h-4" />
-            Kartu Penuh (350px)
+            Cetak Kartu Penuh
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => handlePrint('sticker')} className="gap-2">
             <Tag className="w-4 h-4" />
-            Stiker Label (85x54mm)
+            Cetak Stiker Label
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => handleDownloadPDF('card')} className="gap-2">
+            <Download className="w-4 h-4" />
+            Download PDF Kartu
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleDownloadPDF('sticker')} className="gap-2">
+            <Download className="w-4 h-4" />
+            Download PDF Stiker
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-
-      {/* Preview Card */}
-      <div ref={cardRef} className="hidden">
-        <div className="w-[350px] bg-gradient-to-br from-background to-muted rounded-xl overflow-hidden border">
-          <div className="bg-primary p-4 flex items-center gap-3">
-            <img src={hirocrossLogo} alt="Hirocross" className="w-10 h-10 object-contain" />
-            <div>
-              <h1 className="text-lg font-bold text-primary-foreground">HIROCROSS</h1>
-              <p className="text-xs text-primary-foreground/80">Athlete ID Card</p>
-            </div>
-          </div>
-          <div className="p-5 flex gap-4">
-            <div className="flex flex-col items-center gap-3">
-              {athlete.photo ? (
-                <img src={athlete.photo} alt={athlete.name} className="w-20 h-20 rounded-full border-2 border-primary object-cover" />
-              ) : (
-                <div className="w-20 h-20 rounded-full bg-muted border-2 border-primary flex items-center justify-center text-2xl font-bold">
-                  {athlete.name.charAt(0)}
-                </div>
-              )}
-              <div className="bg-white p-2 rounded">
-                <QRCodeSVG value={publicProfileUrl} size={60} />
-              </div>
-              <div className="text-[10px] text-muted-foreground font-mono">
-                {shortId}
-              </div>
-            </div>
-            <div className="flex-1">
-              <h2 className="text-xl font-bold">{athlete.name}</h2>
-              <p className="text-sm text-primary font-medium">{athlete.sport}</p>
-              <div className="mt-3 space-y-1 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Usia</span><span>{age} tahun</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Gender</span><span>{athlete.gender === 'male' ? 'L' : 'P'}</span></div>
-                {athlete.team && <div className="flex justify-between"><span className="text-muted-foreground">Tim</span><span>{athlete.team}</span></div>}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </>
   );
 }
