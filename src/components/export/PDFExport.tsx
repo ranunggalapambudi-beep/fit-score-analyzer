@@ -248,11 +248,11 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
 
         {/* Athlete Info */}
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <div className="flex justify-between items-start">
-            {/* Profile Photo */}
-            <div className="flex-shrink-0 mr-6">
+          <div className="flex justify-between items-start gap-4">
+            {/* Profile Photo - Enhanced */}
+            <div className="flex-shrink-0">
               {athlete.photo ? (
-                <div className="w-32 h-40 rounded-xl overflow-hidden border-3 border-gray-300 shadow-md" style={{ borderWidth: '3px' }}>
+                <div className="w-36 h-44 rounded-xl overflow-hidden shadow-lg" style={{ border: '4px solid #e5e7eb' }}>
                   <img 
                     src={athlete.photo} 
                     alt={athlete.name} 
@@ -262,7 +262,7 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
                   />
                 </div>
               ) : (
-                <div className="w-32 h-40 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 border-3 border-gray-300 flex flex-col items-center justify-center shadow-md" style={{ borderWidth: '3px' }}>
+                <div className="w-36 h-44 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center shadow-lg" style={{ border: '4px solid #e5e7eb' }}>
                   <svg className="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                   </svg>
@@ -271,73 +271,86 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
               )}
             </div>
             
+            {/* Athlete Details */}
             <div className="flex-1">
               <h2 className="text-lg font-bold text-gray-900 mb-3">Profil Atlet</h2>
-              <div className="grid grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                 <div>
-                  <p className="text-gray-500">Nama</p>
+                  <p className="text-gray-500 text-xs">Nama</p>
                   <p className="font-semibold">{athlete.name}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Usia</p>
+                  <p className="text-gray-500 text-xs">Usia</p>
                   <p className="font-semibold">{age} tahun</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Jenis Kelamin</p>
+                  <p className="text-gray-500 text-xs">Jenis Kelamin</p>
                   <p className="font-semibold">{athlete.gender === 'male' ? 'Laki-laki' : 'Perempuan'}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Cabang Olahraga</p>
+                  <p className="text-gray-500 text-xs">Cabang Olahraga</p>
                   <p className="font-semibold">{athlete.sport}</p>
                 </div>
                 {athlete.team && (
                   <div>
-                    <p className="text-gray-500">Tim/Klub</p>
+                    <p className="text-gray-500 text-xs">Tim/Klub</p>
                     <p className="font-semibold">{athlete.team}</p>
                   </div>
                 )}
                 {athlete.height && (
                   <div>
-                    <p className="text-gray-500">Tinggi Badan</p>
+                    <p className="text-gray-500 text-xs">Tinggi Badan</p>
                     <p className="font-semibold">{athlete.height} cm</p>
                   </div>
                 )}
                 {athlete.weight && (
                   <div>
-                    <p className="text-gray-500">Berat Badan</p>
+                    <p className="text-gray-500 text-xs">Berat Badan</p>
                     <p className="font-semibold">{athlete.weight} kg</p>
                   </div>
                 )}
               </div>
             </div>
             
-            {/* BMI Section with Speedometer */}
+            {/* BMI Section with Speedometer - Enhanced */}
             {bmi && (
-              <div className="flex flex-col items-center gap-2 ml-4">
-                <div className="text-center bg-white rounded-lg p-3 shadow-sm border border-gray-200">
-                  <p className="text-xs text-gray-500 mb-1">Indeks Massa Tubuh</p>
-                  <BMISpeedometer bmi={bmi} size={100} />
+              <div className="flex flex-col items-center">
+                <div className="bg-white rounded-xl p-4 shadow-md border-2" style={{ borderColor: bmi < 18.5 ? '#3B82F6' : bmi < 25 ? '#22C55E' : bmi < 30 ? '#F59E0B' : '#EF4444' }}>
+                  <p className="text-xs text-gray-600 font-medium text-center mb-2">INDEKS MASSA TUBUH (IMT)</p>
+                  <BMISpeedometer bmi={bmi} size={110} />
+                  <div className="mt-2 pt-2 border-t border-gray-100">
+                    <div className="grid grid-cols-2 gap-2 text-center text-xs">
+                      <div>
+                        <p className="text-gray-500">BB</p>
+                        <p className="font-bold">{athlete.weight} kg</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500">TB</p>
+                        <p className="font-bold">{athlete.height} cm</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
             
-            {/* Overall Score */}
-            <div className="text-center bg-white rounded-lg p-4 shadow-sm border border-gray-200 ml-4">
-              <p className="text-xs text-gray-500 mb-1">Skor Keseluruhan</p>
-              <div className={`text-3xl font-bold ${
-                overallScore >= 4 ? 'text-green-600' : 
-                overallScore >= 3 ? 'text-yellow-600' : 
-                overallScore >= 2 ? 'text-orange-600' : 'text-red-600'
-              }`}>
-                {overallScore.toFixed(1)}
+            {/* Overall Score - Enhanced */}
+            <div className="flex flex-col items-center">
+              <div className="bg-white rounded-xl p-4 shadow-md border-2" style={{ borderColor: overallScore >= 4 ? '#22C55E' : overallScore >= 3 ? '#F59E0B' : overallScore >= 2 ? '#F97316' : '#EF4444' }}>
+                <p className="text-xs text-gray-600 font-medium text-center mb-2">SKOR KESELURUHAN</p>
+                <div className="flex flex-col items-center">
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ 
+                    backgroundColor: overallScore >= 4 ? '#22C55E' : overallScore >= 3 ? '#F59E0B' : overallScore >= 2 ? '#F97316' : '#EF4444'
+                  }}>
+                    <span className="text-3xl font-bold text-white">{overallScore.toFixed(1)}</span>
+                  </div>
+                  <p className="text-sm font-bold mt-2" style={{
+                    color: overallScore >= 4 ? '#22C55E' : overallScore >= 3 ? '#F59E0B' : overallScore >= 2 ? '#F97316' : '#EF4444'
+                  }}>
+                    {getScoreLabel(overallScore)}
+                  </p>
+                </div>
               </div>
-              <p className={`text-xs font-medium ${
-                overallScore >= 4 ? 'text-green-600' : 
-                overallScore >= 3 ? 'text-yellow-600' : 
-                overallScore >= 2 ? 'text-orange-600' : 'text-red-600'
-              }`}>
-                {getScoreLabel(overallScore)}
-              </p>
             </div>
           </div>
         </div>
