@@ -302,7 +302,7 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                 <div>
                   <p className="text-gray-500 text-xs">Nama</p>
-                  <p className="font-semibold">{athlete.name}</p>
+                  <p className="font-semibold" style={{ wordBreak: 'break-word' }}>{athlete.name}</p>
                 </div>
                 <div>
                   <p className="text-gray-500 text-xs">Usia</p>
@@ -312,14 +312,14 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
                   <p className="text-gray-500 text-xs">Jenis Kelamin</p>
                   <p className="font-semibold">{athlete.gender === 'male' ? 'Laki-laki' : 'Perempuan'}</p>
                 </div>
-                <div>
+                <div style={{ gridColumn: 'span 2' }}>
                   <p className="text-gray-500 text-xs">Cabang Olahraga</p>
-                  <p className="font-semibold">{athlete.sport}</p>
+                  <p className="font-semibold" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>{athlete.sport}</p>
                 </div>
                 {athlete.team && (
-                  <div>
+                  <div style={{ gridColumn: 'span 2' }}>
                     <p className="text-gray-500 text-xs">Tim/Klub</p>
-                    <p className="font-semibold">{athlete.team}</p>
+                    <p className="font-semibold" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>{athlete.team}</p>
                   </div>
                 )}
                 {athlete.height && (
