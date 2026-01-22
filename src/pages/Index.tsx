@@ -6,7 +6,8 @@ import { biomotorCategories } from '@/data/biomotorTests';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useAuth } from '@/contexts/AuthContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Users, ClipboardList, TrendingUp, ArrowRight, Activity, Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2, BookOpen, LogIn, LogOut, Loader2, Info, Play } from 'lucide-react';
+import { Users, ClipboardList, TrendingUp, ArrowRight, Activity, Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2, BookOpen, LogIn, LogOut, Loader2, Info, Play, ScanLine } from 'lucide-react';
+import { BarcodeScanner } from '@/components/scanner/BarcodeScanner';
 import hirocrossLogo from '@/assets/hirocross-logo.png';
 import heroAthleteImage from '@/assets/hero-athlete-testing.jpg';
 import speedTestImage from '@/assets/speed-test.jpg';
@@ -68,7 +69,7 @@ export default function Index() {
             </p>
           </div>
           
-          <div className="flex gap-3 mt-8">
+          <div className="flex flex-wrap gap-3 mt-8">
             <Link to="/athletes">
               <Button size="lg" className="gap-2 glow-primary bg-primary text-white hover:bg-primary/90">
                 Mulai Pengukuran
@@ -80,6 +81,14 @@ export default function Index() {
                 Lihat Tes
               </Button>
             </Link>
+            <BarcodeScanner
+              trigger={
+                <Button variant="outline" size="lg" className="gap-2 border-white/30 text-white hover:bg-white/10">
+                  <ScanLine className="w-4 h-4" />
+                  Scan Atlet
+                </Button>
+              }
+            />
           </div>
         </div>
       </section>

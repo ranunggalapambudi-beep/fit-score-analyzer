@@ -1,11 +1,12 @@
 import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User } from 'lucide-react';
+import { User, LogOut, Settings, Shield, ScanLine } from 'lucide-react';
 import hirocrossLogo from '@/assets/hirocross-logo.png';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { BarcodeScanner } from '@/components/scanner/BarcodeScanner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +15,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, Shield } from 'lucide-react';
 
 interface HeaderProps {
   title?: string;
@@ -44,6 +44,13 @@ export function Header({ title = 'Hirocross', subtitle, children }: HeaderProps)
             <p className="text-xs text-muted-foreground">{subtitle}</p>
           )}
         </div>
+        <BarcodeScanner
+          trigger={
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <ScanLine className="w-5 h-5" />
+            </Button>
+          }
+        />
         <ThemeToggle />
         {user && (
           <DropdownMenu>
