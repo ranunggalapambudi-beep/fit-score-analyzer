@@ -81,20 +81,45 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
     return grouped;
   })();
 
-  // Calculate overall score
+  // Calculate overall score (1-5 scale)
   const overallScore = (() => {
     const scores = Object.values(categoryScores);
     if (scores.length === 0) return 0;
     return scores.reduce((a, b) => a + b, 0) / scores.length;
   })();
 
-  // Get score label
+  // Convert score to percentage (1-5 scale to 0-100%)
+  const scoreToPercentage = (score: number) => {
+    return ((score - 1) / 4) * 100;
+  };
+
+  const overallPercentage = scoreToPercentage(overallScore);
+
+  // Get score label based on norm (1-5 scale)
   const getScoreLabel = (score: number) => {
-    if (score >= 4.5) return 'Sangat Baik';
-    if (score >= 3.5) return 'Baik';
-    if (score >= 2.5) return 'Cukup';
-    if (score >= 1.5) return 'Kurang';
-    return 'Sangat Kurang';
+    if (score >= 5) return 'Baik Sekali';
+    if (score >= 4) return 'Baik';
+    if (score >= 3) return 'Cukup';
+    if (score >= 2) return 'Kurang';
+    return 'Kurang Sekali';
+  };
+
+  // Get color based on score
+  const getScoreColor = (score: number) => {
+    if (score >= 5) return '#059669'; // emerald-600
+    if (score >= 4) return '#22C55E'; // green-500
+    if (score >= 3) return '#F59E0B'; // amber-500
+    if (score >= 2) return '#F97316'; // orange-500
+    return '#EF4444'; // red-500
+  };
+
+  // Get background color based on score
+  const getScoreBgColor = (score: number) => {
+    if (score >= 5) return '#D1FAE5'; // emerald-100
+    if (score >= 4) return '#DCFCE7'; // green-100
+    if (score >= 3) return '#FEF3C7'; // amber-100
+    if (score >= 2) return '#FFEDD5'; // orange-100
+    return '#FEE2E2'; // red-100
   };
 
   const handleExport = async () => {
@@ -340,15 +365,17 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
                 <p className="text-xs text-gray-600 font-medium text-center mb-2">SKOR KESELURUHAN</p>
                 <div className="flex flex-col items-center">
                   <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ 
-                    backgroundColor: overallScore >= 4 ? '#22C55E' : overallScore >= 3 ? '#F59E0B' : overallScore >= 2 ? '#F97316' : '#EF4444'
+                    backgroundColor: getScoreColor(overallScore)
                   }}>
-                    <span className="text-3xl font-bold text-white">{overallScore.toFixed(1)}</span>
+                    <div className="text-center">
+                      <span className="text-2xl font-bold text-white">{overallPercentage.toFixed(0)}%</span>
+                    </div>
                   </div>
-                  <p className="text-sm font-bold mt-2" style={{
-                    color: overallScore >= 4 ? '#22C55E' : overallScore >= 3 ? '#F59E0B' : overallScore >= 2 ? '#F97316' : '#EF4444'
-                  }}>
-                    {getScoreLabel(overallScore)}
-                  </p>
+                  <div className="mt-2 px-3 py-1 rounded-full" style={{ backgroundColor: getScoreBgColor(overallScore) }}>
+                    <p className="text-sm font-bold" style={{ color: getScoreColor(overallScore) }}>
+                      {getScoreLabel(overallScore)}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -370,29 +397,36 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
           <h2 className="text-lg font-bold text-gray-900 mb-3">Hasil Tes Detail</h2>
           {allTestResults.map(group => (
             <div key={group.categoryId} className="mb-4">
-              <h3 className="font-semibold text-gray-800 bg-gray-100 px-3 py-2 rounded-t">
+              <h3 className="font-semibold text-white px-3 py-2 rounded-t" style={{ backgroundColor: '#374151' }}>
                 {group.categoryName}
               </h3>
-              <table className="w-full text-sm">
+              <table className="w-full text-sm border border-gray-200">
                 <thead>
-                  <tr className="bg-gray-50">
-                    <th className="text-left px-3 py-2 border-b">Tes</th>
-                    <th className="text-center px-3 py-2 border-b">Hasil</th>
-                    <th className="text-center px-3 py-2 border-b">Skor</th>
+                  <tr style={{ backgroundColor: '#F3F4F6' }}>
+                    <th className="text-left px-3 py-2 border-b border-gray-200 font-semibold">Nama Tes</th>
+                    <th className="text-center px-3 py-2 border-b border-gray-200 font-semibold">Hasil</th>
+                    <th className="text-center px-3 py-2 border-b border-gray-200 font-semibold">Skor</th>
+                    <th className="text-center px-3 py-2 border-b border-gray-200 font-semibold">Status Norma</th>
                   </tr>
                 </thead>
                 <tbody>
                   {group.tests.map((test, idx) => (
-                    <tr key={idx} className="border-b">
-                      <td className="px-3 py-2">{test.name}</td>
-                      <td className="text-center px-3 py-2">{test.value} {test.unit}</td>
-                      <td className="text-center px-3 py-2">
-                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-bold ${
-                          test.score >= 4 ? 'bg-green-500' : 
-                          test.score >= 3 ? 'bg-yellow-500' : 
-                          test.score >= 2 ? 'bg-orange-500' : 'bg-red-500'
-                        }`}>
+                    <tr key={idx} style={{ backgroundColor: idx % 2 === 0 ? '#FFFFFF' : '#F9FAFB' }}>
+                      <td className="px-3 py-2 border-b border-gray-100">{test.name}</td>
+                      <td className="text-center px-3 py-2 border-b border-gray-100 font-medium">{test.value} {test.unit}</td>
+                      <td className="text-center px-3 py-2 border-b border-gray-100">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white text-sm font-bold" style={{
+                          backgroundColor: getScoreColor(test.score)
+                        }}>
                           {test.score}
+                        </span>
+                      </td>
+                      <td className="text-center px-3 py-2 border-b border-gray-100">
+                        <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold" style={{
+                          backgroundColor: getScoreBgColor(test.score),
+                          color: getScoreColor(test.score)
+                        }}>
+                          {getScoreLabel(test.score)}
                         </span>
                       </td>
                     </tr>
@@ -408,10 +442,10 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
           <h2 className="text-lg font-bold text-gray-900 mb-3">Ringkasan Performa</h2>
           <div className="grid grid-cols-2 gap-4">
             {/* Keunggulan */}
-            <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-4 border-2 border-emerald-200 shadow-sm">
-              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-emerald-200">
-                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-500 text-white text-sm">↑</span>
-                <h3 className="font-bold text-emerald-800 text-sm">KEUNGGULAN</h3>
+            <div style={{ background: 'linear-gradient(to bottom right, #D1FAE5, #DCFCE7)', borderRadius: '12px', padding: '16px', border: '2px solid #A7F3D0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #A7F3D0' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#059669', color: 'white', fontSize: '14px' }}>↑</span>
+                <h3 style={{ fontWeight: 'bold', color: '#065F46', fontSize: '14px' }}>KEUNGGULAN</h3>
               </div>
               {(() => {
                 const sortedCategories = Object.entries(categoryScores)
@@ -424,29 +458,32 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
                 const strengths = sortedCategories.filter(c => c.score >= 4).slice(0, 3);
                 
                 return strengths.length > 0 ? (
-                  <div className="space-y-2">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {strengths.map((s) => (
-                      <div key={s.id} className="flex items-center justify-between bg-white/60 rounded-lg px-3 py-2">
-                        <span className="text-sm font-medium text-gray-800" style={{ wordBreak: 'break-word' }}>{s.name}</span>
-                        <span className={`inline-flex items-center justify-center min-w-[28px] h-7 rounded-full text-white text-xs font-bold px-2 ${
-                          s.score >= 4.5 ? 'bg-emerald-600' : 'bg-emerald-500'
-                        }`}>
-                          {s.score.toFixed(1)}
-                        </span>
+                      <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: '8px', padding: '8px 12px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '500', color: '#1F2937' }}>{s.name}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ backgroundColor: getScoreColor(s.score), color: 'white', padding: '4px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 'bold' }}>
+                            {scoreToPercentage(s.score).toFixed(0)}%
+                          </span>
+                          <span style={{ backgroundColor: getScoreBgColor(s.score), color: getScoreColor(s.score), padding: '4px 8px', borderRadius: '9999px', fontSize: '11px', fontWeight: 'bold' }}>
+                            {getScoreLabel(s.score)}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 italic">Belum ada kategori dengan skor ≥4</p>
+                  <p style={{ fontSize: '13px', color: '#6B7280', fontStyle: 'italic' }}>Belum ada kategori dengan skor ≥4</p>
                 );
               })()}
             </div>
 
             {/* Perlu Ditingkatkan */}
-            <div className="bg-gradient-to-br from-rose-50 to-red-50 rounded-xl p-4 border-2 border-rose-200 shadow-sm">
-              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-rose-200">
-                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-rose-500 text-white text-sm">↓</span>
-                <h3 className="font-bold text-rose-800 text-sm">PERLU DITINGKATKAN</h3>
+            <div style={{ background: 'linear-gradient(to bottom right, #FEE2E2, #FECACA)', borderRadius: '12px', padding: '16px', border: '2px solid #FECACA' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #FECACA' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#DC2626', color: 'white', fontSize: '14px' }}>↓</span>
+                <h3 style={{ fontWeight: 'bold', color: '#991B1B', fontSize: '14px' }}>PERLU DITINGKATKAN</h3>
               </div>
               {(() => {
                 const sortedCategories = Object.entries(categoryScores)
@@ -459,20 +496,23 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
                 const weaknesses = sortedCategories.filter(c => c.score < 3).slice(0, 3);
                 
                 return weaknesses.length > 0 ? (
-                  <div className="space-y-2">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {weaknesses.map((w) => (
-                      <div key={w.id} className="flex items-center justify-between bg-white/60 rounded-lg px-3 py-2">
-                        <span className="text-sm font-medium text-gray-800" style={{ wordBreak: 'break-word' }}>{w.name}</span>
-                        <span className={`inline-flex items-center justify-center min-w-[28px] h-7 rounded-full text-white text-xs font-bold px-2 ${
-                          w.score < 2 ? 'bg-rose-600' : 'bg-rose-500'
-                        }`}>
-                          {w.score.toFixed(1)}
-                        </span>
+                      <div key={w.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: '8px', padding: '8px 12px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '500', color: '#1F2937' }}>{w.name}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ backgroundColor: getScoreColor(w.score), color: 'white', padding: '4px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 'bold' }}>
+                            {scoreToPercentage(w.score).toFixed(0)}%
+                          </span>
+                          <span style={{ backgroundColor: getScoreBgColor(w.score), color: getScoreColor(w.score), padding: '4px 8px', borderRadius: '9999px', fontSize: '11px', fontWeight: 'bold' }}>
+                            {getScoreLabel(w.score)}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-emerald-600 font-medium">✓ Semua kategori sudah baik!</p>
+                  <p style={{ fontSize: '13px', color: '#059669', fontWeight: '500' }}>✓ Semua kategori sudah baik!</p>
                 );
               })()}
             </div>
