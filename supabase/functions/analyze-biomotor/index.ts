@@ -119,40 +119,30 @@ serve(async (req) => {
     const strengths = sortedCategories.filter(c => c.averageScore >= 4);
     const weaknesses = sortedCategories.filter(c => c.averageScore <= 2);
 
-    // Build prompt for AI
-    const prompt = `Kamu adalah pelatih olahraga profesional dan ahli dalam ilmu keolahragaan. Analisis data biomotor atlet berikut dan berikan rekomendasi latihan yang spesifik dan terstruktur dalam Bahasa Indonesia.
+    // Build prompt for AI - Focused on improvements for weak areas only
+    const prompt = `Kamu adalah pelatih olahraga profesional. Berikan analisis SINGKAT dan FOKUS hanya pada komponen biomotor yang LEMAH (skor ≤2) untuk atlet berikut.
 
 DATA ATLET:
 - Nama: ${athleteData.name}
 - Usia: ${athleteData.age} tahun
-- Jenis Kelamin: ${athleteData.gender === 'male' ? 'Laki-laki' : 'Perempuan'}
 - Cabang Olahraga: ${athleteData.sport}
-${athleteData.weight ? `- Berat Badan: ${athleteData.weight} kg` : ''}
-${athleteData.height ? `- Tinggi Badan: ${athleteData.height} cm` : ''}
 
-HASIL TES BIOMOTOR:
-${categoryAverages.map(cat => `
-${cat.categoryName.toUpperCase()} (Rata-rata Skor: ${cat.averageScore.toFixed(1)}/5):
-${cat.tests.map(t => `  - ${t.testName}: ${t.value} ${t.unit} (Skor: ${t.score}/5)`).join('\n')}`).join('\n')}
+KOMPONEN BIOMOTOR YANG PERLU DITINGKATKAN:
+${weaknesses.length > 0 ? weaknesses.map(w => `- ${w.categoryName}: Skor ${w.averageScore.toFixed(1)}/5\n  Tes: ${w.tests.map(t => `${t.testName} (${t.value} ${t.unit})`).join(', ')}`).join('\n') : 'Semua komponen sudah baik (skor >2)'}
 
-KEUNGGULAN:
-${strengths.length > 0 ? strengths.map(s => `- ${s.categoryName}: ${s.averageScore.toFixed(1)}/5`).join('\n') : 'Belum ada kategori dengan skor sangat baik (≥4)'}
+${strengths.length > 0 ? `\nKEUNGGULAN (pertahankan): ${strengths.map(s => s.categoryName).join(', ')}` : ''}
 
-KELEMAHAN:
-${weaknesses.length > 0 ? weaknesses.map(w => `- ${w.categoryName}: ${w.averageScore.toFixed(1)}/5`).join('\n') : 'Tidak ada kategori dengan skor kurang (≤2)'}
+INSTRUKSI:
+- Berikan analisis SINGKAT dalam 2-3 kalimat per poin
+- FOKUS hanya pada cara meningkatkan komponen yang LEMAH
+- Berikan 3-4 latihan spesifik untuk memperbaiki kelemahan
+- Jangan bertele-tele, langsung ke poin penting
 
-Berikan analisis dalam format berikut:
-1. RINGKASAN PROFIL BIOMOTOR (2-3 kalimat tentang kondisi fisik atlet secara keseluruhan)
-2. ANALISIS KEUNGGULAN (jelaskan apa yang sudah baik dan bagaimana mempertahankannya)
-3. ANALISIS KELEMAHAN (jelaskan area yang perlu ditingkatkan dan mengapa penting untuk cabor ini)
-4. REKOMENDASI LATIHAN (minimal 5 latihan spesifik dengan:
-   - Nama latihan
-   - Target komponen biomotor
-   - Dosis latihan (set x repetisi atau durasi)
-   - Frekuensi per minggu
-   - Intensitas yang disarankan)
-5. PERIODISASI (saran pembagian periode latihan 4-8 minggu)
-6. TIPS TAMBAHAN (nutrisi, recovery, dll yang relevan)`;
+FORMAT JAWABAN (SINGKAT):
+1. MASALAH UTAMA: Sebutkan 1-2 kalimat masalah biomotor utama
+2. REKOMENDASI LATIHAN: 3-4 latihan spesifik dengan dosis (set x rep atau durasi)
+3. PRIORITAS LATIHAN: Urutan prioritas latihan untuk 4 minggu ke depan
+4. CATATAN: 1 tips penting untuk recovery/nutrisi`;
 
     console.log("Sending request to Lovable AI...");
 
