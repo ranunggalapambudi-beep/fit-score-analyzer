@@ -6,6 +6,71 @@
 
 @layer base {
   :root {
+    /* Light Mode */
+    --background: 0 0% 100%;
+    --foreground: 220 20% 10%;
+
+    --card: 0 0% 98%;
+    --card-foreground: 220 20% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
+
+    --primary: 0 85% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 10% 94%;
+    --secondary-foreground: 220 20% 10%;
+
+    --muted: 220 10% 96%;
+    --muted-foreground: 220 10% 40%;
+
+    --accent: 0 70% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 10% 88%;
+    --input: 220 10% 88%;
+    --ring: 0 85% 50%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(0, 85%, 50%) 0%, hsl(0, 70%, 40%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(0, 70%, 45%) 0%, hsl(15, 80%, 50%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 98%) 0%, hsl(0, 0%, 96%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(0, 85%, 50%, 0.1) 0%, hsl(0, 70%, 45%, 0.1) 100%);
+    
+    --shadow-glow: 0 0 40px hsl(0, 85%, 50%, 0.15);
+    --shadow-card: 0 4px 24px hsl(220, 20%, 0%, 0.08);
+    --shadow-elevated: 0 8px 32px hsl(220, 20%, 0%, 0.12);
+
+    --font-display: 'Outfit', sans-serif;
+    --font-body: 'Inter', sans-serif;
+
+    /* Biomotor category colors */
+    --endurance: 0 85% 50%;
+    --strength: 0 72% 55%;
+    --speed: 45 90% 50%;
+    --agility: 280 70% 55%;
+    --flexibility: 200 80% 50%;
+    --balance: 320 70% 55%;
+    --power: 25 90% 55%;
+    --coordination: 260 70% 55%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 220 20% 10%;
+    --sidebar-primary: 0 85% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 10% 94%;
+    --sidebar-accent-foreground: 220 20% 10%;
+    --sidebar-border: 220 10% 88%;
+    --sidebar-ring: 0 85% 50%;
+  }
+
+  .dark {
     --background: 220 20% 6%;
     --foreground: 210 20% 98%;
 
@@ -34,30 +99,10 @@
     --input: 220 15% 18%;
     --ring: 0 85% 50%;
 
-    --radius: 0.75rem;
-
-    /* Custom tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(0, 85%, 50%) 0%, hsl(0, 70%, 40%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(0, 70%, 45%) 0%, hsl(15, 80%, 50%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(220, 18%, 12%) 0%, hsl(220, 18%, 8%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(0, 85%, 50%, 0.1) 0%, hsl(0, 70%, 45%, 0.1) 100%);
-    
     --shadow-glow: 0 0 40px hsl(0, 85%, 50%, 0.2);
     --shadow-card: 0 4px 24px hsl(220, 20%, 0%, 0.4);
     --shadow-elevated: 0 8px 32px hsl(220, 20%, 0%, 0.6);
-
-    --font-display: 'Outfit', sans-serif;
-    --font-body: 'Inter', sans-serif;
-
-    /* Biomotor category colors */
-    --endurance: 0 85% 50%;
-    --strength: 0 72% 55%;
-    --speed: 45 90% 50%;
-    --agility: 280 70% 55%;
-    --flexibility: 200 80% 50%;
-    --balance: 320 70% 55%;
-    --power: 25 90% 55%;
-    --coordination: 260 70% 55%;
 
     --sidebar-background: 220 18% 8%;
     --sidebar-foreground: 210 20% 98%;
@@ -67,11 +112,6 @@
     --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: 220 15% 16%;
     --sidebar-ring: 0 85% 50%;
-  }
-
-  .dark {
-    --background: 220 20% 6%;
-    --foreground: 210 20% 98%;
   }
 }
 
