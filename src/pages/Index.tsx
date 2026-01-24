@@ -8,11 +8,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Users, ClipboardList, TrendingUp, ArrowRight, Activity, Target, Brain, BarChart3, Zap, Award, ChevronRight, LayoutDashboard, Users2, BookOpen, LogIn, LogOut, Loader2, Info, Play, ScanLine } from 'lucide-react';
 import { BarcodeScanner } from '@/components/scanner/BarcodeScanner';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { categoryImageList } from '@/data/categoryImages';
 import hirocrossLogo from '@/assets/hirocross-logo.png';
 import heroAthleteImage from '@/assets/hero-athlete-testing.jpg';
-import speedTestImage from '@/assets/speed-test.jpg';
-import jumpTestImage from '@/assets/jump-test.jpg';
-import agilityTestImage from '@/assets/agility-test.jpg';
 
 export default function Index() {
   const {
@@ -93,34 +92,41 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Testing Gallery Section */}
+      {/* Biomotor Categories Carousel */}
       <section className="px-4 -mt-8 relative z-20">
-        <div className="grid grid-cols-3 gap-2">
-          <div className="relative rounded-xl overflow-hidden aspect-square group cursor-pointer">
-            <img src={speedTestImage} alt="Speed Test" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            <div className="absolute bottom-2 left-2 right-2">
-              <p className="text-white text-xs font-medium">Kecepatan</p>
-              <p className="text-white/60 text-[10px]">Sprint Test</p>
-            </div>
-          </div>
-          <div className="relative rounded-xl overflow-hidden aspect-square group cursor-pointer">
-            <img src={jumpTestImage} alt="Jump Test" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            <div className="absolute bottom-2 left-2 right-2">
-              <p className="text-white text-xs font-medium">Power</p>
-              <p className="text-white/60 text-[10px]">Vertical Jump</p>
-            </div>
-          </div>
-          <div className="relative rounded-xl overflow-hidden aspect-square group cursor-pointer">
-            <img src={agilityTestImage} alt="Agility Test" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            <div className="absolute bottom-2 left-2 right-2">
-              <p className="text-white text-xs font-medium">Kelincahan</p>
-              <p className="text-white/60 text-[10px]">Agility Test</p>
-            </div>
-          </div>
-        </div>
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-2">
+            {categoryImageList.map((category) => (
+              <CarouselItem key={category.id} className="pl-2 basis-1/3 md:basis-1/4">
+                <Link to={`/tests/${category.id}`}>
+                  <div className="relative rounded-xl overflow-hidden aspect-square group cursor-pointer">
+                    <img 
+                      src={category.image} 
+                      alt={category.name} 
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute bottom-2 left-2 right-2">
+                      <p className="text-white text-xs font-medium">{category.name}</p>
+                      <p className="text-white/60 text-[10px]">{category.nameEn}</p>
+                    </div>
+                  </div>
+                </Link>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="left-0 -translate-x-1/2 bg-background/80 border-border/50" />
+          <CarouselNext className="right-0 translate-x-1/2 bg-background/80 border-border/50" />
+        </Carousel>
+        <p className="text-center text-xs text-muted-foreground mt-2">
+          ← Geser untuk melihat semua kategori →
+        </p>
       </section>
 
       <div className="px-4 pb-6 space-y-6">
