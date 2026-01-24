@@ -12,6 +12,8 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { categoryImageList } from '@/data/categoryImages';
 import hirocrossLogo from '@/assets/hirocross-logo.png';
 import heroAthleteImage from '@/assets/hero-athlete-testing.jpg';
+import Autoplay from 'embla-carousel-autoplay';
+import { useRef } from 'react';
 
 export default function Index() {
   const {
@@ -92,13 +94,20 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Biomotor Categories Carousel */}
+      {/* Biomotor Categories Carousel with Auto-play */}
       <section className="px-4 -mt-8 relative z-20">
         <Carousel
           opts={{
             align: "start",
             loop: true,
           }}
+          plugins={[
+            Autoplay({
+              delay: 3000,
+              stopOnInteraction: true,
+              stopOnMouseEnter: true,
+            }),
+          ]}
           className="w-full"
         >
           <CarouselContent className="-ml-2">
@@ -124,9 +133,16 @@ export default function Index() {
           <CarouselPrevious className="left-0 -translate-x-1/2 bg-background/80 border-border/50" />
           <CarouselNext className="right-0 translate-x-1/2 bg-background/80 border-border/50" />
         </Carousel>
-        <p className="text-center text-xs text-muted-foreground mt-2">
-          ← Geser untuk melihat semua kategori →
-        </p>
+        <div className="flex items-center justify-center gap-2 mt-2">
+          <div className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="text-xs text-muted-foreground">Auto-play aktif</span>
+          </div>
+          <span className="text-muted-foreground">•</span>
+          <p className="text-xs text-muted-foreground">
+            ← Geser untuk melihat semua kategori →
+          </p>
+        </div>
       </section>
 
       <div className="px-4 pb-6 space-y-6">
