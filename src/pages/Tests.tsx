@@ -5,7 +5,7 @@ import { biomotorCategories } from '@/data/biomotorTests';
 
 export default function Tests() {
   return (
-    <Layout title="Tes Biomotor" subtitle="7 komponen dengan 30+ item tes">
+    <Layout title="Tes Biomotor" subtitle="8 komponen dengan 30+ item tes">
       <div className="px-4 py-6 space-y-4">
         {biomotorCategories.map((category, index) => (
           <div 
@@ -20,6 +20,8 @@ export default function Tests() {
                 iconName={category.icon}
                 color={category.color}
                 testCount={category.tests.length}
+                categoryId={category.id}
+                showImage={true}
               />
             </Link>
           </div>
