@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { AthleteCard } from '@/components/athletes/AthleteCard';
 import { EditTeamSheet } from '@/components/teams/EditTeamSheet';
 import { AddAthleteSheet } from '@/components/athletes/AddAthleteSheet';
+import { BatchPrintCards } from '@/components/teams/BatchPrintCards';
 import { useTeamStore } from '@/store/teamStore';
 import { useAthleteStore } from '@/store/athleteStore';
 import { 
@@ -219,12 +220,15 @@ export default function TeamDetail() {
               <Users className="w-5 h-5" style={{ color: team.color }} />
               Atlet dalam Tim ({teamAthletes.length})
             </h3>
-            <AddAthleteSheet defaultTeam={team.name} defaultSport={team.sport}>
-              <Button size="sm" className="gap-1">
-                <Plus className="w-4 h-4" />
-                Tambah
-              </Button>
-            </AddAthleteSheet>
+            <div className="flex gap-2">
+              <BatchPrintCards athletes={teamAthletes} teamName={team.name} />
+              <AddAthleteSheet defaultTeam={team.name} defaultSport={team.sport}>
+                <Button size="sm" className="gap-1">
+                  <Plus className="w-4 h-4" />
+                  Tambah
+                </Button>
+              </AddAthleteSheet>
+            </div>
           </div>
 
           {teamAthletes.length > 0 ? (
