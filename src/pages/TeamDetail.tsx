@@ -5,6 +5,7 @@ import { AthleteCard } from '@/components/athletes/AthleteCard';
 import { EditTeamSheet } from '@/components/teams/EditTeamSheet';
 import { AddAthleteSheet } from '@/components/athletes/AddAthleteSheet';
 import { BatchPrintCards } from '@/components/teams/BatchPrintCards';
+import { TeamReportPDF } from '@/components/teams/TeamReportPDF';
 import { useTeamStore } from '@/store/teamStore';
 import { useAthleteStore } from '@/store/athleteStore';
 import { 
@@ -122,6 +123,13 @@ export default function TeamDetail() {
                 Edit Tim
               </Button>
             </EditTeamSheet>
+            <TeamReportPDF
+              teamName={team.name}
+              teamSport={team.sport}
+              teamColor={team.color || '#3B82F6'}
+              athletes={teamAthletes}
+              testSessions={testSessions}
+            />
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="icon">

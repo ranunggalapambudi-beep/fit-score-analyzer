@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Printer, Loader2, Download, FileText } from 'lucide-react';
+import { Printer, Loader2, Download, FileText, Filter, Check } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import JsBarcode from 'jsbarcode';
 import { Athlete } from '@/types/athlete';
@@ -12,7 +12,12 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 
 const escapeHtml = (unsafe: string | undefined | null): string => {
   if (!unsafe) return '';
@@ -23,6 +28,8 @@ const escapeHtml = (unsafe: string | undefined | null): string => {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 };
+
+type FilterType = 'all' | 'complete' | 'incomplete' | 'with-photo' | 'without-photo';
 
 interface BatchPrintCardsProps {
   athletes: Athlete[];
@@ -38,10 +45,42 @@ interface AthleteCardData {
   age: number;
 }
 
+// Check if athlete has complete data
+const isAthleteComplete = (athlete: Athlete): boolean => {
+  return !!(athlete.height && athlete.weight && athlete.photo);
+};
+
+const hasPhysicalData = (athlete: Athlete): boolean => {
+  return !!(athlete.height && athlete.weight);
+};
+
 export function BatchPrintCards({ athletes, teamName, baseUrl = window.location.origin }: BatchPrintCardsProps) {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [cardData, setCardData] = useState<AthleteCardData[]>([]);
+  const [filter, setFilter] = useState<FilterType>('all');
   const qrRefs = useRef<Map<string, HTMLCanvasElement>>(new Map());
+
+  // Filter athletes based on selected filter
+  const getFilteredAthletes = (): Athlete[] => {
+    switch (filter) {
+      case 'complete':
+        return athletes.filter(a => isAthleteComplete(a));
+      case 'incomplete':
+        return athletes.filter(a => !isAthleteComplete(a));
+      case 'with-photo':
+        return athletes.filter(a => !!a.photo);
+      case 'without-photo':
+        return athletes.filter(a => !a.photo);
+      default:
+        return athletes;
+    }
+  };
+
+  const filteredAthletes = getFilteredAthletes();
+  
+  // Stats for display
+  const completeCount = athletes.filter(a => isAthleteComplete(a)).length;
+  const incompleteCount = athletes.length - completeCount;
+  const withPhotoCount = athletes.filter(a => !!a.photo).length;
 
   // Register QR code ref for each athlete
   const setQrRef = (athleteId: string, el: HTMLCanvasElement | null) => {
@@ -99,7 +138,7 @@ export function BatchPrintCards({ athletes, teamName, baseUrl = window.location.
   const prepareCardData = async (): Promise<AthleteCardData[]> => {
     await new Promise(r => setTimeout(r, 200));
     
-    return athletes.map(athlete => {
+    return filteredAthletes.map(athlete => {
       const qrCanvas = qrRefs.current.get(athlete.id);
       const qrDataUrl = qrCanvas ? qrCanvas.toDataURL('image/png') : '';
       const shortId = athlete.id.slice(0, 8).toUpperCase();
@@ -255,8 +294,8 @@ export function BatchPrintCards({ athletes, teamName, baseUrl = window.location.
   };
 
   const handleBatchPrint = async (format: 'card' | 'sticker') => {
-    if (athletes.length === 0) {
-      toast.error('Tidak ada atlet dalam tim ini.');
+    if (filteredAthletes.length === 0) {
+      toast.error('Tidak ada atlet yang sesuai filter.');
       return;
     }
 
@@ -343,7 +382,7 @@ export function BatchPrintCards({ athletes, teamName, baseUrl = window.location.
         }, 500);
       };
 
-      toast.success(`Mencetak ${athletes.length} kartu atlet...`);
+      toast.success(`Mencetak ${filteredAthletes.length} kartu atlet...`);
     } catch (error) {
       console.error('Batch print error:', error);
       toast.error('Gagal mencetak. Silakan coba lagi.');
@@ -353,8 +392,8 @@ export function BatchPrintCards({ athletes, teamName, baseUrl = window.location.
   };
 
   const handleBatchDownloadPDF = async (format: 'card' | 'sticker') => {
-    if (athletes.length === 0) {
-      toast.error('Tidak ada atlet dalam tim ini.');
+    if (filteredAthletes.length === 0) {
+      toast.error('Tidak ada atlet yang sesuai filter.');
       return;
     }
 
@@ -433,13 +472,23 @@ export function BatchPrintCards({ athletes, teamName, baseUrl = window.location.
       }
 
       pdf.save(`Kartu-Tim-${teamName.replace(/\s+/g, '-')}.pdf`);
-      toast.success(`${athletes.length} kartu berhasil diunduh!`);
+      toast.success(`${filteredAthletes.length} kartu berhasil diunduh!`);
     } catch (error) {
       console.error('Batch PDF error:', error);
       toast.error('Gagal mengunduh PDF. Silakan coba lagi.');
     }
 
     setIsProcessing(false);
+  };
+
+  const getFilterLabel = (): string => {
+    switch (filter) {
+      case 'complete': return 'Lengkap';
+      case 'incomplete': return 'Tidak Lengkap';
+      case 'with-photo': return 'Ada Foto';
+      case 'without-photo': return 'Tanpa Foto';
+      default: return 'Semua';
+    }
   };
 
   return (
@@ -470,24 +519,74 @@ export function BatchPrintCards({ athletes, teamName, baseUrl = window.location.
             ) : (
               <FileText className="w-4 h-4" />
             )}
-            Cetak Batch Kartu
+            Cetak Kartu
+            {filter !== 'all' && (
+              <Badge variant="secondary" className="ml-1 text-xs">
+                {filteredAthletes.length}
+              </Badge>
+            )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => handleBatchPrint('card')}>
-            <Printer className="w-4 h-4 mr-2" />
-            Cetak Kartu Penuh
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleBatchPrint('sticker')}>
-            <Printer className="w-4 h-4 mr-2" />
-            Cetak Stiker Label
-          </DropdownMenuItem>
+        <DropdownMenuContent align="end" className="w-56">
+          {/* Filter submenu */}
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <Filter className="w-4 h-4 mr-2" />
+              Filter: {getFilterLabel()}
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuCheckboxItem
+                checked={filter === 'all'}
+                onCheckedChange={() => setFilter('all')}
+              >
+                Semua Atlet ({athletes.length})
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={filter === 'complete'}
+                onCheckedChange={() => setFilter('complete')}
+              >
+                Data Lengkap ({completeCount})
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={filter === 'incomplete'}
+                onCheckedChange={() => setFilter('incomplete')}
+              >
+                Data Tidak Lengkap ({incompleteCount})
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuCheckboxItem
+                checked={filter === 'with-photo'}
+                onCheckedChange={() => setFilter('with-photo')}
+              >
+                Ada Foto ({withPhotoCount})
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={filter === 'without-photo'}
+                onCheckedChange={() => setFilter('without-photo')}
+              >
+                Tanpa Foto ({athletes.length - withPhotoCount})
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+          
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => handleBatchDownloadPDF('card')}>
+          
+          <DropdownMenuItem onClick={() => handleBatchPrint('card')} disabled={filteredAthletes.length === 0}>
+            <Printer className="w-4 h-4 mr-2" />
+            Cetak Kartu Penuh ({filteredAthletes.length})
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleBatchPrint('sticker')} disabled={filteredAthletes.length === 0}>
+            <Printer className="w-4 h-4 mr-2" />
+            Cetak Stiker Label ({filteredAthletes.length})
+          </DropdownMenuItem>
+          
+          <DropdownMenuSeparator />
+          
+          <DropdownMenuItem onClick={() => handleBatchDownloadPDF('card')} disabled={filteredAthletes.length === 0}>
             <Download className="w-4 h-4 mr-2" />
             Download PDF Kartu
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleBatchDownloadPDF('sticker')}>
+          <DropdownMenuItem onClick={() => handleBatchDownloadPDF('sticker')} disabled={filteredAthletes.length === 0}>
             <Download className="w-4 h-4 mr-2" />
             Download PDF Stiker
           </DropdownMenuItem>
