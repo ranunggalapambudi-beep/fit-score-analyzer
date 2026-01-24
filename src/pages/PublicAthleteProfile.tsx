@@ -135,19 +135,27 @@ export default function PublicAthleteProfile() {
     ? calculateBMI(athlete.weight, athlete.height) 
     : null;
 
-  // Prepare radar chart data
+  // Prepare radar chart data - only include categories that have results
   const radarData = latestSession?.results 
-    ? biomotorCategories.map(category => {
-        const categoryResults = latestSession.results.filter(r => r.category_id === category.id);
-        const avgScore = categoryResults.length > 0
-          ? categoryResults.reduce((sum, r) => sum + r.score, 0) / categoryResults.length
-          : 0;
-        return {
-          category: category.name,
-          score: Math.round(avgScore * 20), // Convert 1-5 to 0-100
-          fullMark: 100
-        };
-      })
+    ? biomotorCategories
+        .map(category => {
+          const categoryResults = latestSession.results.filter(r => r.category_id === category.id);
+          if (categoryResults.length === 0) return null; // Skip empty categories
+          const avgScore = categoryResults.reduce((sum, r) => sum + r.score, 0) / categoryResults.length;
+          return {
+            category: category.name,
+            score: Math.round(avgScore * 20), // Convert 1-5 to 0-100
+            fullMark: 100
+          };
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null) // Remove null entries
+    : [];
+  
+  // Get categories that have results for display
+  const categoriesWithResults = latestSession?.results
+    ? biomotorCategories.filter(category => 
+        latestSession.results.some(r => r.category_id === category.id)
+      )
     : [];
 
   return (
@@ -272,34 +280,39 @@ export default function PublicAthleteProfile() {
                 {/* Detailed Results */}
                 <div className="space-y-3">
                   <h4 className="font-medium text-sm text-muted-foreground">Detail Hasil</h4>
-                  {biomotorCategories.map(category => {
-                    const categoryResults = latestSession.results.filter(r => r.category_id === category.id);
-                    if (categoryResults.length === 0) return null;
+                  {categoriesWithResults.length > 0 ? (
+                    categoriesWithResults.map(category => {
+                      const categoryResults = latestSession.results.filter(r => r.category_id === category.id);
 
-                    return (
-                      <div key={category.id} className="border rounded-lg p-3">
-                        <h5 className="font-medium text-sm mb-2">{category.name}</h5>
-                        <div className="space-y-2">
-                          {categoryResults.map(result => {
-                            const test = category.tests.find(t => t.id === result.test_id);
-                            const unit = test?.norms?.[0]?.unit || '';
-                            const scoreInfo = getScoreLabel(result.score);
-                            return (
-                              <div key={result.id} className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">{test?.name || result.test_id}</span>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium">{result.value} {unit}</span>
-                                  <Badge className={scoreInfo.color} variant="outline">
-                                    {scoreInfo.label}
-                                  </Badge>
+                      return (
+                        <div key={category.id} className="border rounded-lg p-3">
+                          <h5 className="font-medium text-sm mb-2">{category.name}</h5>
+                          <div className="space-y-2">
+                            {categoryResults.map(result => {
+                              const test = category.tests.find(t => t.id === result.test_id);
+                              const unit = test?.norms?.[0]?.unit || '';
+                              const scoreInfo = getScoreLabel(result.score);
+                              return (
+                                <div key={result.id} className="flex justify-between items-center text-sm">
+                                  <span className="text-muted-foreground">{test?.name || result.test_id}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium">{result.value} {unit}</span>
+                                    <Badge className={scoreInfo.color} variant="outline">
+                                      {scoreInfo.label}
+                                    </Badge>
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      Tidak ada hasil tes yang tercatat untuk sesi ini.
+                    </p>
+                  )}
                 </div>
               </div>
             ) : (
