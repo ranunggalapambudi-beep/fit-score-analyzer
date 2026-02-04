@@ -89,6 +89,30 @@ export type Database = {
         }
         Relationships: []
       }
+      favorite_tests: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          test_id: string
+          user_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          test_id: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          test_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

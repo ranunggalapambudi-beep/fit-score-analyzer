@@ -28,6 +28,7 @@ import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import PublicAthleteProfile from "./pages/PublicAthleteProfile";
+import CategoryComparison from "./pages/CategoryComparison";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,9 @@ const App = () => (
               } />
               <Route path="/tests" element={
                 <ProtectedRoute><Tests /></ProtectedRoute>
+              } />
+              <Route path="/tests/compare" element={
+                <ProtectedRoute><CategoryComparison /></ProtectedRoute>
               } />
               <Route path="/tests/:categoryId" element={
                 <ProtectedRoute><TestCategory /></ProtectedRoute>

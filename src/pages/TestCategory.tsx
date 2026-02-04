@@ -3,17 +3,21 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { biomotorCategories } from '@/data/biomotorTests';
 import { TestIllustrationGuide } from '@/components/tests/TestIllustrationGuide';
-import { ChevronLeft, ChevronRight, BookOpen, Wrench, Image as ImageIcon, Info, Target, ListChecks } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen, Wrench, Image as ImageIcon, Info, Target, ListChecks, Star, ArrowLeftRight } from 'lucide-react';
 import { 
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger 
 } from '@/components/ui/sheet';
 import { categoryImages } from '@/data/categoryImages';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
+import { useFavoriteTests } from '@/hooks/useFavoriteTests';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 export default function TestCategory() {
   const { categoryId } = useParams();
   const navigate = useNavigate();
+  const { isFavorite, toggleFavorite } = useFavoriteTests();
   
   const category = biomotorCategories.find((c) => c.id === categoryId);
   const categoryImage = categoryId ? categoryImages[categoryId] : null;
@@ -57,8 +61,8 @@ export default function TestCategory() {
           </>
         )}
         
-        {/* Back Button */}
-        <div className="absolute top-4 left-4 z-10">
+        {/* Back Button and Compare Button */}
+        <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
           <Button 
             variant="secondary" 
             size="icon" 
@@ -67,6 +71,16 @@ export default function TestCategory() {
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
+          <Link to="/tests/compare">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              className="bg-background/80 backdrop-blur-sm gap-1.5"
+            >
+              <ArrowLeftRight className="w-4 h-4" />
+              Bandingkan
+            </Button>
+          </Link>
         </div>
         
         {/* Category Title Overlay */}
@@ -217,43 +231,54 @@ export default function TestCategory() {
           {category.tests.map((test, index) => (
             <Sheet key={test.id}>
               <SheetTrigger asChild>
-                <button
-                  className="w-full p-4 rounded-xl bg-card border border-border/50 flex items-start gap-4 text-left hover:border-border transition-all duration-200 hover:shadow-md animate-slide-up"
-                  style={{ animationDelay: `${index * 50}ms` }}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="relative"
                 >
-                  <div 
-                    className="flex items-center justify-center w-12 h-12 rounded-xl shrink-0"
-                    style={{ 
-                      backgroundColor: `hsl(var(--${category.color}) / 0.15)`,
-                      color: `hsl(var(--${category.color}))`,
-                    }}
+                  <button
+                    className="w-full p-4 rounded-xl bg-card border border-border/50 flex items-start gap-4 text-left hover:border-border transition-all duration-200 hover:shadow-md"
                   >
-                    <span className="text-lg font-bold font-display">{index + 1}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold font-display text-foreground">
-                      {test.name}
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                      {test.description}
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span 
-                        className="px-2 py-0.5 rounded-full text-[10px] font-medium"
-                        style={{ 
-                          backgroundColor: `hsl(var(--${category.color}) / 0.1)`,
-                          color: `hsl(var(--${category.color}))`,
-                        }}
-                      >
-                        {test.norms[0]?.unit}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {test.norms.length} norma
-                      </span>
+                    <div 
+                      className="flex items-center justify-center w-12 h-12 rounded-xl shrink-0"
+                      style={{ 
+                        backgroundColor: `hsl(var(--${category.color}) / 0.15)`,
+                        color: `hsl(var(--${category.color}))`,
+                      }}
+                    >
+                      <span className="text-lg font-bold font-display">{index + 1}</span>
                     </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0 mt-2" />
-                </button>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold font-display text-foreground">
+                          {test.name}
+                        </h3>
+                        {isFavorite(test.id) && (
+                          <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                        {test.description}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span 
+                          className="px-2 py-0.5 rounded-full text-[10px] font-medium"
+                          style={{ 
+                            backgroundColor: `hsl(var(--${category.color}) / 0.1)`,
+                            color: `hsl(var(--${category.color}))`,
+                          }}
+                        >
+                          {test.norms[0]?.unit}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {test.norms.length} norma
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0 mt-2" />
+                  </button>
+                </motion.div>
               </SheetTrigger>
               <SheetContent side="bottom" className="h-[85vh] overflow-y-auto rounded-t-3xl">
                 <SheetHeader>
@@ -261,9 +286,36 @@ export default function TestCategory() {
                     className="w-12 h-1 rounded-full mx-auto mb-4"
                     style={{ backgroundColor: `hsl(var(--${category.color}))` }}
                   />
-                  <SheetTitle className="font-display text-left text-xl">{test.name}</SheetTitle>
+                  <div className="flex items-center justify-between">
+                    <SheetTitle className="font-display text-left text-xl">{test.name}</SheetTitle>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(test.id, category.id);
+                      }}
+                      className="shrink-0"
+                    >
+                      <Star 
+                        className={`w-5 h-5 ${isFavorite(test.id) ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'}`} 
+                      />
+                    </Button>
+                  </div>
                 </SheetHeader>
                 <div className="space-y-6 mt-6">
+                  {/* Favorite Button */}
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2"
+                    onClick={() => toggleFavorite(test.id, category.id)}
+                  >
+                    <Star 
+                      className={`w-4 h-4 ${isFavorite(test.id) ? 'text-yellow-500 fill-yellow-500' : ''}`} 
+                    />
+                    {isFavorite(test.id) ? 'Hapus dari Favorit' : 'Simpan ke Favorit'}
+                  </Button>
+
                   {/* Description */}
                   <div 
                     className="p-4 rounded-xl"
