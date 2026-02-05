@@ -6,13 +6,23 @@ import JsBarcode from 'jsbarcode';
 import { Athlete } from '@/types/athlete';
 import { toast } from 'sonner';
 import hirocrossLogo from '@/assets/hirocross-logo.png';
+ import vocafitHeader from '@/assets/vocafit-header.png';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+ import {
+   Select,
+   SelectContent,
+   SelectItem,
+   SelectTrigger,
+   SelectValue,
+ } from "@/components/ui/select";
+ import { Label } from "@/components/ui/label";
 
 // HTML escape function to prevent XSS attacks
 const escapeHtml = (unsafe: string | undefined | null): string => {
@@ -30,8 +40,11 @@ interface AthleteProfileCardProps {
   baseUrl?: string;
 }
 
+ type CardVersion = 'hirocross' | 'vocafit';
+ 
 export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }: AthleteProfileCardProps) {
   const [isPrinting, setIsPrinting] = useState(false);
+   const [selectedVersion, setSelectedVersion] = useState<CardVersion>('hirocross');
   const qrRef = useRef<HTMLCanvasElement>(null);
 
   const age = Math.floor(
@@ -45,7 +58,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
   const shortId = athlete.id.slice(0, 8).toUpperCase();
 
   // Convert logo to base64 for print window
-  const getLogoBase64 = (): Promise<string> => {
+   const getLogoBase64 = (version: CardVersion): Promise<string> => {
     return new Promise((resolve) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
@@ -58,7 +71,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
         resolve(canvas.toDataURL('image/png'));
       };
       img.onerror = () => resolve('');
-      img.src = hirocrossLogo;
+       img.src = version === 'vocafit' ? vocafitHeader : hirocrossLogo;
     });
   };
 
@@ -114,7 +127,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
     }
 
     // Get pre-generated assets
-    const logoBase64 = await getLogoBase64();
+     const logoBase64 = await getLogoBase64(selectedVersion);
     const qrDataUrl = generateQRCodeDataUrl();
     const barcodeDataUrl = generateBarcodeDataUrl(shortId);
 
@@ -125,8 +138,8 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
     const safePhoto = escapeHtml(athlete.photo);
 
     const cardHtml = format === 'sticker' 
-      ? generateStickerHtml(safeName, safeSport, safeTeam, safePhoto, qrDataUrl, barcodeDataUrl, shortId, logoBase64)
-      : generateCardHtml(safeName, safeSport, safeTeam, safePhoto, qrDataUrl, barcodeDataUrl, shortId, logoBase64, age, athlete);
+       ? generateStickerHtml(safeName, safeSport, safeTeam, safePhoto, qrDataUrl, barcodeDataUrl, shortId, logoBase64, selectedVersion)
+       : generateCardHtml(safeName, safeSport, safeTeam, safePhoto, qrDataUrl, barcodeDataUrl, shortId, logoBase64, age, athlete, selectedVersion);
 
     printWindow.document.write(cardHtml);
     printWindow.document.close();
@@ -155,7 +168,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
       await new Promise(r => setTimeout(r, 100));
 
       // Get pre-generated assets
-      const logoBase64 = await getLogoBase64();
+       const logoBase64 = await getLogoBase64(selectedVersion);
       const qrDataUrl = generateQRCodeDataUrl();
       const barcodeDataUrl = generateBarcodeDataUrl(shortId);
 
@@ -172,8 +185,8 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
       document.body.appendChild(container);
 
       const cardHtml = format === 'sticker' 
-        ? generateStickerHtmlForPDF(safeName, safeSport, safeTeam, safePhoto, qrDataUrl, barcodeDataUrl, shortId, logoBase64)
-        : generateCardHtmlForPDF(safeName, safeSport, safeTeam, safePhoto, qrDataUrl, barcodeDataUrl, shortId, logoBase64, age, athlete);
+         ? generateStickerHtmlForPDF(safeName, safeSport, safeTeam, safePhoto, qrDataUrl, barcodeDataUrl, shortId, logoBase64, selectedVersion)
+         : generateCardHtmlForPDF(safeName, safeSport, safeTeam, safePhoto, qrDataUrl, barcodeDataUrl, shortId, logoBase64, age, athlete, selectedVersion);
 
       container.innerHTML = cardHtml;
 
@@ -205,7 +218,8 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
       const pdfHeight = pdf.internal.pageSize.getHeight();
       
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Kartu-${athlete.name.replace(/\s+/g, '-')}.pdf`);
+       const versionName = selectedVersion === 'hirocross' ? 'Hirocross' : 'VocaFit';
+       pdf.save(`Kartu-${versionName}-${athlete.name.replace(/\s+/g, '-')}.pdf`);
 
       // Cleanup
       document.body.removeChild(container);
@@ -226,8 +240,17 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
     qrDataUrl: string,
     barcodeDataUrl: string,
     shortId: string,
-    logoBase64: string
-  ) => `
+     logoBase64: string,
+     version: CardVersion
+   ) => {
+     const isVocafit = version === 'vocafit';
+     const brandName = isVocafit ? 'VOCAFIT' : 'HIROCROSS';
+     const primaryColor = isVocafit ? '#1e40af' : '#e94560';
+     const gradientColors = isVocafit 
+       ? 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)'
+       : 'linear-gradient(135deg, #e94560 0%, #ff6b6b 100%)';
+     
+     return `
     <div class="sticker" style="
       width: 320px;
       height: 204px;
@@ -239,7 +262,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
     ">
       <div style="
         width: 100px;
-        background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+         background: ${gradientColors};
         padding: 15px;
         display: flex;
         flex-direction: column;
@@ -247,8 +270,8 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
         justify-content: center;
         gap: 8px;
       ">
-        ${logoBase64 ? `<img src="${logoBase64}" alt="Logo" style="width: 45px; height: 45px; object-fit: contain;" />` : ''}
-        <div style="color: white; font-size: 10px; font-weight: 700;">HIROCROSS</div>
+         ${logoBase64 ? `<img src="${logoBase64}" alt="Logo" style="width: ${isVocafit ? '60px' : '45px'}; height: ${isVocafit ? '35px' : '45px'}; object-fit: contain;" />` : ''}
+         <div style="color: white; font-size: 10px; font-weight: 700;">${brandName}</div>
         ${safePhoto 
           ? `<img src="${safePhoto}" alt="${safeName}" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; object-fit: cover;" />`
           : `<div style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: bold;">${safeName.charAt(0)}</div>`
@@ -256,7 +279,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
       </div>
       <div style="flex: 1; padding: 12px; display: flex; flex-direction: column;">
         <div style="font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 2px;">${safeName}</div>
-        <div style="font-size: 11px; color: #e94560; font-weight: 600; margin-bottom: 6px;">${safeSport}</div>
+         <div style="font-size: 11px; color: ${primaryColor}; font-weight: 600; margin-bottom: 6px;">${safeSport}</div>
         ${safeTeam ? `<div style="font-size: 9px; color: #666;">Tim: ${safeTeam}</div>` : ''}
         <div style="display: flex; align-items: center; gap: 10px; margin-top: auto; padding-top: 8px; border-top: 1px solid #eee;">
           <img src="${qrDataUrl}" alt="QR Code" style="width: 55px; height: 55px; border: 1px solid #ddd; border-radius: 4px;" />
@@ -268,6 +291,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
       </div>
     </div>
   `;
+   };
 
   const generateCardHtmlForPDF = (
     safeName: string, 
@@ -279,34 +303,46 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
     shortId: string,
     logoBase64: string,
     age: number,
-    athlete: Athlete
-  ) => `
+     athlete: Athlete,
+     version: CardVersion
+   ) => {
+     const isVocafit = version === 'vocafit';
+     const brandName = isVocafit ? 'VOCAFIT' : 'HIROCROSS';
+     const primaryColor = isVocafit ? '#1e40af' : '#e94560';
+     const headerGradient = isVocafit 
+       ? 'linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%)'
+       : 'linear-gradient(90deg, #e94560 0%, #ff6b6b 100%)';
+     const bodyGradient = isVocafit
+       ? 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%)'
+       : 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)';
+     
+     return `
     <div class="card" style="
       width: 340px;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+       background: ${bodyGradient};
       border-radius: 16px;
       overflow: hidden;
       color: white;
       font-family: 'Segoe UI', Tahoma, sans-serif;
     ">
       <div style="
-        background: linear-gradient(90deg, #e94560 0%, #ff6b6b 100%);
+         background: ${headerGradient};
         padding: 16px 20px;
         display: flex;
         align-items: center;
         gap: 12px;
       ">
-        ${logoBase64 ? `<img src="${logoBase64}" alt="Hirocross" style="width: 40px; height: 40px; object-fit: contain;" />` : ''}
+         ${logoBase64 ? `<img src="${logoBase64}" alt="${brandName}" style="width: ${isVocafit ? '80px' : '40px'}; height: ${isVocafit ? '35px' : '40px'}; object-fit: contain;" />` : ''}
         <div>
-          <div style="font-size: 18px; font-weight: 700; letter-spacing: 1px;">HIROCROSS</div>
+           <div style="font-size: 18px; font-weight: 700; letter-spacing: 1px;">${brandName}</div>
           <div style="font-size: 10px; opacity: 0.9;">Athlete Identification Card</div>
         </div>
       </div>
       <div style="padding: 24px 20px; display: flex; gap: 20px;">
         <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
           ${safePhoto 
-            ? `<img src="${safePhoto}" alt="${safeName}" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #e94560; object-fit: cover;" />`
-            : `<div style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #e94560; background: #2a2a4a; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #e94560;">${safeName.charAt(0)}</div>`
+             ? `<img src="${safePhoto}" alt="${safeName}" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid ${primaryColor}; object-fit: cover;" />`
+             : `<div style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid ${primaryColor}; background: #2a2a4a; display: flex; align-items: center; justify-content: center; font-size: 32px; color: ${primaryColor};">${safeName.charAt(0)}</div>`
           }
           <div style="background: white; padding: 6px; border-radius: 6px;">
             <img src="${qrDataUrl}" alt="QR Code" style="width: 60px; height: 60px; display: block;" />
@@ -317,7 +353,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
         </div>
         <div style="flex: 1;">
           <div style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">${safeName}</div>
-          <div style="font-size: 12px; color: #e94560; font-weight: 600; margin-bottom: 12px;">${safeSport}</div>
+           <div style="font-size: 12px; color: ${primaryColor}; font-weight: 600; margin-bottom: 12px;">${safeSport}</div>
           <div style="display: grid; gap: 8px;">
             <div style="display: flex; justify-content: space-between; font-size: 12px;">
               <span style="color: #888;">Usia</span>
@@ -346,14 +382,15 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
             </div>
             ` : ''}
           </div>
-          <div style="background: #e94560; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; display: inline-block; margin-top: 8px;">ID: ${shortId}</div>
+           <div style="background: ${primaryColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; display: inline-block; margin-top: 8px;">ID: ${shortId}</div>
         </div>
       </div>
       <div style="background: rgba(0,0,0,0.2); padding: 12px 20px; text-align: center; font-size: 10px; color: #888;">
-        Scan QR/Barcode untuk akses profil & hasil tes • ${new Date().getFullYear()} Hirocross
+         Scan QR/Barcode untuk akses profil & hasil tes • ${new Date().getFullYear()} ${brandName}
       </div>
     </div>
   `;
+   };
 
   const generateStickerHtml = (
     safeName: string, 
@@ -363,12 +400,21 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
     qrDataUrl: string,
     barcodeDataUrl: string,
     shortId: string,
-    logoBase64: string
-  ) => `
+     logoBase64: string,
+     version: CardVersion
+   ) => {
+     const isVocafit = version === 'vocafit';
+     const brandName = isVocafit ? 'VOCAFIT' : 'HIROCROSS';
+     const primaryColor = isVocafit ? '#1e40af' : '#e94560';
+     const gradientColors = isVocafit 
+       ? 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)'
+       : 'linear-gradient(135deg, #e94560 0%, #ff6b6b 100%)';
+     
+     return `
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Stiker Atlet - ${safeName}</title>
+       <title>Stiker Atlet ${brandName} - ${safeName}</title>
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -392,7 +438,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
         }
         .left-section {
           width: 28mm;
-          background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+           background: ${gradientColors};
           padding: 4mm;
           display: flex;
           flex-direction: column;
@@ -401,8 +447,8 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
           gap: 2mm;
         }
         .logo {
-          width: 12mm;
-          height: 12mm;
+           width: ${isVocafit ? '18mm' : '12mm'};
+           height: ${isVocafit ? '10mm' : '12mm'};
           object-fit: contain;
         }
         .brand {
@@ -449,7 +495,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
         }
         .sport {
           font-size: 7pt;
-          color: #e94560;
+           color: ${primaryColor};
           font-weight: 600;
           margin-bottom: 2mm;
         }
@@ -515,7 +561,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
       <div class="sticker">
         <div class="left-section">
           ${logoBase64 ? `<img src="${logoBase64}" alt="Logo" class="logo" />` : ''}
-          <div class="brand">HIROCROSS</div>
+           <div class="brand">${brandName}</div>
           ${safePhoto 
             ? `<img src="${safePhoto}" alt="${safeName}" class="photo" />`
             : `<div class="photo-placeholder">${safeName.charAt(0)}</div>`
@@ -551,6 +597,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
     </body>
     </html>
   `;
+   };
 
   const generateCardHtml = (
     safeName: string, 
@@ -562,12 +609,24 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
     shortId: string,
     logoBase64: string,
     age: number,
-    athlete: Athlete
-  ) => `
+     athlete: Athlete,
+     version: CardVersion
+   ) => {
+     const isVocafit = version === 'vocafit';
+     const brandName = isVocafit ? 'VOCAFIT' : 'HIROCROSS';
+     const primaryColor = isVocafit ? '#1e40af' : '#e94560';
+     const headerGradient = isVocafit 
+       ? 'linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%)'
+       : 'linear-gradient(90deg, #e94560 0%, #ff6b6b 100%)';
+     const bodyGradient = isVocafit
+       ? 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%)'
+       : 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)';
+     
+     return `
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Kartu Atlet - ${safeName}</title>
+       <title>Kartu Atlet ${brandName} - ${safeName}</title>
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -581,22 +640,22 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
         }
         .card {
           width: 350px;
-          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+           background: ${bodyGradient};
           border-radius: 16px;
           overflow: hidden;
           box-shadow: 0 20px 40px rgba(0,0,0,0.3);
           color: white;
         }
         .header {
-          background: linear-gradient(90deg, #e94560 0%, #ff6b6b 100%);
+           background: ${headerGradient};
           padding: 16px 20px;
           display: flex;
           align-items: center;
           gap: 12px;
         }
         .logo {
-          width: 40px;
-          height: 40px;
+           width: ${isVocafit ? '80px' : '40px'};
+           height: ${isVocafit ? '35px' : '40px'};
           object-fit: contain;
         }
         .header-text h1 {
@@ -623,7 +682,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
           width: 80px;
           height: 80px;
           border-radius: 50%;
-          border: 3px solid #e94560;
+           border: 3px solid ${primaryColor};
           object-fit: cover;
           background: #2a2a4a;
         }
@@ -631,13 +690,13 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
           width: 80px;
           height: 80px;
           border-radius: 50%;
-          border: 3px solid #e94560;
+           border: 3px solid ${primaryColor};
           background: #2a2a4a;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 32px;
-          color: #e94560;
+           color: ${primaryColor};
         }
         .qr-container {
           background: white;
@@ -668,7 +727,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
         }
         .sport {
           font-size: 12px;
-          color: #e94560;
+           color: ${primaryColor};
           font-weight: 600;
           margin-bottom: 12px;
         }
@@ -695,7 +754,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
           color: #888;
         }
         .id-badge {
-          background: #e94560;
+           background: ${primaryColor};
           color: white;
           padding: 4px 8px;
           border-radius: 4px;
@@ -713,9 +772,9 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
     <body>
       <div class="card">
         <div class="header">
-          ${logoBase64 ? `<img src="${logoBase64}" alt="Hirocross" class="logo" />` : '<div class="logo"></div>'}
+           ${logoBase64 ? `<img src="${logoBase64}" alt="${brandName}" class="logo" />` : '<div class="logo"></div>'}
           <div class="header-text">
-            <h1>HIROCROSS</h1>
+             <h1>${brandName}</h1>
             <p>Athlete Identification Card</p>
           </div>
         </div>
@@ -767,7 +826,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
           </div>
         </div>
         <div class="footer">
-          Scan QR/Barcode untuk akses profil & hasil tes • ${new Date().getFullYear()} Hirocross
+           Scan QR/Barcode untuk akses profil & hasil tes • ${new Date().getFullYear()} ${brandName}
         </div>
       </div>
       <script>
@@ -785,6 +844,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
     </body>
     </html>
   `;
+   };
 
   return (
     <>
@@ -799,41 +859,57 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
         />
       </div>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button 
-            variant="outline" 
-            disabled={isPrinting}
-            className="gap-2"
-          >
-            {isPrinting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Printer className="w-4 h-4" />
-            )}
-            Cetak Kartu
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="bg-popover">
-          <DropdownMenuItem onClick={() => handlePrint('card')} className="gap-2">
-            <Printer className="w-4 h-4" />
-            Cetak Kartu Penuh
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handlePrint('sticker')} className="gap-2">
-            <Tag className="w-4 h-4" />
-            Cetak Stiker Label
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => handleDownloadPDF('card')} className="gap-2">
-            <Download className="w-4 h-4" />
-            Download PDF Kartu
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleDownloadPDF('sticker')} className="gap-2">
-            <Download className="w-4 h-4" />
-            Download PDF Stiker
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+       <div className="flex items-center gap-2">
+         <Select value={selectedVersion} onValueChange={(v: CardVersion) => setSelectedVersion(v)}>
+           <SelectTrigger className="w-[130px] h-9">
+             <SelectValue placeholder="Pilih versi" />
+           </SelectTrigger>
+           <SelectContent>
+             <SelectItem value="hirocross">HiroCross</SelectItem>
+             <SelectItem value="vocafit">VocaFit</SelectItem>
+           </SelectContent>
+         </Select>
+ 
+         <DropdownMenu>
+           <DropdownMenuTrigger asChild>
+             <Button 
+               variant="outline" 
+               disabled={isPrinting}
+               className="gap-2"
+             >
+               {isPrinting ? (
+                 <Loader2 className="w-4 h-4 animate-spin" />
+               ) : (
+                 <Printer className="w-4 h-4" />
+               )}
+               Cetak Kartu
+             </Button>
+           </DropdownMenuTrigger>
+           <DropdownMenuContent align="end" className="bg-popover">
+             <DropdownMenuLabel className="text-xs text-muted-foreground">
+               Versi: {selectedVersion === 'hirocross' ? 'HiroCross' : 'VocaFit'}
+             </DropdownMenuLabel>
+             <DropdownMenuSeparator />
+             <DropdownMenuItem onClick={() => handlePrint('card')} className="gap-2">
+               <Printer className="w-4 h-4" />
+               Cetak Kartu Penuh
+             </DropdownMenuItem>
+             <DropdownMenuItem onClick={() => handlePrint('sticker')} className="gap-2">
+               <Tag className="w-4 h-4" />
+               Cetak Stiker Label
+             </DropdownMenuItem>
+             <DropdownMenuSeparator />
+             <DropdownMenuItem onClick={() => handleDownloadPDF('card')} className="gap-2">
+               <Download className="w-4 h-4" />
+               Download PDF Kartu
+             </DropdownMenuItem>
+             <DropdownMenuItem onClick={() => handleDownloadPDF('sticker')} className="gap-2">
+               <Download className="w-4 h-4" />
+               Download PDF Stiker
+             </DropdownMenuItem>
+           </DropdownMenuContent>
+         </DropdownMenu>
+       </div>
     </>
   );
 }
