@@ -4,10 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, Calendar, Ruler, Weight, Trophy, Target, FileText, AlertCircle } from 'lucide-react';
+ import { User, Calendar, Ruler, Weight, Trophy, Target, FileText, AlertCircle, Brain, Sparkles } from 'lucide-react';
 import { RadarChart } from '@/components/charts/RadarChart';
 import { biomotorCategories } from '@/data/biomotorTests';
 import hirocrossLogo from '@/assets/hirocross-logo.png';
+ import vocafitHeader from '@/assets/vocafit-header.png';
 
 interface AthleteData {
   id: string;
@@ -36,6 +37,12 @@ interface TestSession {
   results: TestResult[];
 }
 
+ interface CategoryAverage {
+   categoryId: string;
+   categoryName: string;
+   averageScore: number;
+ }
+ 
 const getScoreLabel = (score: number): { label: string; color: string } => {
   if (score >= 5) return { label: 'Baik Sekali', color: 'text-green-600 bg-green-100' };
   if (score >= 4) return { label: 'Baik', color: 'text-blue-600 bg-blue-100' };
@@ -66,6 +73,8 @@ export default function PublicAthleteProfile() {
   const { id } = useParams<{ id: string }>();
   const [athlete, setAthlete] = useState<AthleteData | null>(null);
   const [latestSession, setLatestSession] = useState<TestSession | null>(null);
+   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+   const [categoryAverages, setCategoryAverages] = useState<CategoryAverage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,6 +102,8 @@ export default function PublicAthleteProfile() {
 
         setAthlete(athleteData.athlete);
         setLatestSession(athleteData.latestSession);
+         setAiAnalysis(athleteData.aiAnalysis || null);
+         setCategoryAverages(athleteData.categoryAverages || []);
       } catch (err) {
         console.error('Error fetching athlete:', err);
         setError('Gagal memuat data atlet');
@@ -158,16 +169,37 @@ export default function PublicAthleteProfile() {
       )
     : [];
 
+   // Format AI analysis text with proper line breaks
+   const formatAnalysisText = (text: string) => {
+     return text.split('\n').map((line, index) => {
+       // Check if line is a header (starts with ** or number)
+       const isHeader = line.match(/^\*\*.*\*\*$/) || line.match(/^\d+\./);
+       const cleanLine = line.replace(/\*\*/g, '');
+       
+       if (!cleanLine.trim()) return null;
+       
+       if (isHeader) {
+         return (
+           <p key={index} className="font-semibold text-foreground mt-3 first:mt-0">
+             {cleanLine}
+           </p>
+         );
+       }
+       return (
+         <p key={index} className="text-muted-foreground mb-2">
+           {cleanLine}
+         </p>
+       );
+     });
+   };
+ 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       {/* Header */}
-      <div className="bg-primary text-primary-foreground p-4">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <img src={hirocrossLogo} alt="Hirocross" className="w-10 h-10 object-contain" />
-          <div>
-            <h1 className="text-lg font-bold">HIROCROSS</h1>
-            <p className="text-xs opacity-80">Profil Atlet Digital</p>
-          </div>
+        <div className="bg-primary text-primary-foreground p-4">
+         <div className="max-w-2xl mx-auto">
+           <img src={vocafitHeader} alt="VocaFit" className="h-12 object-contain" />
+           <p className="text-xs opacity-80 mt-1">Profil Atlet Digital</p>
         </div>
       </div>
 
@@ -277,6 +309,26 @@ export default function PublicAthleteProfile() {
                   </div>
                 )}
 
+                 {/* Category Scores Summary */}
+                 {categoryAverages.length > 0 && (
+                   <div className="space-y-2">
+                     <h4 className="font-medium text-sm text-muted-foreground">Skor Kategori</h4>
+                     <div className="grid grid-cols-2 gap-2">
+                       {categoryAverages.map((cat) => {
+                         const scoreInfo = getScoreLabel(cat.averageScore);
+                         return (
+                           <div key={cat.categoryId} className="flex justify-between items-center p-2 bg-muted rounded-lg">
+                             <span className="text-sm font-medium">{cat.categoryName}</span>
+                             <Badge className={scoreInfo.color} variant="outline">
+                               {cat.averageScore.toFixed(1)}
+                             </Badge>
+                           </div>
+                         );
+                       })}
+                     </div>
+                   </div>
+                 )}
+ 
                 {/* Detailed Results */}
                 <div className="space-y-3">
                   <h4 className="font-medium text-sm text-muted-foreground">Detail Hasil</h4>
@@ -327,9 +379,35 @@ export default function PublicAthleteProfile() {
           </CardContent>
         </Card>
 
+         {/* AI Analysis Section */}
+         {aiAnalysis && (
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+             <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-primary">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                   <Brain className="w-5 h-5" />
+                 </div>
+                 <div>
+                   <span>Analisis AI</span>
+                   <p className="text-xs font-normal text-muted-foreground flex items-center gap-1 mt-0.5">
+                     <Sparkles className="w-3 h-3" />
+                     Powered by VocaFit AI
+                   </p>
+                 </div>
+               </CardTitle>
+             </CardHeader>
+             <CardContent>
+               <div className="prose prose-sm max-w-none dark:prose-invert">
+                 {formatAnalysisText(aiAnalysis)}
+               </div>
+             </CardContent>
+           </Card>
+         )}
+ 
         {/* Footer */}
         <div className="text-center text-xs text-muted-foreground py-4">
-          <p>Profil Atlet Digital oleh Hirocross © {new Date().getFullYear()}</p>
+           <p>Profil Atlet Digital oleh VocaFit © {new Date().getFullYear()}</p>
+           <p className="mt-1 opacity-60">Powered by HIROCROSS Measure</p>
         </div>
       </div>
     </div>
