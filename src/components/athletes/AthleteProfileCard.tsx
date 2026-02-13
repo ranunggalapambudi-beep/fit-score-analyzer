@@ -6,7 +6,7 @@ import JsBarcode from 'jsbarcode';
 import { Athlete } from '@/types/athlete';
 import { toast } from 'sonner';
 import hirocrossLogo from '@/assets/hirocross-logo.png';
- import vocafitHeader from '@/assets/vocafit-header.png';
+ import vocafitLogo from '@/assets/vocafit-logo.png';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -71,7 +71,7 @@ export function AthleteProfileCard({ athlete, baseUrl = window.location.origin }
         resolve(canvas.toDataURL('image/png'));
       };
       img.onerror = () => resolve('');
-       img.src = version === 'vocafit' ? vocafitHeader : hirocrossLogo;
+       img.src = version === 'vocafit' ? vocafitLogo : hirocrossLogo;
     });
   };
 
