@@ -70,13 +70,14 @@ const calculateBMI = (weight: number, height: number): { value: number; category
 };
 
 export default function PublicAthleteProfile() {
-  const { id } = useParams<{ id: string }>();
-  const [athlete, setAthlete] = useState<AthleteData | null>(null);
-  const [latestSession, setLatestSession] = useState<TestSession | null>(null);
-   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
-   const [categoryAverages, setCategoryAverages] = useState<CategoryAverage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+   const { id } = useParams<{ id: string }>();
+   const [athlete, setAthlete] = useState<AthleteData | null>(null);
+   const [latestSession, setLatestSession] = useState<TestSession | null>(null);
+    const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+    const [categoryAverages, setCategoryAverages] = useState<CategoryAverage[]>([]);
+   const [loading, setLoading] = useState(true);
+   const [error, setError] = useState<string | null>(null);
+   const [isVocaFit] = useState(true); // VocaFit version for scanned profiles
 
   useEffect(() => {
     const fetchData = async () => {
@@ -193,15 +194,15 @@ export default function PublicAthleteProfile() {
      });
    };
  
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
-      {/* Header */}
-         <div className="bg-primary text-primary-foreground p-4">
-          <div className="max-w-2xl mx-auto">
-            <img src={vocafitLogo} alt="VocaFit" className="h-16 object-contain" />
-            <p className="text-xs opacity-80 mt-1">Profil Atlet Digital</p>
-         </div>
-       </div>
+   return (
+     <div className={`min-h-screen bg-gradient-to-br ${isVocaFit ? 'from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900' : 'from-background to-muted'}`}>
+       {/* Header */}
+          <div className={`${isVocaFit ? 'bg-blue-600' : 'bg-primary'} text-white p-4`}>
+           <div className="max-w-2xl mx-auto">
+             <img src={vocafitLogo} alt="VocaFit" className="h-16 object-contain" />
+             <p className="text-xs opacity-80 mt-1">Profil Atlet Digital</p>
+          </div>
+        </div>
 
       <div className="max-w-2xl mx-auto p-4 space-y-4">
         {/* Athlete Profile Card */}
@@ -211,14 +212,14 @@ export default function PublicAthleteProfile() {
               {/* Photo */}
               <div className="flex-shrink-0">
                 {athlete.photo ? (
-                  <img 
-                    src={athlete.photo} 
-                    alt={athlete.name} 
-                    className="w-24 h-24 rounded-full object-cover border-4 border-primary"
-                  />
+                   <img 
+                     src={athlete.photo} 
+                     alt={athlete.name} 
+                     className={`w-24 h-24 rounded-full object-cover border-4 ${isVocaFit ? 'border-blue-600' : 'border-primary'}`}
+                   />
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-muted border-4 border-primary flex items-center justify-center">
-                    <User className="w-12 h-12 text-muted-foreground" />
+                   <div className={`w-24 h-24 rounded-full ${isVocaFit ? 'bg-blue-100' : 'bg-muted'} border-4 ${isVocaFit ? 'border-blue-600' : 'border-primary'} flex items-center justify-center`}>
+                     <User className={`w-12 h-12 ${isVocaFit ? 'text-blue-600' : 'text-muted-foreground'}`} />
                   </div>
                 )}
               </div>
@@ -238,29 +239,29 @@ export default function PublicAthleteProfile() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
-              <div className="bg-muted rounded-lg p-3 text-center">
-                <Calendar className="w-5 h-5 mx-auto text-primary mb-1" />
-                <p className="text-lg font-bold">{age}</p>
-                <p className="text-xs text-muted-foreground">Tahun</p>
-              </div>
-              <div className="bg-muted rounded-lg p-3 text-center">
-                <User className="w-5 h-5 mx-auto text-primary mb-1" />
-                <p className="text-lg font-bold">{athlete.gender === 'male' ? 'L' : 'P'}</p>
-                <p className="text-xs text-muted-foreground">Gender</p>
-              </div>
+               <div className={`${isVocaFit ? 'bg-blue-100' : 'bg-muted'} rounded-lg p-3 text-center`}>
+                 <Calendar className={`w-5 h-5 mx-auto ${isVocaFit ? 'text-blue-600' : 'text-primary'} mb-1`} />
+                 <p className="text-lg font-bold">{age}</p>
+                 <p className="text-xs text-muted-foreground">Tahun</p>
+               </div>
+               <div className={`${isVocaFit ? 'bg-blue-100' : 'bg-muted'} rounded-lg p-3 text-center`}>
+                 <User className={`w-5 h-5 mx-auto ${isVocaFit ? 'text-blue-600' : 'text-primary'} mb-1`} />
+                 <p className="text-lg font-bold">{athlete.gender === 'male' ? 'L' : 'P'}</p>
+                 <p className="text-xs text-muted-foreground">Gender</p>
+               </div>
               {athlete.height && (
-                <div className="bg-muted rounded-lg p-3 text-center">
-                  <Ruler className="w-5 h-5 mx-auto text-primary mb-1" />
-                  <p className="text-lg font-bold">{athlete.height}</p>
-                  <p className="text-xs text-muted-foreground">cm</p>
-                </div>
+                 <div className={`${isVocaFit ? 'bg-blue-100' : 'bg-muted'} rounded-lg p-3 text-center`}>
+                   <Ruler className={`w-5 h-5 mx-auto ${isVocaFit ? 'text-blue-600' : 'text-primary'} mb-1`} />
+                   <p className="text-lg font-bold">{athlete.height}</p>
+                   <p className="text-xs text-muted-foreground">cm</p>
+                 </div>
               )}
               {athlete.weight && (
-                <div className="bg-muted rounded-lg p-3 text-center">
-                  <Weight className="w-5 h-5 mx-auto text-primary mb-1" />
-                  <p className="text-lg font-bold">{athlete.weight}</p>
-                  <p className="text-xs text-muted-foreground">kg</p>
-                </div>
+                 <div className={`${isVocaFit ? 'bg-blue-100' : 'bg-muted'} rounded-lg p-3 text-center`}>
+                   <Weight className={`w-5 h-5 mx-auto ${isVocaFit ? 'text-blue-600' : 'text-primary'} mb-1`} />
+                   <p className="text-lg font-bold">{athlete.weight}</p>
+                   <p className="text-xs text-muted-foreground">kg</p>
+                 </div>
               )}
             </div>
 
@@ -379,30 +380,30 @@ export default function PublicAthleteProfile() {
           </CardContent>
         </Card>
 
-         {/* AI Analysis Section */}
-         {aiAnalysis && (
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
-             <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-primary">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                   <Brain className="w-5 h-5" />
-                 </div>
-                 <div>
-                   <span>Analisis AI</span>
-                   <p className="text-xs font-normal text-muted-foreground flex items-center gap-1 mt-0.5">
-                     <Sparkles className="w-3 h-3" />
-                     Powered by VocaFit AI
-                   </p>
-                 </div>
-               </CardTitle>
-             </CardHeader>
-             <CardContent>
-               <div className="prose prose-sm max-w-none dark:prose-invert">
-                 {formatAnalysisText(aiAnalysis)}
-               </div>
-             </CardContent>
-           </Card>
-         )}
+          {/* AI Analysis Section */}
+          {aiAnalysis && (
+             <Card className={`${isVocaFit ? 'border-blue-200 bg-gradient-to-br from-blue-50 to-background dark:from-blue-950/20 dark:to-background' : 'border-primary/20 bg-gradient-to-br from-primary/5 to-background'}`}>
+              <CardHeader>
+                 <CardTitle className={`flex items-center gap-2 ${isVocaFit ? 'text-blue-600' : 'text-primary'}`}>
+                   <div className={`p-2 ${isVocaFit ? 'bg-blue-100' : 'bg-primary/10'} rounded-lg`}>
+                    <Brain className={`w-5 h-5 ${isVocaFit ? 'text-blue-600' : ''}`} />
+                  </div>
+                  <div>
+                    <span>Analisis AI</span>
+                    <p className="text-xs font-normal text-muted-foreground flex items-center gap-1 mt-0.5">
+                      <Sparkles className="w-3 h-3" />
+                      Powered by VocaFit AI
+                    </p>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="prose prose-sm max-w-none dark:prose-invert">
+                  {formatAnalysisText(aiAnalysis)}
+                </div>
+              </CardContent>
+            </Card>
+          )}
  
         {/* Footer */}
         <div className="text-center text-xs text-muted-foreground py-4">
