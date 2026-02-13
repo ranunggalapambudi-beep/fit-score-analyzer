@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { RadarChart } from '@/components/charts/RadarChart';
 import { biomotorCategories } from '@/data/biomotorTests';
 import hirocrossLogo from '@/assets/hirocross-logo.png';
- import vocafitHeader from '@/assets/vocafit-header.png';
+ import vocafitLogo from '@/assets/vocafit-logo.png';
 
 interface AthleteData {
   id: string;
@@ -196,12 +196,12 @@ export default function PublicAthleteProfile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       {/* Header */}
-        <div className="bg-primary text-primary-foreground p-4">
-         <div className="max-w-2xl mx-auto">
-           <img src={vocafitHeader} alt="VocaFit" className="h-12 object-contain" />
-           <p className="text-xs opacity-80 mt-1">Profil Atlet Digital</p>
-        </div>
-      </div>
+         <div className="bg-primary text-primary-foreground p-4">
+          <div className="max-w-2xl mx-auto">
+            <img src={vocafitLogo} alt="VocaFit" className="h-16 object-contain" />
+            <p className="text-xs opacity-80 mt-1">Profil Atlet Digital</p>
+         </div>
+       </div>
 
       <div className="max-w-2xl mx-auto p-4 space-y-4">
         {/* Athlete Profile Card */}
