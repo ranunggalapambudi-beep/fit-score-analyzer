@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -8,11 +9,20 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface ContactMessage {
-  name: string;
-  email: string;
-  subject?: string;
-  message: string;
+const ContactMessageSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  email: z.string().trim().email().max(255),
+  subject: z.string().trim().max(200).optional(),
+  message: z.string().trim().min(1).max(2000),
+});
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -22,10 +32,27 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { name, email, subject, message }: ContactMessage = await req.json();
-    
-    console.log("Received contact message from:", email);
-    console.log("Subject:", subject);
+    let rawBody: unknown;
+    try {
+      rawBody = await req.json();
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+    const parsed = ContactMessageSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+    const { name, email, subject, message } = parsed.data;
+    const safeName = escapeHtml(name);
+    const safeEmail = escapeHtml(email);
+    const safeSubject = subject ? escapeHtml(subject) : "";
+    const safeMessage = escapeHtml(message);
     
     // Admin email to notify
     const adminEmail = "nafisa.arifp@gmail.com";
@@ -34,7 +61,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "HiroCross Measure <onboarding@resend.dev>",
       to: [adminEmail],
-      subject: `[HiroCross] Pesan Baru dari ${name}: ${subject || 'Tanpa Subjek'}`,
+      subject: `[HiroCross] Pesan Baru dari ${name}: ${subject || 'Tanpa Subjek'}`.slice(0, 250),
       html: `
         <!DOCTYPE html>
         <html>
@@ -61,22 +88,22 @@ const handler = async (req: Request): Promise<Response> => {
             <div class="content">
               <div class="field">
                 <div class="field-label">Nama Pengirim</div>
-                <div class="field-value">${name}</div>
+                <div class="field-value">${safeName}</div>
               </div>
               <div class="field">
                 <div class="field-label">Email</div>
-                <div class="field-value">${email}</div>
+                <div class="field-value">${safeEmail}</div>
               </div>
               <div class="field">
                 <div class="field-label">Subjek</div>
-                <div class="field-value">${subject || 'Tidak ada subjek'}</div>
+                <div class="field-value">${safeSubject || 'Tidak ada subjek'}</div>
               </div>
               <div class="field">
                 <div class="field-label">Pesan</div>
-                <div class="message-box">${message}</div>
+                <div class="message-box">${safeMessage}</div>
               </div>
               <center>
-                <a href="mailto:${email}" class="btn">Balas Email</a>
+                <a href="mailto:${safeEmail}" class="btn">Balas Email</a>
               </center>
             </div>
             <div class="footer">
