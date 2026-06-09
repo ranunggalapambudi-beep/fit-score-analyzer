@@ -25,6 +25,8 @@ export default function TestSession() {
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
   const [results, setResults] = useState<Record<string, number>>({});
   const [notes, setNotes] = useState('');
+  // Separate state for beep-test level & shuttle inputs
+  const [beepInputs, setBeepInputs] = useState<{ level: string; shuttle: string }>({ level: '', shuttle: '' });
 
   // Fetch athlete from Supabase
   useEffect(() => {
@@ -95,6 +97,26 @@ export default function TestSession() {
         const newResults = { ...prev };
         delete newResults[testId];
         return newResults;
+      });
+    }
+  };
+
+  const handleBeepChange = (field: 'level' | 'shuttle', value: string) => {
+    const next = { ...beepInputs, [field]: value };
+    setBeepInputs(next);
+    const levelNum = parseInt(next.level, 10);
+    const shuttleNum = parseInt(next.shuttle, 10);
+    if (!isNaN(levelNum) && !isNaN(shuttleNum)) {
+      // Combine as level.shuttle (e.g. Level 7 Shuttle 5 => 7.5; shuttle 12 => 7.12)
+      const combined = parseFloat(`${levelNum}.${shuttleNum}`);
+      setResults((prev) => ({ ...prev, ['beep-test']: combined }));
+    } else if (!isNaN(levelNum)) {
+      setResults((prev) => ({ ...prev, ['beep-test']: levelNum }));
+    } else {
+      setResults((prev) => {
+        const n = { ...prev };
+        delete n['beep-test'];
+        return n;
       });
     }
   };
@@ -275,6 +297,47 @@ export default function TestSession() {
                   <h3 className="font-semibold text-sm">{test.name}</h3>
                   <p className="text-xs text-muted-foreground mt-0.5">{test.description}</p>
                 </div>
+                {test.id === 'beep-test' ? (
+                  <div className="space-y-2">
+                    <div className="flex items-end gap-3">
+                      <div className="flex-1 space-y-1.5">
+                        <Label htmlFor={`${test.id}-level`} className="text-xs text-muted-foreground">
+                          Level
+                        </Label>
+                        <Input
+                          id={`${test.id}-level`}
+                          type="number"
+                          min="1"
+                          max="21"
+                          value={beepInputs.level}
+                          onChange={(e) => handleBeepChange('level', e.target.value)}
+                          placeholder="cth: 7"
+                        />
+                      </div>
+                      <div className="flex-1 space-y-1.5">
+                        <Label htmlFor={`${test.id}-shuttle`} className="text-xs text-muted-foreground">
+                          Shuttle
+                        </Label>
+                        <Input
+                          id={`${test.id}-shuttle`}
+                          type="number"
+                          min="1"
+                          value={beepInputs.shuttle}
+                          onChange={(e) => handleBeepChange('shuttle', e.target.value)}
+                          placeholder="cth: 5"
+                        />
+                      </div>
+                      {score !== null && (
+                        <div className="shrink-0">
+                          <ScoreBadge score={score} size="md" />
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Catat level & shuttle terakhir yang berhasil diselesaikan (contoh: Level 7 Shuttle 5).
+                    </p>
+                  </div>
+                ) : (
                 <div className="flex items-end gap-3">
                   <div className="flex-1 space-y-1.5">
                     <Label htmlFor={test.id} className="text-xs text-muted-foreground">
@@ -295,6 +358,7 @@ export default function TestSession() {
                     </div>
                   )}
                 </div>
+                )}
               </div>
             );
           })}
