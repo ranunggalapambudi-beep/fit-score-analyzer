@@ -256,10 +256,14 @@ export default function AdminDashboard() {
   };
 
   const markAsRead = async (messageId: string) => {
-    // Update locally only since we don't have UPDATE policy for regular read
-    setMessages(prev => 
+    setMessages(prev =>
       prev.map(m => m.id === messageId ? { ...m, is_read: true } : m)
     );
+    const { error } = await supabase
+      .from('contact_messages')
+      .update({ is_read: true })
+      .eq('id', messageId);
+    if (error) console.error('Error marking message as read:', error);
   };
 
   const handleRoleChange = async (userId: string, newRole: 'admin' | 'moderator' | 'user' | 'none') => {
