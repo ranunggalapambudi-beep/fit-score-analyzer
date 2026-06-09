@@ -11,12 +11,13 @@ import { exportTeamsToCSV } from '@/utils/csvExport';
 import { Search, Plus, Users2, Download, Upload, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Team } from '@/types/team';
+import { Athlete } from '@/types/athlete';
 
 export default function Teams() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   
-  const { teams, athletes, loading, addTeam, refreshData } = useSupabaseData();
+  const { teams, athletes, loading, addTeam, addAthlete, refreshData } = useSupabaseData();
 
   const filteredTeams = teams.filter((team) =>
     team.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -45,6 +46,23 @@ export default function Teams() {
       if (result) successCount++;
     }
     toast.success(`${successCount} tim berhasil diimpor`);
+    refreshData();
+  };
+
+  const handleImportAthletesToTeam = async (
+    importedAthletes: Omit<Athlete, 'id'>[],
+    team: Team,
+  ) => {
+    let successCount = 0;
+    for (const a of importedAthletes) {
+      const result = await addAthlete({
+        ...a,
+        team: team.name,
+        sport: a.sport || team.sport,
+      });
+      if (result) successCount++;
+    }
+    toast.success(`${successCount} atlet berhasil diimpor ke ${team.name}`);
     refreshData();
   };
 
@@ -123,6 +141,7 @@ export default function Teams() {
                 athleteCount={getAthleteCount(team.id)}
                 onClick={() => navigate(`/teams/${team.id}`)}
                 onAthleteAdded={refreshData}
+                onImportAthletes={handleImportAthletesToTeam}
               />
             ))}
           </div>
