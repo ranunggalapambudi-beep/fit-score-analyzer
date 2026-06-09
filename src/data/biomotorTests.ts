@@ -53,16 +53,16 @@ export const biomotorCategories: BiomotorCategory[] = [
       },
       {
         id: 'beep-test',
-        name: 'Multistage Fitness Test (Beep Test)',
-        description: 'Tes lari bolak-balik 20 meter mengikuti irama bunyi beep yang semakin cepat',
-        procedure: '1. Lari bolak-balik 20 meter\n2. Ikuti irama beep\n3. Catat level dan shuttle terakhir',
-        equipment: ['Lapangan 20 meter', 'Audio beep test', 'Cone', 'Speaker'],
+        name: 'Beep Test (Multi-Stage Fitness Test)',
+        description: 'Tes lari bolak-balik 20 meter mengikuti irama bunyi beep yang semakin cepat. Hasil dicatat dalam format Level dan Shuttle terakhir yang berhasil diselesaikan. Setiap level terdiri dari beberapa shuttle dengan kecepatan yang meningkat.',
+        procedure: '1. Siapkan lintasan lurus 20 meter dengan cone penanda di setiap ujung\n2. Atlet berdiri di salah satu ujung, siap mengikuti irama beep\n3. Setiap bunyi beep, atlet harus sampai di ujung berlawanan (20 meter)\n4. Level dimulai dari Level 1 (7 shuttle, 8.0 km/jam) dan naik setiap level\n5. Setiap level terdiri dari beberapa shuttle dengan kecepatan yang meningkat 0.5 km/jam per level\n6. Catat Level dan Shuttle TERAKHIR yang berhasil diselesaikan sebelum gagal\n7. Contoh hasil: Level 7 Shuttle 5 ditulis 7.5 atau Level 7, Shuttle 5',
+        equipment: ['Lapangan 20 meter', 'Audio beep test / aplikasi', 'Cone penanda', 'Speaker'],
         reference: 'Léger, L.A. & Lambert, J. (1982). A maximal multistage 20m shuttle run test',
         norms: [
-          { gender: 'male', ageRange: [13, 19], scale1: [0, 5], scale2: [5, 7], scale3: [7, 9], scale4: [9, 11], scale5: [11, 21], unit: 'level', higherIsBetter: true },
-          { gender: 'male', ageRange: [20, 29], scale1: [0, 6], scale2: [6, 8], scale3: [8, 10], scale4: [10, 12], scale5: [12, 21], unit: 'level', higherIsBetter: true },
-          { gender: 'female', ageRange: [13, 19], scale1: [0, 4], scale2: [4, 5.5], scale3: [5.5, 7], scale4: [7, 8.5], scale5: [8.5, 21], unit: 'level', higherIsBetter: true },
-          { gender: 'female', ageRange: [20, 29], scale1: [0, 4.5], scale2: [4.5, 6], scale3: [6, 7.5], scale4: [7.5, 9], scale5: [9, 21], unit: 'level', higherIsBetter: true },
+          { gender: 'male', ageRange: [13, 19], scale1: [0, 5.0], scale2: [5.0, 7.0], scale3: [7.0, 9.0], scale4: [9.0, 11.0], scale5: [11.0, 21.0], unit: 'level', higherIsBetter: true },
+          { gender: 'male', ageRange: [20, 29], scale1: [0, 6.0], scale2: [6.0, 8.0], scale3: [8.0, 10.0], scale4: [10.0, 12.0], scale5: [12.0, 21.0], unit: 'level', higherIsBetter: true },
+          { gender: 'female', ageRange: [13, 19], scale1: [0, 4.0], scale2: [4.0, 5.5], scale3: [5.5, 7.0], scale4: [7.0, 8.5], scale5: [8.5, 21.0], unit: 'level', higherIsBetter: true },
+          { gender: 'female', ageRange: [20, 29], scale1: [0, 4.5], scale2: [4.5, 6.0], scale3: [6.0, 7.5], scale4: [7.5, 9.0], scale5: [9.0, 21.0], unit: 'level', higherIsBetter: true },
         ]
       },
       {
