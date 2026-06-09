@@ -334,6 +334,66 @@ export default function TestCategory() {
                     categoryColor={category.color}
                   />
 
+                  {/* Beep Test Level & Shuttle Reference */}
+                  {test.id === 'beep-test' && (
+                    <div>
+                      <h4 className="font-semibold font-display flex items-center gap-2 mb-3">
+                        <Activity className="w-4 h-4" style={{ color: `hsl(var(--${category.color}))` }} />
+                        Referensi Level & Shuttle
+                      </h4>
+                      <div className="rounded-xl border border-border overflow-hidden">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr style={{ backgroundColor: `hsl(var(--${category.color}) / 0.1)` }}>
+                                <th className="text-left py-2 px-2 font-medium">Level</th>
+                                <th className="text-center py-2 px-1 font-medium">Jumlah Shuttle</th>
+                                <th className="text-center py-2 px-1 font-medium">Kecepatan</th>
+                                <th className="text-center py-2 px-1 font-medium">Waktu/Shuttle</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {[
+                                { level: 1, shuttles: 7, speed: '8.0', time: '9.00s' },
+                                { level: 2, shuttles: 8, speed: '8.5', time: '8.47s' },
+                                { level: 3, shuttles: 9, speed: '9.0', time: '8.00s' },
+                                { level: 4, shuttles: 10, speed: '9.5', time: '7.58s' },
+                                { level: 5, shuttles: 11, speed: '10.0', time: '7.20s' },
+                                { level: 6, shuttles: 12, speed: '10.5', time: '6.86s' },
+                                { level: 7, shuttles: 13, speed: '11.0', time: '6.55s' },
+                                { level: 8, shuttles: 14, speed: '11.5', time: '6.26s' },
+                                { level: 9, shuttles: 15, speed: '12.0', time: '6.00s' },
+                                { level: 10, shuttles: 16, speed: '12.5', time: '5.76s' },
+                                { level: 11, shuttles: 17, speed: '13.0', time: '5.54s' },
+                                { level: 12, shuttles: 18, speed: '13.5', time: '5.33s' },
+                                { level: 13, shuttles: 19, speed: '14.0', time: '5.14s' },
+                                { level: 14, shuttles: 20, speed: '14.5', time: '4.97s' },
+                                { level: 15, shuttles: 21, speed: '15.0', time: '4.80s' },
+                                { level: 16, shuttles: 22, speed: '15.5', time: '4.65s' },
+                                { level: 17, shuttles: 23, speed: '16.0', time: '4.50s' },
+                                { level: 18, shuttles: 24, speed: '16.5', time: '4.36s' },
+                                { level: 19, shuttles: 25, speed: '17.0', time: '4.24s' },
+                                { level: 20, shuttles: 26, speed: '17.5', time: '4.11s' },
+                                { level: 21, shuttles: 27, speed: '18.0', time: '4.00s' },
+                              ].map((row, i) => (
+                                <tr key={row.level} className="border-t border-border/50">
+                                  <td className="py-2 px-2 font-medium">Level {row.level}</td>
+                                  <td className="text-center py-2 px-1">{row.shuttles}x</td>
+                                  <td className="text-center py-2 px-1">{row.speed} km/jam</td>
+                                  <td className="text-center py-2 px-1">{row.time}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
+                        <Timer className="w-3 h-3" />
+                        Catat Level dan Shuttle terakhir yang berhasil diselesaikan. Contoh: Level 7 Shuttle 5 = 7.5
+                      </p>
+                    </div>
+                  )}
+
                   {/* Procedure */}
                   <div>
                     <h4 className="font-semibold font-display flex items-center gap-2 mb-3">
