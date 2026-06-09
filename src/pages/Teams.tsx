@@ -122,6 +122,7 @@ export default function Teams() {
                 team={team}
                 athleteCount={getAthleteCount(team.id)}
                 onClick={() => navigate(`/teams/${team.id}`)}
+                onAthleteAdded={refreshData}
               />
             ))}
           </div>
