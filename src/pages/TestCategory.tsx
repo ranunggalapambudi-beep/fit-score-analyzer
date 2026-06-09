@@ -3,7 +3,7 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { biomotorCategories } from '@/data/biomotorTests';
 import { TestIllustrationGuide } from '@/components/tests/TestIllustrationGuide';
-import { ChevronLeft, ChevronRight, BookOpen, Wrench, Image as ImageIcon, Info, Target, ListChecks, Star, ArrowLeftRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen, Wrench, Image as ImageIcon, Info, Target, ListChecks, Star, ArrowLeftRight, Activity, Timer } from 'lucide-react';
 import { 
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger 
 } from '@/components/ui/sheet';
