@@ -1,13 +1,16 @@
-import { Users, ChevronRight } from 'lucide-react';
+import { Users, ChevronRight, UserPlus } from 'lucide-react';
 import { Team } from '@/types/team';
+import { AddAthleteSheet } from '@/components/athletes/AddAthleteSheet';
+import { Button } from '@/components/ui/button';
 
 interface TeamCardProps {
   team: Team;
   athleteCount: number;
   onClick?: () => void;
+  onAthleteAdded?: () => void;
 }
 
-export function TeamCard({ team, athleteCount, onClick }: TeamCardProps) {
+export function TeamCard({ team, athleteCount, onClick, onAthleteAdded }: TeamCardProps) {
   return (
     <div
       onClick={onClick}
@@ -30,13 +33,27 @@ export function TeamCard({ team, athleteCount, onClick }: TeamCardProps) {
         )}
       </div>
       
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
         <div className="text-right">
           <p className="text-lg font-bold" style={{ color: team.color }}>
             {athleteCount}
           </p>
           <p className="text-xs text-muted-foreground">Atlet</p>
         </div>
+        <AddAthleteSheet
+          defaultTeam={team.name}
+          defaultSport={team.sport}
+          onSuccess={onAthleteAdded}
+        >
+          <Button
+            size="icon"
+            variant="outline"
+            className="h-9 w-9 shrink-0"
+            aria-label={`Tambah atlet ke ${team.name}`}
+          >
+            <UserPlus className="w-4 h-4" />
+          </Button>
+        </AddAthleteSheet>
         <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
       </div>
     </div>
