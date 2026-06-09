@@ -98,8 +98,9 @@ export default function Athletes() {
           <AddAthleteSheet
             onSuccess={refreshData}
             trigger={
-              <Button size="icon" className="shrink-0">
-                <Plus className="w-5 h-5" />
+              <Button className="shrink-0 gap-2">
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Tambah Atlet</span>
               </Button>
             }
           />
