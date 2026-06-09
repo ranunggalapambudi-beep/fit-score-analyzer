@@ -1,16 +1,19 @@
-import { Users, ChevronRight, UserPlus } from 'lucide-react';
+import { Users, ChevronRight, UserPlus, Upload } from 'lucide-react';
 import { Team } from '@/types/team';
 import { AddAthleteSheet } from '@/components/athletes/AddAthleteSheet';
 import { Button } from '@/components/ui/button';
+import { CSVImportDialog } from '@/components/import/CSVImportDialog';
+import { Athlete } from '@/types/athlete';
 
 interface TeamCardProps {
   team: Team;
   athleteCount: number;
   onClick?: () => void;
   onAthleteAdded?: () => void;
+  onImportAthletes?: (athletes: Omit<Athlete, 'id'>[], team: Team) => Promise<void>;
 }
 
-export function TeamCard({ team, athleteCount, onClick, onAthleteAdded }: TeamCardProps) {
+export function TeamCard({ team, athleteCount, onClick, onAthleteAdded, onImportAthletes }: TeamCardProps) {
   return (
     <div
       onClick={onClick}
@@ -54,6 +57,22 @@ export function TeamCard({ team, athleteCount, onClick, onAthleteAdded }: TeamCa
             <UserPlus className="w-4 h-4" />
           </Button>
         </AddAthleteSheet>
+        {onImportAthletes && (
+          <CSVImportDialog
+            type="athletes"
+            onImportAthletes={(athletes) => onImportAthletes(athletes, team)}
+            trigger={
+              <Button
+                size="icon"
+                variant="outline"
+                className="h-9 w-9 shrink-0"
+                aria-label={`Import atlet ke ${team.name}`}
+              >
+                <Upload className="w-4 h-4" />
+              </Button>
+            }
+          />
+        )}
         <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
       </div>
     </div>
