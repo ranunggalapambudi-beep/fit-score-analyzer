@@ -96,7 +96,8 @@ export function CSVImportDialog({ type, onImportAthletes, onImportTeams, trigger
       } else if (type === 'teams' && onImportTeams) {
         const teams = parseTeamsFromCSV(data);
         if (teams.length === 0) {
-          setError('Tidak ada data tim valid yang ditemukan');
+          const cols = data[0] ? Object.keys(data[0]).join(', ') : '(kosong)';
+          setError(`Tidak ada data tim valid yang ditemukan. Jika file ini berisi atlet, gunakan tombol upload pada kartu tim yang dipilih. Kolom terdeteksi: ${cols}`);
           setImporting(false);
           return;
         }
@@ -142,7 +143,7 @@ export function CSVImportDialog({ type, onImportAthletes, onImportTeams, trigger
             Import {type === 'athletes' ? 'Data Atlet' : 'Data Tim'}
           </DialogTitle>
           <DialogDescription>
-            Upload file CSV atau Excel (.xlsx, .xls) untuk mengimpor {type === 'athletes' ? 'data atlet' : 'data tim'} secara massal.
+            Upload file CSV atau Excel (.xlsx, .xls) untuk mengimpor {type === 'athletes' ? 'data atlet ke tim ini' : 'data tim'} secara massal.
           </DialogDescription>
         </DialogHeader>
 
@@ -157,7 +158,7 @@ export function CSVImportDialog({ type, onImportAthletes, onImportTeams, trigger
               {file ? file.name : 'Klik untuk upload file CSV / Excel'}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Kolom: {type === 'athletes' ? 'name, dateOfBirth, gender, sport, team' : 'name, sport, description, color'}
+              Kolom: {type === 'athletes' ? 'NAMA LENGKAP, TANGGAL LAHIR, JENIS KELAMIN, CABOR' : 'nama tim, cabor, deskripsi, warna'}
             </p>
             <input
               ref={fileInputRef}
