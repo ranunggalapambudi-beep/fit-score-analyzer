@@ -173,11 +173,11 @@ export function parseAthletesFromCSV(data: Record<string, string>[]): Omit<Athle
     const n = Number(raw.replace(',', '.').replace(/[^\d.]/g, ''));
     return Number.isFinite(n) && n > 0 ? n : undefined;
   };
-  return data.map((row, index) => {
+  return data.map<Omit<Athlete, 'id'> | null>((row, index) => {
     const hasAnyValue = Object.values(row).some(v => String(v ?? '').trim() !== '');
     if (!hasAnyValue) return null;
     const name = pick(row, ['name', 'nama', 'atlet', 'namaatlet', 'fullname', 'namalengkap', 'pemain', 'peserta', 'siswa']) || `Atlet Baris ${index + 2}`;
-    const sport = pick(row, ['sport', 'cabor', 'olahraga', 'cabangolahraga', 'cabang']);
+    const sport = pick(row, ['sport', 'cabor', 'olahraga', 'cabangolahraga', 'cabang']) || 'Umum';
     const genderRaw = pick(row, ['gender', 'jeniskelamin', 'jk', 'sex', 'kelamin']).toLowerCase();
     const isFemale = ['perempuan', 'female', 'wanita', 'putri', 'p', 'f'].includes(genderRaw);
     const dobRaw = pick(row, ['dateofbirth', 'tanggallahir', 'tgllahir', 'dob', 'birthdate', 'tanggal_lahir', 'lahir']);
