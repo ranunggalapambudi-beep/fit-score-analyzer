@@ -151,6 +151,35 @@ export function useSupabaseData() {
     return data;
   };
 
+  const addAthletes = async (newAthletes: Omit<Athlete, 'id'>[]) => {
+    if (!user || newAthletes.length === 0) return 0;
+
+    const rows = newAthletes.map(athlete => ({
+      user_id: user.id,
+      name: athlete.name,
+      date_of_birth: athlete.dateOfBirth,
+      gender: athlete.gender,
+      sport: athlete.sport,
+      team: athlete.team || null,
+      height: athlete.height || null,
+      weight: athlete.weight || null,
+      photo: athlete.photo || null,
+    }));
+
+    const { data, error } = await supabase
+      .from('athletes')
+      .insert(rows)
+      .select('id');
+
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      return 0;
+    }
+
+    await fetchAthletes();
+    return data?.length || 0;
+  };
+
   const updateAthlete = async (id: string, updates: Partial<Athlete>) => {
     const { error } = await supabase
       .from('athletes')
@@ -314,6 +343,7 @@ export function useSupabaseData() {
     loading,
     refreshData,
     addAthlete,
+    addAthletes,
     updateAthlete,
     deleteAthlete,
     addTeam,
