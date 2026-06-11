@@ -160,7 +160,7 @@ export function parseAthletesFromCSV(data: Record<string, string>[]): Omit<Athle
       }
     }
     // dd/mm/yyyy or dd-mm-yyyy
-    const m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+    const m = s.match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2,4})$/);
     if (m) {
       const dd = m[1].padStart(2, '0');
       const mm = m[2].padStart(2, '0');
