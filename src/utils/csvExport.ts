@@ -126,9 +126,10 @@ export function parseCSV(csvContent: string): Record<string, string>[] {
   return data;
 }
 
-// Parse imported athletes from CSV
+// Parse imported athletes from CSV/Excel
 export function parseAthletesFromCSV(data: Record<string, string>[]): Omit<Athlete, 'id'>[] {
-  const norm = (s: string) => s.toLowerCase().replace(/[\s_\-./]/g, '');
+  const defaultDOB = '2000-01-01';
+  const norm = (s: string) => s.toLowerCase().replace(/[\s_\-./()]/g, '');
   const pick = (row: Record<string, string>, keys: string[]): string => {
     const map: Record<string, string> = {};
     for (const k of Object.keys(row)) map[norm(k)] = row[k];
@@ -138,8 +139,12 @@ export function parseAthletesFromCSV(data: Record<string, string>[]): Omit<Athle
     }
     return '';
   };
+  const isValidISODate = (value: string): boolean => {
+    const d = new Date(value);
+    return !isNaN(d.getTime()) && d.toISOString().startsWith(value);
+  };
   const parseDOB = (raw: string): string => {
-    if (!raw) return '';
+    if (!raw) return defaultDOB;
     const s = raw.trim();
     // Excel serial number
     if (/^\d{4,6}(\.\d+)?$/.test(s)) {
@@ -157,28 +162,39 @@ export function parseAthletesFromCSV(data: Record<string, string>[]): Omit<Athle
       const mm = m[2].padStart(2, '0');
       let yy = m[3];
       if (yy.length === 2) yy = (parseInt(yy) > 30 ? '19' : '20') + yy;
-      return `${yy}-${mm}-${dd}`;
+      const iso = `${yy}-${mm}-${dd}`;
+      return isValidISODate(iso) ? iso : defaultDOB;
     }
     const d = new Date(s);
     if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
-    return s;
+    return defaultDOB;
   };
-  return data.map(row => {
-    const name = pick(row, ['name', 'nama', 'namaatlet', 'fullname', 'namalengkap']);
+  const parseNumber = (raw: string): number | undefined => {
+    const n = Number(raw.replace(',', '.').replace(/[^\d.]/g, ''));
+    return Number.isFinite(n) && n > 0 ? n : undefined;
+  };
+  return data.map((row, index) => {
+    const hasAnyValue = Object.values(row).some(v => String(v ?? '').trim() !== '');
+    if (!hasAnyValue) return null;
+    const name = pick(row, ['name', 'nama', 'atlet', 'namaatlet', 'fullname', 'namalengkap', 'pemain', 'peserta', 'siswa']) || `Atlet Baris ${index + 2}`;
     const sport = pick(row, ['sport', 'cabor', 'olahraga', 'cabangolahraga', 'cabang']);
-    const genderRaw = pick(row, ['gender', 'jeniskelamin', 'jk', 'sex']).toLowerCase();
-    const isFemale = ['perempuan', 'female', 'wanita', 'p', 'f'].includes(genderRaw);
-    const dobRaw = pick(row, ['dateofbirth', 'tanggallahir', 'tgllahir', 'dob', 'birthdate', 'tanggal_lahir']);
-    const team = pick(row, ['team', 'tim', 'klub', 'club']);
+    const genderRaw = pick(row, ['gender', 'jeniskelamin', 'jk', 'sex', 'kelamin']).toLowerCase();
+    const isFemale = ['perempuan', 'female', 'wanita', 'putri', 'p', 'f'].includes(genderRaw);
+    const dobRaw = pick(row, ['dateofbirth', 'tanggallahir', 'tgllahir', 'dob', 'birthdate', 'tanggal_lahir', 'lahir']);
+    const team = pick(row, ['team', 'tim', 'klub', 'club', 'kelas', 'grup']);
+    const height = parseNumber(pick(row, ['height', 'tinggi', 'tinggibadan', 'tb']));
+    const weight = parseNumber(pick(row, ['weight', 'berat', 'beratbadan', 'bb']));
     return {
       name,
       dateOfBirth: parseDOB(dobRaw),
       gender: (isFemale ? 'female' : 'male') as 'male' | 'female',
       sport,
       team: team || undefined,
+      height,
+      weight,
       createdAt: new Date().toISOString(),
     };
-  }).filter(a => a.name && a.sport);
+  }).filter((a): a is Omit<Athlete, 'id'> => Boolean(a));
 }
 
 // Parse imported teams from CSV
