@@ -87,7 +87,8 @@ export function CSVImportDialog({ type, onImportAthletes, onImportTeams, trigger
       if (type === 'athletes' && onImportAthletes) {
         const athletes = parseAthletesFromCSV(data);
         if (athletes.length === 0) {
-          setError('Tidak ada data atlet valid yang ditemukan');
+          const cols = data[0] ? Object.keys(data[0]).join(', ') : '(kosong)';
+          setError(`Tidak ada data atlet valid. Pastikan ada kolom "name" (atau "nama") dan "sport" (atau "cabor"). Kolom terdeteksi: ${cols}`);
           setImporting(false);
           return;
         }
