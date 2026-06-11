@@ -96,7 +96,11 @@ export function parseCSV(csvContent: string): Record<string, string>[] {
   const lines = csvContent.split('\n').filter(line => line.trim());
   if (lines.length < 2) return [];
   
-  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+  const firstLine = lines[0];
+  const delimiter = [';', '\t', ','].reduce((best, current) =>
+    firstLine.split(current).length > firstLine.split(best).length ? current : best
+  , ',');
+  const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
   const data: Record<string, string>[] = [];
   
   for (let i = 1; i < lines.length; i++) {
@@ -107,7 +111,7 @@ export function parseCSV(csvContent: string): Record<string, string>[] {
     for (const char of lines[i]) {
       if (char === '"') {
         inQuotes = !inQuotes;
-      } else if (char === ',' && !inQuotes) {
+      } else if (char === delimiter && !inQuotes) {
         values.push(current.trim().replace(/^"|"$/g, ''));
         current = '';
       } else {
