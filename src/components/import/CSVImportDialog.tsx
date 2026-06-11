@@ -12,6 +12,7 @@ import { Upload, FileSpreadsheet, Check, AlertCircle } from 'lucide-react';
 import { parseCSV, parseAthletesFromCSV, parseTeamsFromCSV } from '@/utils/csvExport';
 import { Athlete } from '@/types/athlete';
 import { Team } from '@/types/team';
+import * as XLSX from 'xlsx';
 
 interface CSVImportDialogProps {
   type: 'athletes' | 'teams';
@@ -28,6 +29,23 @@ export function CSVImportDialog({ type, onImportAthletes, onImportTeams, trigger
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const readFileData = async (selectedFile: File): Promise<Record<string, string>[]> => {
+    const name = selectedFile.name.toLowerCase();
+    if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
+      const buf = await selectedFile.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: '', raw: false });
+      return rows.map((r) => {
+        const out: Record<string, string> = {};
+        for (const k of Object.keys(r)) out[k.trim()] = String(r[k] ?? '');
+        return out;
+      });
+    }
+    const text = await selectedFile.text();
+    return parseCSV(text);
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     setError(null);
@@ -38,8 +56,9 @@ export function CSVImportDialog({ type, onImportAthletes, onImportTeams, trigger
       return;
     }
 
-    if (!selectedFile.name.endsWith('.csv')) {
-      setError('Hanya file CSV yang diperbolehkan');
+    const n = selectedFile.name.toLowerCase();
+    if (!n.endsWith('.csv') && !n.endsWith('.xlsx') && !n.endsWith('.xls')) {
+      setError('Hanya file CSV atau Excel (.xlsx, .xls) yang diperbolehkan');
       setFile(null);
       setPreview([]);
       return;
@@ -48,11 +67,10 @@ export function CSVImportDialog({ type, onImportAthletes, onImportTeams, trigger
     setFile(selectedFile);
     
     try {
-      const text = await selectedFile.text();
-      const data = parseCSV(text);
+      const data = await readFileData(selectedFile);
       setPreview(data.slice(0, 5)); // Show first 5 rows as preview
     } catch {
-      setError('Gagal membaca file CSV');
+      setError('Gagal membaca file');
       setPreview([]);
     }
   };
@@ -64,8 +82,7 @@ export function CSVImportDialog({ type, onImportAthletes, onImportTeams, trigger
     setError(null);
     
     try {
-      const text = await file.text();
-      const data = parseCSV(text);
+      const data = await readFileData(file);
       
       if (type === 'athletes' && onImportAthletes) {
         const athletes = parseAthletesFromCSV(data);
@@ -113,7 +130,7 @@ export function CSVImportDialog({ type, onImportAthletes, onImportTeams, trigger
         {trigger || (
           <Button variant="outline" size="sm" className="gap-2">
             <Upload className="w-4 h-4" />
-            Import CSV
+            Import CSV/Excel
           </Button>
         )}
       </DialogTrigger>
@@ -124,7 +141,7 @@ export function CSVImportDialog({ type, onImportAthletes, onImportTeams, trigger
             Import {type === 'athletes' ? 'Data Atlet' : 'Data Tim'}
           </DialogTitle>
           <DialogDescription>
-            Upload file CSV untuk mengimpor {type === 'athletes' ? 'data atlet' : 'data tim'} secara massal.
+            Upload file CSV atau Excel (.xlsx, .xls) untuk mengimpor {type === 'athletes' ? 'data atlet' : 'data tim'} secara massal.
           </DialogDescription>
         </DialogHeader>
 
@@ -136,15 +153,15 @@ export function CSVImportDialog({ type, onImportAthletes, onImportTeams, trigger
           >
             <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
             <p className="text-sm font-medium">
-              {file ? file.name : 'Klik untuk upload file CSV'}
+              {file ? file.name : 'Klik untuk upload file CSV / Excel'}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Format: {type === 'athletes' ? 'name, dateOfBirth, gender, sport, team' : 'name, sport, description, color'}
+              Kolom: {type === 'athletes' ? 'name, dateOfBirth, gender, sport, team' : 'name, sport, description, color'}
             </p>
             <input
               ref={fileInputRef}
               type="file"
-              accept=".csv"
+              accept=".csv,.xlsx,.xls"
               onChange={handleFileChange}
               className="hidden"
             />
