@@ -203,10 +203,21 @@ export function parseAthletesFromCSV(data: Record<string, string>[]): Omit<Athle
 
 // Parse imported teams from CSV
 export function parseTeamsFromCSV(data: Record<string, string>[]): Omit<Team, 'id' | 'createdAt'>[] {
+  const norm = (s: string) => s.toLowerCase().replace(/[\s_\-./()]/g, '');
+  const pick = (row: Record<string, string>, keys: string[]): string => {
+    const map: Record<string, string> = {};
+    for (const k of Object.keys(row)) map[norm(k)] = row[k];
+    for (const k of keys) {
+      const v = map[norm(k)];
+      if (v !== undefined && String(v).trim() !== '') return String(v).trim();
+    }
+    return '';
+  };
+
   return data.map(row => ({
-    name: row.name || row.nama || '',
-    sport: row.sport || row.cabor || row.olahraga || '',
-    description: row.description || row.deskripsi || undefined,
-    color: row.color || row.warna || '#3B82F6',
+    name: pick(row, ['name', 'nama', 'namatim', 'team', 'tim']),
+    sport: pick(row, ['sport', 'cabor', 'olahraga', 'cabangolahraga', 'cabang']),
+    description: pick(row, ['description', 'deskripsi', 'keterangan']) || undefined,
+    color: pick(row, ['color', 'warna']) || '#3B82F6',
   })).filter(t => t.name && t.sport);
 }
