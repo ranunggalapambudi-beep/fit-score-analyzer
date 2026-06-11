@@ -128,15 +128,54 @@ export function parseCSV(csvContent: string): Record<string, string>[] {
 
 // Parse imported athletes from CSV
 export function parseAthletesFromCSV(data: Record<string, string>[]): Omit<Athlete, 'id'>[] {
+  const norm = (s: string) => s.toLowerCase().replace(/[\s_\-./]/g, '');
+  const pick = (row: Record<string, string>, keys: string[]): string => {
+    const map: Record<string, string> = {};
+    for (const k of Object.keys(row)) map[norm(k)] = row[k];
+    for (const k of keys) {
+      const v = map[norm(k)];
+      if (v !== undefined && String(v).trim() !== '') return String(v).trim();
+    }
+    return '';
+  };
+  const parseDOB = (raw: string): string => {
+    if (!raw) return '';
+    const s = raw.trim();
+    // Excel serial number
+    if (/^\d{4,6}(\.\d+)?$/.test(s)) {
+      const n = parseFloat(s);
+      if (n > 1000 && n < 80000) {
+        const ms = Math.round((n - 25569) * 86400 * 1000);
+        const d = new Date(ms);
+        if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+      }
+    }
+    // dd/mm/yyyy or dd-mm-yyyy
+    const m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+    if (m) {
+      const dd = m[1].padStart(2, '0');
+      const mm = m[2].padStart(2, '0');
+      let yy = m[3];
+      if (yy.length === 2) yy = (parseInt(yy) > 30 ? '19' : '20') + yy;
+      return `${yy}-${mm}-${dd}`;
+    }
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+    return s;
+  };
   return data.map(row => {
-    const genderRaw = row.gender || row.jenisKelamin || '';
-    const isFemale = genderRaw.toLowerCase() === 'perempuan' || genderRaw.toLowerCase() === 'female';
+    const name = pick(row, ['name', 'nama', 'namaatlet', 'fullname', 'namalengkap']);
+    const sport = pick(row, ['sport', 'cabor', 'olahraga', 'cabangolahraga', 'cabang']);
+    const genderRaw = pick(row, ['gender', 'jeniskelamin', 'jk', 'sex']).toLowerCase();
+    const isFemale = ['perempuan', 'female', 'wanita', 'p', 'f'].includes(genderRaw);
+    const dobRaw = pick(row, ['dateofbirth', 'tanggallahir', 'tgllahir', 'dob', 'birthdate', 'tanggal_lahir']);
+    const team = pick(row, ['team', 'tim', 'klub', 'club']);
     return {
-      name: row.name || row.nama || '',
-      dateOfBirth: row.dateOfBirth || row.tanggalLahir || row.tgl_lahir || '',
+      name,
+      dateOfBirth: parseDOB(dobRaw),
       gender: (isFemale ? 'female' : 'male') as 'male' | 'female',
-      sport: row.sport || row.cabor || row.olahraga || '',
-      team: row.team || row.tim || undefined,
+      sport,
+      team: team || undefined,
       createdAt: new Date().toISOString(),
     };
   }).filter(a => a.name && a.sport);
