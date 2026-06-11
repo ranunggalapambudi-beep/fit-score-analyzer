@@ -17,7 +17,7 @@ export default function Teams() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   
-  const { teams, athletes, loading, addTeam, addAthlete, refreshData } = useSupabaseData();
+  const { teams, athletes, loading, addTeam, addAthletes, refreshData } = useSupabaseData();
 
   const filteredTeams = teams.filter((team) =>
     team.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -53,15 +53,11 @@ export default function Teams() {
     importedAthletes: Omit<Athlete, 'id'>[],
     team: Team,
   ) => {
-    let successCount = 0;
-    for (const a of importedAthletes) {
-      const result = await addAthlete({
-        ...a,
-        team: team.name,
-        sport: a.sport || team.sport,
-      });
-      if (result) successCount++;
-    }
+    const successCount = await addAthletes(importedAthletes.map((a) => ({
+      ...a,
+      team: team.name,
+      sport: a.sport || team.sport,
+    })));
     toast.success(`${successCount} atlet berhasil diimpor ke ${team.name}`);
     refreshData();
   };

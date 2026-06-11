@@ -19,7 +19,7 @@ export default function Athletes() {
   const [search, setSearch] = useState('');
   const [genderFilter, setGenderFilter] = useState<string>('all');
   const [sportFilter, setSportFilter] = useState<string>('all');
-  const { athletes, testSessions, loading, addAthlete, refreshData } = useSupabaseData();
+  const { athletes, testSessions, loading, addAthletes, refreshData } = useSupabaseData();
 
   // Get unique sports from athletes
   const uniqueSports = useMemo(() => {
@@ -62,11 +62,7 @@ export default function Athletes() {
   };
 
   const handleImportAthletes = async (importedAthletes: Omit<Athlete, 'id'>[]) => {
-    let successCount = 0;
-    for (const athlete of importedAthletes) {
-      const result = await addAthlete(athlete);
-      if (result) successCount++;
-    }
+    const successCount = await addAthletes(importedAthletes);
     toast.success(`${successCount} atlet berhasil diimpor`);
     refreshData();
   };
