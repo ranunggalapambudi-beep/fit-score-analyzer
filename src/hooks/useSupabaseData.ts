@@ -197,7 +197,7 @@ export function useSupabaseData() {
     });
 
     // 2. Update existing athletes in parallel
-    const updatePromises: Promise<any>[] = [];
+    const updatePromises = [];
     newAthletes.forEach((athlete, idx) => {
       const existingId = athleteIdByIndex.get(idx);
       if (existingId) {
