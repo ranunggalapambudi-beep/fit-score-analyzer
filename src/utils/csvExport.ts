@@ -1,5 +1,133 @@
 import { Athlete, TestSession } from '@/types/athlete';
 import { Team } from '@/types/team';
+import { biomotorCategories, calculateScore } from '@/data/biomotorTests';
+
+// Map normalized Excel/CSV column headers -> internal test id
+// Keys are normalized via `norm()` (lowercase, no spaces/symbols).
+const TEST_COLUMN_ALIASES: Record<string, string> = {
+  // Sprint 30m
+  sprint30m: 'sprint-30m',
+  sprint30meter: 'sprint-30m',
+  sprint30: 'sprint-30m',
+  lari30m: 'sprint-30m',
+  lari30meter: 'sprint-30m',
+  // Sprint 60m / 100m
+  sprint60m: 'sprint-60m',
+  lari60m: 'sprint-60m',
+  sprint100m: 'sprint-100m',
+  lari100m: 'sprint-100m',
+  // Illinois agility
+  illinois: 'illinois-agility',
+  illinoisagility: 'illinois-agility',
+  illinoisagilitytest: 'illinois-agility',
+  // Vertical jump
+  verticaljump: 'vertical-jump',
+  vertikaljump: 'vertical-jump',
+  lompattegak: 'vertical-jump',
+  lompatvertikal: 'vertical-jump',
+  // Hand grip dynamometer
+  handgrip: 'grip-strength',
+  handgripdynamometer: 'grip-strength',
+  gripstrength: 'grip-strength',
+  genggam: 'grip-strength',
+  // Leg dynamometer
+  legdynamometer: 'leg-dynamometer',
+  legdyno: 'leg-dynamometer',
+  legstrength: 'leg-dynamometer',
+  // Sit and reach
+  sitandreach: 'sit-reach',
+  sitreach: 'sit-reach',
+  // Beep test
+  beeptest: 'beep-test',
+  beep: 'beep-test',
+  // Push up / sit up / pull up
+  pushup: 'push-up',
+  situp: 'sit-up',
+  pullup: 'pull-up',
+  // Cooper test
+  coopertest: 'cooper-test',
+  cooper: 'cooper-test',
+  // Standing broad jump
+  standingbroadjump: 'standing-broad-jump',
+  broadjump: 'standing-broad-jump',
+};
+
+function findTestIdForHeader(header: string): string | null {
+  const k = header.toLowerCase().replace(/[\s_\-./()]/g, '');
+  return TEST_COLUMN_ALIASES[k] || null;
+}
+
+function categoryIdForTest(testId: string): string | null {
+  for (const cat of biomotorCategories) {
+    if (cat.tests.some(t => t.id === testId)) return cat.id;
+  }
+  return null;
+}
+
+export interface ParsedAthleteTest {
+  testId: string;
+  categoryId: string;
+  value: number;
+}
+
+// Parse test result columns from a single row.
+// Beep test special: combine "beep level" + "beep shuttle" columns into one value (level.shuttle).
+function parseTestsFromRow(row: Record<string, string>): ParsedAthleteTest[] {
+  const results: ParsedAthleteTest[] = [];
+  const normMap: Record<string, string> = {};
+  for (const k of Object.keys(row)) {
+    normMap[k.toLowerCase().replace(/[\s_\-./()]/g, '')] = row[k];
+  }
+  // Beep test (level + shuttle separately)
+  const beepLevel = normMap['beeplevel'] ?? normMap['beeptestlevel'] ?? normMap['leveltest'];
+  const beepShuttle = normMap['beepshuttle'] ?? normMap['beeptestshuttle'] ?? normMap['shuttle'] ?? normMap['shutle'];
+  if (beepLevel && String(beepLevel).trim() !== '') {
+    const lvl = parseFloat(String(beepLevel).replace(',', '.'));
+    if (Number.isFinite(lvl)) {
+      let val = lvl;
+      if (beepShuttle && String(beepShuttle).trim() !== '') {
+        const sh = parseInt(String(beepShuttle), 10);
+        if (Number.isFinite(sh)) val = parseFloat(`${Math.trunc(lvl)}.${sh}`);
+      }
+      const catId = categoryIdForTest('beep-test');
+      if (catId) results.push({ testId: 'beep-test', categoryId: catId, value: val });
+    }
+  }
+  // Other tests
+  for (const header of Object.keys(row)) {
+    const testId = findTestIdForHeader(header);
+    if (!testId) continue;
+    if (testId === 'beep-test' && (beepLevel || beepShuttle)) continue; // already handled
+    if (results.some(r => r.testId === testId)) continue;
+    const raw = String(row[header] ?? '').trim();
+    if (!raw) continue;
+    const n = parseFloat(raw.replace(',', '.'));
+    if (!Number.isFinite(n) || n <= 0) continue;
+    const catId = categoryIdForTest(testId);
+    if (!catId) continue;
+    results.push({ testId, categoryId: catId, value: n });
+  }
+  return results;
+}
+
+// Compute score for each parsed result using athlete profile.
+export function computeTestScores(
+  results: ParsedAthleteTest[],
+  athlete: { gender: 'male' | 'female'; dateOfBirth: string },
+): { testId: string; categoryId: string; value: number; score: number }[] {
+  const age = Math.floor(
+    (Date.now() - new Date(athlete.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000),
+  );
+  const out: { testId: string; categoryId: string; value: number; score: number }[] = [];
+  for (const r of results) {
+    const cat = biomotorCategories.find(c => c.id === r.categoryId);
+    const test = cat?.tests.find(t => t.id === r.testId);
+    if (!test) continue;
+    const score = calculateScore(r.value, test, athlete.gender, age);
+    out.push({ ...r, score });
+  }
+  return out;
+}
 
 // Convert data to CSV string
 function arrayToCSV(data: Record<string, unknown>[], headers: string[]): string {
@@ -188,7 +316,8 @@ export function parseAthletesFromCSV(data: Record<string, string>[]): Omit<Athle
     const team = pick(row, ['team', 'tim', 'klub', 'club', 'kelas', 'grup']);
     const height = parseNumber(pick(row, ['height', 'tinggi', 'tinggibadan', 'tb']));
     const weight = parseNumber(pick(row, ['weight', 'berat', 'beratbadan', 'bb']));
-    return {
+    const tests = parseTestsFromRow(row);
+    const athlete: Omit<Athlete, 'id'> = {
       name,
       dateOfBirth: parseDOB(dobRaw),
       gender: (isFemale ? 'female' : 'male') as 'male' | 'female',
@@ -198,6 +327,11 @@ export function parseAthletesFromCSV(data: Record<string, string>[]): Omit<Athle
       weight,
       createdAt: new Date().toISOString(),
     };
+    if (tests.length > 0) {
+      // Stash parsed tests on the object; consumed by addAthletes during import.
+      (athlete as Athlete & { __tests?: ParsedAthleteTest[] }).__tests = tests;
+    }
+    return athlete;
   }).filter((a): a is Omit<Athlete, 'id'> => Boolean(a));
 }
 
