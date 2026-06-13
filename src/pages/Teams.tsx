@@ -53,12 +53,15 @@ export default function Teams() {
     importedAthletes: Omit<Athlete, 'id'>[],
     team: Team,
   ) => {
-    const successCount = await addAthletes(importedAthletes.map((a) => ({
+    const result = await addAthletes(importedAthletes.map((a) => ({
       ...a,
       team: team.name,
       sport: a.sport || team.sport,
     })));
-    toast.success(`${successCount} atlet berhasil diimpor ke ${team.name}`);
+    const parts: string[] = [];
+    if (result.inserted > 0) parts.push(`${result.inserted} atlet baru`);
+    if (result.updated > 0) parts.push(`${result.updated} atlet diperbarui`);
+    toast.success(parts.length > 0 ? `${parts.join(', ')} berhasil diimpor ke ${team.name}` : 'Tidak ada perubahan');
     refreshData();
   };
 
