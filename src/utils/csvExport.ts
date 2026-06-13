@@ -316,7 +316,8 @@ export function parseAthletesFromCSV(data: Record<string, string>[]): Omit<Athle
     const team = pick(row, ['team', 'tim', 'klub', 'club', 'kelas', 'grup']);
     const height = parseNumber(pick(row, ['height', 'tinggi', 'tinggibadan', 'tb']));
     const weight = parseNumber(pick(row, ['weight', 'berat', 'beratbadan', 'bb']));
-    return {
+    const tests = parseTestsFromRow(row);
+    const athlete: Omit<Athlete, 'id'> = {
       name,
       dateOfBirth: parseDOB(dobRaw),
       gender: (isFemale ? 'female' : 'male') as 'male' | 'female',
@@ -326,6 +327,11 @@ export function parseAthletesFromCSV(data: Record<string, string>[]): Omit<Athle
       weight,
       createdAt: new Date().toISOString(),
     };
+    if (tests.length > 0) {
+      // Stash parsed tests on the object; consumed by addAthletes during import.
+      (athlete as Athlete & { __tests?: ParsedAthleteTest[] }).__tests = tests;
+    }
+    return athlete;
   }).filter((a): a is Omit<Athlete, 'id'> => Boolean(a));
 }
 
