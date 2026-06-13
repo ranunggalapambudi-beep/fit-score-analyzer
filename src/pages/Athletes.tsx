@@ -62,8 +62,11 @@ export default function Athletes() {
   };
 
   const handleImportAthletes = async (importedAthletes: Omit<Athlete, 'id'>[]) => {
-    const successCount = await addAthletes(importedAthletes);
-    toast.success(`${successCount} atlet berhasil diimpor`);
+    const result = await addAthletes(importedAthletes);
+    const parts: string[] = [];
+    if (result.inserted > 0) parts.push(`${result.inserted} atlet baru`);
+    if (result.updated > 0) parts.push(`${result.updated} atlet diperbarui`);
+    toast.success(parts.length > 0 ? `${parts.join(', ')} berhasil diimpor` : 'Tidak ada perubahan');
     refreshData();
   };
 
