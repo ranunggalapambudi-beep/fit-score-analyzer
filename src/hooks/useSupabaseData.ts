@@ -153,47 +153,105 @@ export function useSupabaseData() {
   };
 
   const addAthletes = async (newAthletes: Omit<Athlete, 'id'>[]) => {
-    if (!user || newAthletes.length === 0) return 0;
+    if (!user || newAthletes.length === 0) return { inserted: 0, updated: 0 };
 
-    const rows = newAthletes.map(athlete => ({
-      user_id: user.id,
-      name: athlete.name,
-      date_of_birth: athlete.dateOfBirth,
-      gender: athlete.gender,
-      sport: athlete.sport,
-      team: athlete.team || null,
-      height: athlete.height || null,
-      weight: athlete.weight || null,
-      photo: athlete.photo || null,
-    }));
-
-    const { data, error } = await supabase
+    // 1. Fetch existing athletes for deduplication
+    const { data: existingData, error: existingErr } = await supabase
       .from('athletes')
-      .insert(rows)
-      .select('id');
+      .select('id, name, date_of_birth')
+      .eq('user_id', user.id);
 
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-      return 0;
+    if (existingErr) {
+      toast({ title: 'Error', description: existingErr.message, variant: 'destructive' });
+      return { inserted: 0, updated: 0 };
     }
 
-    // Insert test sessions for athletes that carry parsed tests (__tests).
+    const normalizeName = (n: string) => n.trim().toLowerCase().replace(/\s+/g, ' ');
+    const existingMap = new Map<string, string>();
+    for (const e of existingData || []) {
+      const key = `${normalizeName(e.name)}|${e.date_of_birth}`;
+      existingMap.set(key, e.id);
+    }
+
+    const toInsertRows: any[] = [];
+    const athleteIdByIndex = new Map<number, string>();
+
+    newAthletes.forEach((athlete, idx) => {
+      const key = `${normalizeName(athlete.name)}|${athlete.dateOfBirth}`;
+      const existingId = existingMap.get(key);
+      if (existingId) {
+        athleteIdByIndex.set(idx, existingId);
+      } else {
+        toInsertRows.push({
+          user_id: user.id,
+          name: athlete.name,
+          date_of_birth: athlete.dateOfBirth,
+          gender: athlete.gender,
+          sport: athlete.sport,
+          team: athlete.team || null,
+          height: athlete.height || null,
+          weight: athlete.weight || null,
+          photo: athlete.photo || null,
+        });
+      }
+    });
+
+    // 2. Update existing athletes in parallel
+    const updatePromises: Promise<any>[] = [];
+    newAthletes.forEach((athlete, idx) => {
+      const existingId = athleteIdByIndex.get(idx);
+      if (existingId) {
+        updatePromises.push(
+          supabase.from('athletes').update({
+            sport: athlete.sport,
+            team: athlete.team || null,
+            height: athlete.height || null,
+            weight: athlete.weight || null,
+          }).eq('id', existingId)
+        );
+      }
+    });
+    await Promise.all(updatePromises);
+
+    // 3. Insert new athletes
+    let insertedIds: string[] = [];
+    if (toInsertRows.length > 0) {
+      const { data, error } = await supabase
+        .from('athletes')
+        .insert(toInsertRows)
+        .select('id');
+      if (error) {
+        toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      } else {
+        insertedIds = (data || []).map(d => d.id);
+      }
+    }
+
+    // Map inserted IDs back to indices
+    let insertIdx = 0;
+    newAthletes.forEach((_, idx) => {
+      if (!athleteIdByIndex.has(idx)) {
+        athleteIdByIndex.set(idx, insertedIds[insertIdx++]);
+      }
+    });
+
+    // 4. Insert test sessions for ALL athletes that carry parsed tests
     try {
-      const insertedIds = (data || []).map(d => d.id);
       const nowIso = new Date().toISOString();
-      const sessionsToCreate: { athleteIdx: number; results: ReturnType<typeof computeTestScores> }[] = [];
+      const sessionsToCreate: { athleteId: string; results: ReturnType<typeof computeTestScores> }[] = [];
       newAthletes.forEach((a, idx) => {
         const tests = (a as Athlete & { __tests?: ParsedAthleteTest[] }).__tests;
         if (!tests || tests.length === 0) return;
-        if (!insertedIds[idx]) return;
+        const athleteId = athleteIdByIndex.get(idx);
+        if (!athleteId) return;
         const scored = computeTestScores(tests, { gender: a.gender, dateOfBirth: a.dateOfBirth });
-        if (scored.length > 0) sessionsToCreate.push({ athleteIdx: idx, results: scored });
+        if (scored.length > 0) sessionsToCreate.push({ athleteId, results: scored });
       });
 
       if (sessionsToCreate.length > 0) {
         const sessionRows = sessionsToCreate.map(s => ({
           user_id: user.id,
-          athlete_id: insertedIds[s.athleteIdx],
+          athlete_id: s.athleteId,
           date: nowIso,
           notes: 'Diimpor dari file Excel/CSV',
         }));
@@ -222,7 +280,7 @@ export function useSupabaseData() {
 
     await fetchAthletes();
     await fetchTestSessions();
-    return data?.length || 0;
+    return { inserted: insertedIds.length, updated: updatePromises.length };
   };
 
   const updateAthlete = async (id: string, updates: Partial<Athlete>) => {
