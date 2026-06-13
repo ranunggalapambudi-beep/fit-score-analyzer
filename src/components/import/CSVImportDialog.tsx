@@ -158,7 +158,9 @@ export function CSVImportDialog({ type, onImportAthletes, onImportTeams, trigger
               {file ? file.name : 'Klik untuk upload file CSV / Excel'}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Kolom: {type === 'athletes' ? 'NAMA LENGKAP, TANGGAL LAHIR, JENIS KELAMIN, CABOR' : 'nama tim, cabor, deskripsi, warna'}
+              Kolom: {type === 'athletes'
+                ? 'NAMA LENGKAP, JENIS KELAMIN, CABOR, TANGGAL LAHIR, TINGGI BADAN, BERAT BADAN + nama tes (mis. SPRINT 30 METER, ILLINOIS AGILITY, VERTICAL JUMP, HAND GRIP, LEG DYNAMOMETER, SIT AND REACH, BEEP LEVEL, BEEP SHUTTLE)'
+                : 'nama tim, cabor, deskripsi, warna'}
             </p>
             <input
               ref={fileInputRef}
