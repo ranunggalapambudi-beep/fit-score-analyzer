@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Athlete, TestSession } from '@/types/athlete';
 import { Team } from '@/types/team';
 import { useToast } from '@/hooks/use-toast';
+import { computeTestScores, type ParsedAthleteTest } from '@/utils/csvExport';
 
 export function useSupabaseData() {
   const { user } = useAuth();
@@ -176,7 +177,51 @@ export function useSupabaseData() {
       return 0;
     }
 
+    // Insert test sessions for athletes that carry parsed tests (__tests).
+    try {
+      const insertedIds = (data || []).map(d => d.id);
+      const nowIso = new Date().toISOString();
+      const sessionsToCreate: { athleteIdx: number; results: ReturnType<typeof computeTestScores> }[] = [];
+      newAthletes.forEach((a, idx) => {
+        const tests = (a as Athlete & { __tests?: ParsedAthleteTest[] }).__tests;
+        if (!tests || tests.length === 0) return;
+        if (!insertedIds[idx]) return;
+        const scored = computeTestScores(tests, { gender: a.gender, dateOfBirth: a.dateOfBirth });
+        if (scored.length > 0) sessionsToCreate.push({ athleteIdx: idx, results: scored });
+      });
+
+      if (sessionsToCreate.length > 0) {
+        const sessionRows = sessionsToCreate.map(s => ({
+          user_id: user.id,
+          athlete_id: insertedIds[s.athleteIdx],
+          date: nowIso,
+          notes: 'Diimpor dari file Excel/CSV',
+        }));
+        const { data: sessionData, error: sessionErr } = await supabase
+          .from('test_sessions')
+          .insert(sessionRows)
+          .select('id');
+        if (!sessionErr && sessionData) {
+          const resultRows = sessionData.flatMap((s, i) =>
+            sessionsToCreate[i].results.map(r => ({
+              session_id: s.id,
+              test_id: r.testId,
+              category_id: r.categoryId,
+              value: r.value,
+              score: r.score,
+            })),
+          );
+          if (resultRows.length > 0) {
+            await supabase.from('test_results').insert(resultRows);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Failed to import test sessions:', e);
+    }
+
     await fetchAthletes();
+    await fetchTestSessions();
     return data?.length || 0;
   };
 
