@@ -155,7 +155,7 @@ export function TeamReportPDF({
           name: athlete.name,
           age: calculateAge(athlete.dateOfBirth),
           gender: athlete.gender === 'male' ? 'L' : 'P',
-          sessionDate: new Date(session.date).toLocaleDateString('id-ID'),
+          sessionDate: (() => { const d = new Date(session.date); const p = (n: number) => String(n).padStart(2,'0'); return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`; })(),
           avgScore,
           ...getScoreLabel(avgScore)
         };
@@ -195,7 +195,7 @@ export function TeamReportPDF({
           <div style="background: linear-gradient(135deg, ${teamColor}20 0%, ${teamColor}10 100%); border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 4px solid ${teamColor};">
             <h1 style="font-size: 28px; font-weight: 700; margin: 0 0 5px 0; color: #1a1a2e;">${escapeHtml(teamName)}</h1>
             <p style="font-size: 16px; color: ${teamColor}; font-weight: 600; margin: 0;">${escapeHtml(teamSport)}</p>
-            <p style="font-size: 12px; color: #666; margin-top: 10px;">Tanggal Laporan: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            <p style="font-size: 12px; color: #666; margin-top: 10px;">Tanggal Laporan: ${(() => { const d = new Date(); const p = (n: number) => String(n).padStart(2,'0'); return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`; })()}</p>
           </div>
 
           <!-- Quick Stats -->
