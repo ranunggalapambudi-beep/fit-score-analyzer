@@ -9,10 +9,12 @@ import { EditAthleteSheet } from '@/components/athletes/EditAthleteSheet';
 import { AthleteProfileCard } from '@/components/athletes/AthleteProfileCard';
 import { 
   User, Calendar, Activity, ChevronLeft, Trash2, 
-  PlayCircle, FileText, Scale, Ruler, Heart, TrendingUp, TrendingDown, GitCompareArrows, Loader2, BarChart3
+  PlayCircle, FileText, Scale, Ruler, Heart, TrendingUp, TrendingDown, GitCompareArrows, Loader2, BarChart3, Pencil
 } from 'lucide-react';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
+import { EditSessionSheet } from '@/components/tests/EditSessionSheet';
+import { formatDateID } from '@/lib/dateFormat';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -373,25 +375,38 @@ export default function AthleteDetail() {
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                 .slice(0, 5)
                 .map((session) => (
-                  <button
+                  <div
                     key={session.id}
-                    className="w-full p-3 rounded-xl bg-card border border-border/50 flex items-center justify-between text-left hover:border-primary/50 transition-colors"
-                    onClick={() => navigate(`/results/${athlete.id}/${session.id}`)}
+                    className="w-full p-3 rounded-xl bg-card border border-border/50 flex items-center gap-2"
                   >
-                    <div>
-                      <p className="font-medium">
-                        {new Date(session.date).toLocaleDateString('id-ID', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {session.results.length} item tes
-                      </p>
-                    </div>
-                    <ChevronLeft className="w-5 h-5 text-muted-foreground rotate-180" />
-                  </button>
+                    <button
+                      className="flex-1 flex items-center justify-between text-left"
+                      onClick={() => navigate(`/results/${athlete.id}/${session.id}`)}
+                    >
+                      <div>
+                        <p className="font-medium">{formatDateID(session.date)}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {session.results.length} item tes
+                        </p>
+                      </div>
+                      <ChevronLeft className="w-5 h-5 text-muted-foreground rotate-180" />
+                    </button>
+                    <EditSessionSheet
+                      athlete={athlete}
+                      session={session}
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="shrink-0"
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label="Edit sesi"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                      }
+                    />
+                  </div>
                 ))}
             </div>
           </section>
