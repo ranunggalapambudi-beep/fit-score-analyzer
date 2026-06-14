@@ -366,7 +366,7 @@ export function BatchPrintCards({ athletes, teamName, baseUrl = window.location.
         <body>
           <div class="header">
             <h1>Kartu Atlet - ${escapeHtml(teamName)}</h1>
-            <p>Total: ${athletes.length} atlet | Dicetak: ${new Date().toLocaleDateString('id-ID')}</p>
+            <p>Total: ${athletes.length} atlet | Dicetak: ${(() => { const d = new Date(); const p = (n: number) => String(n).padStart(2,'0'); return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}`; })()}</p>
           </div>
           <div class="cards-container">
             ${cardsHtml}
