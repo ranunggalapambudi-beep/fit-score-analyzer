@@ -5,6 +5,7 @@ import { Athlete, TestSession } from '@/types/athlete';
 import { Team } from '@/types/team';
 import { useToast } from '@/hooks/use-toast';
 import { computeTestScores, type ParsedAthleteTest } from '@/utils/csvExport';
+import { biomotorCategories, calculateScore } from '@/data/biomotorTests';
 
 export function useSupabaseData() {
   const { user } = useAuth();
@@ -439,6 +440,86 @@ export function useSupabaseData() {
     return true;
   };
 
+  // Update session metadata (date / notes)
+  const updateTestSession = async (
+    id: string,
+    updates: { date?: string; notes?: string | null },
+  ) => {
+    const payload: Record<string, unknown> = {};
+    if (updates.date !== undefined) payload.date = updates.date;
+    if (updates.notes !== undefined) payload.notes = updates.notes;
+    const { error } = await supabase.from('test_sessions').update(payload).eq('id', id);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      return false;
+    }
+    await fetchTestSessions();
+    return true;
+  };
+
+  // Add or update a single test result inside an existing session.
+  // Re-computes the score using the athlete profile.
+  const upsertTestResult = async (
+    sessionId: string,
+    athlete: { gender: 'male' | 'female'; dateOfBirth: string },
+    testId: string,
+    value: number,
+  ) => {
+    const category = biomotorCategories.find(c => c.tests.some(t => t.id === testId));
+    const test = category?.tests.find(t => t.id === testId);
+    if (!category || !test) {
+      toast({ title: 'Error', description: 'Tes tidak ditemukan', variant: 'destructive' });
+      return false;
+    }
+    const age = Math.floor(
+      (Date.now() - new Date(athlete.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000),
+    );
+    const score = calculateScore(value, test, athlete.gender, age);
+
+    // Find existing result
+    const { data: existing } = await supabase
+      .from('test_results')
+      .select('id')
+      .eq('session_id', sessionId)
+      .eq('test_id', testId)
+      .maybeSingle();
+
+    if (existing?.id) {
+      const { error } = await supabase
+        .from('test_results')
+        .update({ value, score, category_id: category.id })
+        .eq('id', existing.id);
+      if (error) {
+        toast({ title: 'Error', description: error.message, variant: 'destructive' });
+        return false;
+      }
+    } else {
+      const { error } = await supabase.from('test_results').insert({
+        session_id: sessionId,
+        test_id: testId,
+        category_id: category.id,
+        value,
+        score,
+      });
+      if (error) {
+        toast({ title: 'Error', description: error.message, variant: 'destructive' });
+        return false;
+      }
+    }
+    await fetchTestSessions();
+    return true;
+  };
+
+  const deleteTestResult = async (resultId: string) => {
+    const { error } = await supabase.from('test_results').delete().eq('id', resultId);
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      return false;
+    }
+    await fetchTestSessions();
+    return true;
+  };
+
   return {
     athletes,
     teams,
@@ -454,6 +535,9 @@ export function useSupabaseData() {
     deleteTeam,
     addTestSession,
     deleteTestSession,
+    updateTestSession,
+    upsertTestResult,
+    deleteTestResult,
     getAthlete: (id: string) => athletes.find(a => a.id === id),
     getTeam: (id: string) => teams.find(t => t.id === id),
     getAthleteTestSessions: (athleteId: string) => testSessions.filter(s => s.athleteId === athleteId),
