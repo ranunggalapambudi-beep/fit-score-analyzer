@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { CSVImportDialog } from '@/components/import/CSVImportDialog';
 import { exportAthletesToCSV } from '@/utils/csvExport';
-import { Search, Plus, Users, Download, Upload, Loader2, Filter, X, Scale } from 'lucide-react';
+import { bulkExportAthletePDFs } from '@/utils/bulkPdfExport';
+import { Search, Plus, Users, Download, Upload, Loader2, Filter, X, Scale, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { Athlete } from '@/types/athlete';
 
@@ -19,6 +20,7 @@ export default function Athletes() {
   const [search, setSearch] = useState('');
   const [genderFilter, setGenderFilter] = useState<string>('all');
   const [sportFilter, setSportFilter] = useState<string>('all');
+  const [bulkPdfLoading, setBulkPdfLoading] = useState(false);
   const { athletes, testSessions, loading, addAthletes, refreshData } = useSupabaseData();
 
   // Get unique sports from athletes
@@ -59,6 +61,26 @@ export default function Athletes() {
     }
     exportAthletesToCSV(athletes);
     toast.success('Data atlet berhasil diekspor');
+  };
+
+  const handleBulkPDF = async () => {
+    if (filteredAthletes.length === 0) {
+      toast.error('Tidak ada atlet untuk diekspor');
+      return;
+    }
+    const target = filteredAthletes;
+    setBulkPdfLoading(true);
+    const label = sportFilter !== 'all' ? `cabor ${sportFilter}` : 'atlet';
+    toast.info(`Mengunduh ${target.length} PDF (${label})… izinkan multiple download bila diminta browser`);
+    try {
+      await bulkExportAthletePDFs(target, testSessions);
+      toast.success(`${target.length} PDF berhasil diunduh`);
+    } catch (e) {
+      console.error(e);
+      toast.error('Gagal mengunduh sebagian PDF');
+    } finally {
+      setBulkPdfLoading(false);
+    }
   };
 
   const handleImportAthletes = async (importedAthletes: Omit<Athlete, 'id'>[]) => {
@@ -153,6 +175,19 @@ export default function Athletes() {
           <Button variant="outline" size="sm" className="gap-2" onClick={handleExport}>
             <Download className="w-4 h-4" />
             Export
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={handleBulkPDF}
+            disabled={bulkPdfLoading || filteredAthletes.length === 0}
+            title={sportFilter !== 'all'
+              ? `Unduh PDF semua atlet cabor ${sportFilter}`
+              : 'Unduh PDF semua atlet (gunakan filter cabor untuk lebih fokus)'}
+          >
+            {bulkPdfLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+            PDF ({filteredAthletes.length})
           </Button>
           <BulkUpdateSheet
             athletes={athletes}

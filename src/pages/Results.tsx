@@ -10,10 +10,10 @@ import { ScoreBadge } from '@/components/ui/score-badge';
 import { biomotorCategories } from '@/data/biomotorTests';
 import { 
   BarChart3, Search, X, Loader2, Activity, TrendingUp, 
-  Calendar, ChevronRight, PlayCircle, FileText, Users
+  Calendar, ChevronRight, PlayCircle, FileText, Users, Pencil
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { id as localeId } from 'date-fns/locale';
+import { formatDateID } from '@/lib/dateFormat';
+import { EditSessionSheet } from '@/components/tests/EditSessionSheet';
 
 export default function Results() {
   const navigate = useNavigate();
@@ -312,11 +312,22 @@ export default function Results() {
                           <div>
                             <p className="font-semibold text-sm">{session.athlete.name}</p>
                             <p className="text-xs text-muted-foreground">
-                              {format(new Date(session.date), 'd MMM yyyy', { locale: localeId })}
+                              {formatDateID(session.date)}
                             </p>
                           </div>
                         </div>
-                        <ScoreBadge score={Math.round(session.avgScore)} size="md" showLabel={false} />
+                        <div className="flex items-center gap-2">
+                          <EditSessionSheet
+                            athlete={session.athlete}
+                            session={session}
+                            trigger={
+                              <Button variant="ghost" size="icon" className="shrink-0" aria-label="Edit sesi">
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                            }
+                          />
+                          <ScoreBadge score={Math.round(session.avgScore)} size="md" showLabel={false} />
+                        </div>
                       </div>
 
                       {/* Category Scores */}

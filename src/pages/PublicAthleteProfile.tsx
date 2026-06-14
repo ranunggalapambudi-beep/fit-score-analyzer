@@ -294,13 +294,13 @@ export default function PublicAthleteProfile() {
                 {/* Session Info */}
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Tanggal Tes</span>
-                  <span className="font-medium">
-                    {new Date(latestSession.date).toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
-                  </span>
+                   <span className="font-medium">
+                     {(() => {
+                       const d = new Date(latestSession.date);
+                       const pad = (n: number) => String(n).padStart(2, '0');
+                       return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+                     })()}
+                   </span>
                 </div>
 
                 {/* Radar Chart */}

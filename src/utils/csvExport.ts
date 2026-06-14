@@ -1,6 +1,7 @@
 import { Athlete, TestSession } from '@/types/athlete';
 import { Team } from '@/types/team';
 import { biomotorCategories, calculateScore } from '@/data/biomotorTests';
+import { formatDateID } from '@/lib/dateFormat';
 
 // Map normalized Excel/CSV column headers -> internal test id
 // Keys are normalized via `norm()` (lowercase, no spaces/symbols).
@@ -165,11 +166,11 @@ export function exportAthletesToCSV(athletes: Athlete[]) {
   const headers = ['name', 'dateOfBirth', 'gender', 'sport', 'team', 'createdAt'];
   const data = athletes.map(athlete => ({
     name: athlete.name,
-    dateOfBirth: athlete.dateOfBirth,
+    dateOfBirth: formatDateID(athlete.dateOfBirth),
     gender: athlete.gender === 'male' ? 'Laki-laki' : 'Perempuan',
     sport: athlete.sport,
     team: athlete.team || '',
-    createdAt: athlete.createdAt ? new Date(athlete.createdAt).toLocaleDateString('id-ID') : '',
+    createdAt: athlete.createdAt ? formatDateID(athlete.createdAt) : '',
   }));
   
   const csv = arrayToCSV(data, headers);
@@ -184,7 +185,7 @@ export function exportTeamsToCSV(teams: Team[]) {
     sport: team.sport,
     description: team.description || '',
     color: team.color || '',
-    createdAt: team.createdAt ? new Date(team.createdAt).toLocaleDateString('id-ID') : '',
+    createdAt: team.createdAt ? formatDateID(team.createdAt) : '',
   }));
   
   const csv = arrayToCSV(data, headers);
@@ -206,7 +207,7 @@ export function exportTestResultsToCSV(
     for (const result of session.results) {
       data.push({
         athleteName: athlete?.name || 'Unknown',
-        date: session.date ? new Date(session.date).toLocaleDateString('id-ID') : '',
+        date: session.date ? formatDateID(session.date) : '',
         category: categoryNames[result.categoryId] || result.categoryId,
         test: testNames[result.testId] || result.testId,
         value: result.value,
