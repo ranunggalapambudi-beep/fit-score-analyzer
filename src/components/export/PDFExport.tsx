@@ -10,6 +10,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import hirocrossLogo from '@/assets/hirocross-logo.png';
 import vocafitHeader from '@/assets/vocafit-header.png';
+import { formatDateID } from '@/lib/dateFormat';
 import {
   Select,
   SelectContent,
@@ -259,7 +260,7 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
           <div className="mb-6 pb-4 border-b-2 border-blue-600">
             <img src={vocafitHeader} alt="VocaFit" className="w-full h-auto" />
             <div className="text-right text-sm text-gray-600 mt-2">
-              <p>Tanggal Tes: {new Date(session.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+              <p>Tanggal Tes: {formatDateID(session.date)}</p>
             </div>
           </div>
         ) : (
@@ -272,7 +273,7 @@ export function PDFExport({ athlete, session, categoryScores, analysisResult }: 
               </div>
             </div>
             <div className="text-right text-sm text-gray-600">
-              <p>Tanggal: {new Date(session.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+              <p>Tanggal: {formatDateID(session.date)}</p>
             </div>
           </div>
         )}
