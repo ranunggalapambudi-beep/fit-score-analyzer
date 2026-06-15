@@ -71,10 +71,11 @@ export default function Athletes() {
     const target = filteredAthletes;
     setBulkPdfLoading(true);
     const label = sportFilter !== 'all' ? `cabor ${sportFilter}` : 'atlet';
-    toast.info(`Mengunduh ${target.length} PDF (${label})… izinkan multiple download bila diminta browser`);
+    toast.info(`Membuat ${target.length} PDF (${label})… izinkan multiple download bila diminta browser`);
     try {
-      await bulkExportAthletePDFs(target, testSessions);
-      toast.success(`${target.length} PDF berhasil diunduh`);
+      const { generated, skipped } = await bulkExportAthletePDFs(target, testSessions);
+      if (generated > 0) toast.success(`${generated} PDF berhasil diunduh`);
+      if (skipped > 0) toast.warning(`${skipped} atlet dilewati (belum ada sesi tes)`);
     } catch (e) {
       console.error(e);
       toast.error('Gagal mengunduh sebagian PDF');
