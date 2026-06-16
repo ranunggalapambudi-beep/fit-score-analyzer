@@ -23,9 +23,10 @@ interface RadarChartProps {
     fullMark: number;
   }[];
   height?: number;
+  showValues?: boolean;
 }
 
-export function RadarChart({ data, compareData, height = 300 }: RadarChartProps) {
+export function RadarChart({ data, compareData, height = 300, showValues = false }: RadarChartProps) {
   const chartData = useMemo(() => {
     if (!compareData) return data;
     
@@ -46,7 +47,7 @@ export function RadarChart({ data, compareData, height = 300 }: RadarChartProps)
           dataKey="category" 
           tick={{ 
             fill: 'hsl(var(--muted-foreground))', 
-            fontSize: 11,
+            fontSize: showValues ? 13 : 11,
             fontFamily: 'var(--font-body)',
           }}
           tickLine={false}
@@ -56,7 +57,7 @@ export function RadarChart({ data, compareData, height = 300 }: RadarChartProps)
           domain={[0, 5]} 
           tick={{ 
             fill: 'hsl(var(--muted-foreground))', 
-            fontSize: 10 
+            fontSize: showValues ? 11 : 10,
           }}
           tickCount={6}
           axisLine={false}
@@ -66,8 +67,25 @@ export function RadarChart({ data, compareData, height = 300 }: RadarChartProps)
           dataKey="score"
           stroke="hsl(var(--primary))"
           fill="hsl(var(--primary))"
-          fillOpacity={0.3}
+          fillOpacity={0.35}
           strokeWidth={2}
+          dot={showValues ? { r: 4, fill: 'hsl(var(--primary))', stroke: '#fff', strokeWidth: 1 } : false}
+          label={
+            showValues
+              ? ({ x, y, value }: any) => (
+                  <text
+                    x={x}
+                    y={y - 8}
+                    textAnchor="middle"
+                    fill="#111827"
+                    fontSize={12}
+                    fontWeight={700}
+                  >
+                    {Number(value).toFixed(1)}
+                  </text>
+                )
+              : false
+          }
         />
         {compareData && (
           <Radar
