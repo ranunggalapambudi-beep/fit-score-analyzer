@@ -49,7 +49,7 @@ export function parseDateToISO(input: string | number | Date | null | undefined)
     if (fromSerial) return fromSerial;
   }
 
-  const iso = value.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  const iso = value.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T\s].*)?$/);
   if (iso) {
     const yyyy = Number(iso[1]);
     const mm = Number(iso[2]);
