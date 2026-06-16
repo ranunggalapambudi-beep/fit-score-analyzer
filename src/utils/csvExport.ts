@@ -1,7 +1,7 @@
 import { Athlete, TestSession } from '@/types/athlete';
 import { Team } from '@/types/team';
 import { biomotorCategories, calculateScore } from '@/data/biomotorTests';
-import { formatDateID } from '@/lib/dateFormat';
+import { calculateAgeFromDate, formatDateID, parseDateToISO } from '@/lib/dateFormat';
 
 // Map normalized Excel/CSV column headers -> internal test id
 // Keys are normalized via `norm()` (lowercase, no spaces/symbols).
@@ -116,9 +116,7 @@ export function computeTestScores(
   results: ParsedAthleteTest[],
   athlete: { gender: 'male' | 'female'; dateOfBirth: string },
 ): { testId: string; categoryId: string; value: number; score: number }[] {
-  const age = Math.floor(
-    (Date.now() - new Date(athlete.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000),
-  );
+  const age = calculateAgeFromDate(athlete.dateOfBirth);
   const out: { testId: string; categoryId: string; value: number; score: number }[] = [];
   for (const r of results) {
     const cat = biomotorCategories.find(c => c.id === r.categoryId);
@@ -272,35 +270,8 @@ export function parseAthletesFromCSV(data: Record<string, string>[]): Omit<Athle
     }
     return '';
   };
-  const isValidISODate = (value: string): boolean => {
-    const d = new Date(value);
-    return !isNaN(d.getTime()) && d.toISOString().startsWith(value);
-  };
   const parseDOB = (raw: string): string => {
-    if (!raw) return defaultDOB;
-    const s = raw.trim();
-    // Excel serial number
-    if (/^\d{4,6}(\.\d+)?$/.test(s)) {
-      const n = parseFloat(s);
-      if (n > 1000 && n < 80000) {
-        const ms = Math.round((n - 25569) * 86400 * 1000);
-        const d = new Date(ms);
-        if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
-      }
-    }
-    // dd/mm/yyyy or dd-mm-yyyy
-    const m = s.match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2,4})$/);
-    if (m) {
-      const dd = m[1].padStart(2, '0');
-      const mm = m[2].padStart(2, '0');
-      let yy = m[3];
-      if (yy.length === 2) yy = (parseInt(yy) > 30 ? '19' : '20') + yy;
-      const iso = `${yy}-${mm}-${dd}`;
-      return isValidISODate(iso) ? iso : defaultDOB;
-    }
-    const d = new Date(s);
-    if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
-    return defaultDOB;
+    return parseDateToISO(raw) || defaultDOB;
   };
   const parseNumber = (raw: string): number | undefined => {
     const n = Number(raw.replace(',', '.').replace(/[^\d.]/g, ''));

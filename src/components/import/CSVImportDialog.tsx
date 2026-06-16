@@ -33,9 +33,9 @@ export function CSVImportDialog({ type, onImportAthletes, onImportTeams, trigger
     const name = selectedFile.name.toLowerCase();
     if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
       const buf = await selectedFile.arrayBuffer();
-      const wb = XLSX.read(buf, { type: 'array' });
+      const wb = XLSX.read(buf, { type: 'array', cellDates: false });
       const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: '', raw: false });
+      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: '', raw: true });
       return rows.map((r) => {
         const out: Record<string, string> = {};
         for (const k of Object.keys(r)) out[k.trim()] = String(r[k] ?? '');
