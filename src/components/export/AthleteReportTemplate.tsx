@@ -235,8 +235,8 @@ export const AthleteReportTemplate = forwardRef<HTMLDivElement, AthleteReportTem
         {radarData.length > 0 && (
           <div className="mb-6">
             <h2 className="text-lg font-bold text-gray-900 mb-3">Profil Biomotor</h2>
-            <div className="flex justify-center">
-              <RadarChart data={radarData} height={300} />
+            <div style={{ width: '100%', height: '480px' }}>
+              <RadarChart data={radarData} height={480} showValues />
             </div>
           </div>
         )}
