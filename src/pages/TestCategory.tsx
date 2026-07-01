@@ -2,8 +2,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { biomotorCategories } from '@/data/biomotorTests';
+import { useCustomTests, isCustomTestItem, CustomTestItem } from '@/hooks/useCustomTests';
+import { CustomTestSheet } from '@/components/tests/CustomTestSheet';
+import { useState } from 'react';
 import { TestIllustrationGuide } from '@/components/tests/TestIllustrationGuide';
-import { ChevronLeft, ChevronRight, BookOpen, Wrench, Image as ImageIcon, Info, Target, ListChecks, Star, ArrowLeftRight, Activity, Timer } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen, Wrench, Image as ImageIcon, Info, Target, ListChecks, Star, ArrowLeftRight, Activity, Timer, Plus, Sparkles, Pencil, Trash2 } from 'lucide-react';
 import { 
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger 
 } from '@/components/ui/sheet';
@@ -18,8 +21,11 @@ export default function TestCategory() {
   const { categoryId } = useParams();
   const navigate = useNavigate();
   const { isFavorite, toggleFavorite } = useFavoriteTests();
-  
-  const category = biomotorCategories.find((c) => c.id === categoryId);
+  const { mergedCategories, deleteCustomTest } = useCustomTests();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [editing, setEditing] = useState<CustomTestItem | null>(null);
+
+  const category = mergedCategories.find((c) => c.id === categoryId);
   const categoryImage = categoryId ? categoryImages[categoryId] : null;
 
   if (!category) {
