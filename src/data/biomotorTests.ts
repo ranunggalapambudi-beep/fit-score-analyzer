@@ -816,6 +816,10 @@ export function calculateScore(
 }
 
 function calculateScoreWithNorm(value: number, norm: TestNorm): number {
+  return scoreValueWithNorm(value, norm);
+}
+
+export function scoreValueWithNorm(value: number, norm: TestNorm): number {
   if (norm.higherIsBetter) {
     if (value >= norm.scale5[0]) return 5;
     if (value >= norm.scale4[0]) return 4;
