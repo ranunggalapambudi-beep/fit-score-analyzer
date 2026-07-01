@@ -529,6 +529,12 @@ export default function TestCategory() {
           ))}
         </section>
       </div>
+      <CustomTestSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        editingTest={editing}
+        defaultCategoryId={category.id}
+      />
     </Layout>
   );
 }
