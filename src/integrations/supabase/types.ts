@@ -89,6 +89,57 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_tests: {
+        Row: {
+          category_id: string
+          created_at: string
+          description: string | null
+          equipment: string[] | null
+          higher_is_better: boolean
+          id: string
+          name: string
+          norms: Json
+          procedure: string | null
+          reference: string | null
+          unit: string
+          updated_at: string
+          use_age_groups: boolean
+          user_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          description?: string | null
+          equipment?: string[] | null
+          higher_is_better?: boolean
+          id?: string
+          name: string
+          norms?: Json
+          procedure?: string | null
+          reference?: string | null
+          unit?: string
+          updated_at?: string
+          use_age_groups?: boolean
+          user_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          description?: string | null
+          equipment?: string[] | null
+          higher_is_better?: boolean
+          id?: string
+          name?: string
+          norms?: Json
+          procedure?: string | null
+          reference?: string | null
+          unit?: string
+          updated_at?: string
+          use_age_groups?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       favorite_tests: {
         Row: {
           category_id: string
