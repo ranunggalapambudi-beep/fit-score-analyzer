@@ -5,7 +5,7 @@ import { Athlete, TestSession } from '@/types/athlete';
 import { Team } from '@/types/team';
 import { useToast } from '@/hooks/use-toast';
 import { computeTestScores, type ParsedAthleteTest } from '@/utils/csvExport';
-import { biomotorCategories, calculateScore } from '@/data/biomotorTests';
+import { biomotorCategories, calculateScore, scoreValueWithNorm, TestNorm, TestItem } from '@/data/biomotorTests';
 
 export function useSupabaseData() {
   const { user } = useAuth();
@@ -465,16 +465,43 @@ export function useSupabaseData() {
     testId: string,
     value: number,
   ) => {
-    const category = biomotorCategories.find(c => c.tests.some(t => t.id === testId));
-    const test = category?.tests.find(t => t.id === testId);
-    if (!category || !test) {
-      toast({ title: 'Error', description: 'Tes tidak ditemukan', variant: 'destructive' });
-      return false;
-    }
     const age = Math.floor(
       (Date.now() - new Date(athlete.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000),
     );
-    const score = calculateScore(value, test, athlete.gender, age);
+
+    let categoryId: string | undefined;
+    let score = 3;
+
+    const builtinCategory = biomotorCategories.find(c => c.tests.some(t => t.id === testId));
+    const builtinTest = builtinCategory?.tests.find(t => t.id === testId);
+    if (builtinCategory && builtinTest) {
+      categoryId = builtinCategory.id;
+      score = calculateScore(value, builtinTest, athlete.gender, age);
+    } else {
+      // Try custom test lookup (private per user via RLS)
+      const { data: custom } = await supabase
+        .from('custom_tests')
+        .select('category_id, norms, higher_is_better, unit')
+        .eq('id', testId)
+        .maybeSingle();
+      if (!custom) {
+        toast({ title: 'Error', description: 'Tes tidak ditemukan', variant: 'destructive' });
+        return false;
+      }
+      categoryId = custom.category_id;
+      const norms = (custom.norms as unknown as TestNorm[]) ?? [];
+      const applicable =
+        norms.find(n => n.gender === athlete.gender && age >= n.ageRange[0] && age <= n.ageRange[1]) ||
+        norms.find(n => n.gender === athlete.gender) ||
+        norms[0];
+      if (applicable) {
+        score = scoreValueWithNorm(value, {
+          ...applicable,
+          higherIsBetter: applicable.higherIsBetter ?? custom.higher_is_better,
+          unit: applicable.unit ?? custom.unit,
+        });
+      }
+    }
 
     // Find existing result
     const { data: existing } = await supabase
@@ -487,7 +514,7 @@ export function useSupabaseData() {
     if (existing?.id) {
       const { error } = await supabase
         .from('test_results')
-        .update({ value, score, category_id: category.id })
+        .update({ value, score, category_id: categoryId })
         .eq('id', existing.id);
       if (error) {
         toast({ title: 'Error', description: error.message, variant: 'destructive' });
@@ -497,7 +524,7 @@ export function useSupabaseData() {
       const { error } = await supabase.from('test_results').insert({
         session_id: sessionId,
         test_id: testId,
-        category_id: category.id,
+        category_id: categoryId!,
         value,
         score,
       });
