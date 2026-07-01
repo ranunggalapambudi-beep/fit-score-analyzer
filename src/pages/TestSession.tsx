@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScoreBadge } from '@/components/ui/score-badge';
 import { biomotorCategories, calculateScore } from '@/data/biomotorTests';
+import { useCustomTests } from '@/hooks/useCustomTests';
 import { TestResult, TestSession as TestSessionType, Athlete } from '@/types/athlete';
 import { ChevronLeft, Check, ChevronRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -17,6 +18,7 @@ export default function TestSession() {
   const { athleteId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { mergedCategories } = useCustomTests();
   
   const [athlete, setAthlete] = useState<Athlete | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,13 +77,14 @@ export default function TestSession() {
     );
   }, [athlete]);
 
-  const currentCategory = biomotorCategories[currentCategoryIndex];
+  const categories = mergedCategories.length ? mergedCategories : biomotorCategories;
+  const currentCategory = categories[currentCategoryIndex];
 
   const getScore = (testId: string, categoryId: string) => {
     const value = results[testId];
     if (value === undefined) return null;
     
-    const category = biomotorCategories.find((c) => c.id === categoryId);
+    const category = categories.find((c) => c.id === categoryId);
     const test = category?.tests.find((t) => t.id === testId);
     if (!test || !athlete) return null;
 
