@@ -125,7 +125,7 @@ export default function TestSession() {
   };
 
   const handleNext = () => {
-    if (currentCategoryIndex < biomotorCategories.length - 1) {
+    if (currentCategoryIndex < categories.length - 1) {
       setCurrentCategoryIndex((prev) => prev + 1);
     }
   };
@@ -144,7 +144,7 @@ export default function TestSession() {
     const testResults: { testId: string; categoryId: string; value: number; score: number }[] = [];
     
     Object.entries(results).forEach(([testId, value]) => {
-      const category = biomotorCategories.find((c) => 
+      const category = categories.find((c) => 
         c.tests.some((t) => t.id === testId)
       );
       const test = category?.tests.find((t) => t.id === testId);
@@ -255,7 +255,7 @@ export default function TestSession() {
         </div>
         {/* Category Progress */}
         <div className="flex gap-1 px-4 pb-3">
-          {biomotorCategories.map((cat, i) => (
+          {categories.map((cat, i) => (
             <button
               key={cat.id}
               onClick={() => setCurrentCategoryIndex(i)}
@@ -378,7 +378,7 @@ export default function TestSession() {
             <ChevronLeft className="w-4 h-4 mr-1" />
             Sebelumnya
           </Button>
-          {currentCategoryIndex < biomotorCategories.length - 1 ? (
+          {currentCategoryIndex < categories.length - 1 ? (
             <Button className="flex-1" onClick={handleNext}>
               Selanjutnya
               <ChevronRight className="w-4 h-4 ml-1" />
@@ -396,7 +396,7 @@ export default function TestSession() {
         </div>
 
         {/* Notes (only on last page) */}
-        {currentCategoryIndex === biomotorCategories.length - 1 && (
+        {currentCategoryIndex === categories.length - 1 && (
           <div className="space-y-2">
             <Label>Catatan (opsional)</Label>
             <Input
