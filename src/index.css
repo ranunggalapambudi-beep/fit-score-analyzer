@@ -170,6 +170,9 @@
   .biomotor-power {
     --category-color: var(--power);
   }
+  .biomotor-body-composition {
+    --category-color: var(--body-composition);
+  }
 }
 
 @layer utilities {
