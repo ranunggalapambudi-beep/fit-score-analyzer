@@ -778,6 +778,14 @@ export const biomotorCategories: BiomotorCategory[] = [
       },
     ]
   },
+  {
+    id: 'body-composition',
+    name: 'Komposisi Tubuh',
+    description: 'Pengukuran komposisi tubuh (lemak, otot, BMI, usia biologis) untuk analisis profil fisik',
+    icon: 'PersonStanding',
+    color: 'body-composition',
+    tests: []
+  },
 ];
 
 export const sportsList = [

@@ -7,6 +7,7 @@ import categoryEndurance from '@/assets/category-endurance.jpg';
 import categoryFlexibility from '@/assets/category-flexibility.jpg';
 import categoryCoordination from '@/assets/category-coordination.jpg';
 import categoryBalance from '@/assets/category-balance.jpg';
+import categoryBodyComposition from '@/assets/category-body-composition.jpg';
 
 export interface CategoryImageInfo {
   id: string;
@@ -25,6 +26,7 @@ export const categoryImages: Record<string, string> = {
   'agility': categoryAgility,
   'coordination': categoryCoordination,
   'balance': categoryBalance,
+  'body-composition': categoryBodyComposition,
 };
 
 export const categoryImageList: CategoryImageInfo[] = [
@@ -83,5 +85,12 @@ export const categoryImageList: CategoryImageInfo[] = [
     nameEn: 'Balance',
     image: categoryBalance,
     description: 'Kemampuan mempertahankan posisi tubuh',
+  },
+  {
+    id: 'body-composition',
+    name: 'Komposisi Tubuh',
+    nameEn: 'Body Composition',
+    image: categoryBodyComposition,
+    description: 'Analisis lemak, otot, BMI, dan usia biologis',
   },
 ];
