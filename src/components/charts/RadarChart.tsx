@@ -117,7 +117,12 @@ export function generateRadarData(
   categoryScores: Record<string, number>,
   onlyTested: boolean = false
 ): { category: string; score: number; fullMark: number }[] {
-  const categories = biomotorCategories.map((cat) => ({
+  // Body composition is tracked separately and MUST NOT be part of the
+  // 8-category biomotor radar/average.
+  const EXCLUDED = new Set(['body-composition']);
+  const categories = biomotorCategories
+    .filter((cat) => !EXCLUDED.has(cat.id))
+    .map((cat) => ({
     category: cat.name,
     categoryId: cat.id,
     score: categoryScores[cat.id] || 0,
