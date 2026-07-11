@@ -82,6 +82,8 @@ export default function AthleteDetail() {
 
     const scores: Record<string, number[]> = {};
     latest.results.forEach((r) => {
+      // Exclude body composition from the 8-category biomotor aggregation.
+      if (r.categoryId === 'body-composition') return;
       if (!scores[r.categoryId]) scores[r.categoryId] = [];
       scores[r.categoryId].push(r.score);
     });

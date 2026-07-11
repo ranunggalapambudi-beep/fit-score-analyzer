@@ -50,6 +50,7 @@ export default function Analysis() {
     if (!latestSession) return {};
     const scores: Record<string, number[]> = {};
     latestSession.results.forEach((r) => {
+      if (r.categoryId === 'body-composition') return;
       if (!scores[r.categoryId]) scores[r.categoryId] = [];
       scores[r.categoryId].push(r.score);
     });
@@ -81,7 +82,7 @@ export default function Analysis() {
           unit,
           score: r.score,
         };
-      });
+      }).filter((r) => r.categoryId !== 'body-composition');
 
       const { data, error } = await supabase.functions.invoke('analyze-biomotor', {
         body: { athleteData: { name: athlete.name, age, gender: athlete.gender, sport: athlete.sport, weight: athlete.weight, height: athlete.height, results: resultsWithDetails } },
